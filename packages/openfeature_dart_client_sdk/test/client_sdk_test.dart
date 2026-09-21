@@ -198,15 +198,15 @@ void main() {
         await event,
         isA<ProviderEvent>()
             .having(
-          (value) => value.type,
-          'type',
-          ProviderEventType.configurationChanged,
-        )
+              (value) => value.type,
+              'type',
+              ProviderEventType.configurationChanged,
+            )
             .having((value) => value.flagsChanged, 'flagsChanged', [
-          'new',
-          'old',
-          'same',
-        ]),
+              'new',
+              'old',
+              'same',
+            ]),
       );
     });
   });
@@ -605,9 +605,9 @@ class _CancelFailingShutdownProvider extends _TestProvider
 
   final StreamController<ProviderEvent> _events =
       StreamController<ProviderEvent>(
-    onCancel: () =>
-        Future<void>.error(StateError('event subscription cleanup failed')),
-  );
+        onCancel: () =>
+            Future<void>.error(StateError('event subscription cleanup failed')),
+      );
   int shutdownCalls = 0;
 
   @override
@@ -723,7 +723,7 @@ final class _RecordingHook extends HookAdapter {
 
 class _TestProvider implements FeatureProvider {
   _TestProvider(Map<String, Object> flags)
-      : _provider = InMemoryProvider(flags);
+    : _provider = InMemoryProvider(flags);
 
   final InMemoryProvider _provider;
 
@@ -735,38 +735,33 @@ class _TestProvider implements FeatureProvider {
     String flagKey,
     bool defaultValue,
     EvaluationContext context,
-  ) =>
-      _provider.resolveBooleanValue(flagKey, defaultValue, context);
+  ) => _provider.resolveBooleanValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<double> resolveDoubleValue(
     String flagKey,
     double defaultValue,
     EvaluationContext context,
-  ) =>
-      _provider.resolveDoubleValue(flagKey, defaultValue, context);
+  ) => _provider.resolveDoubleValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<int> resolveIntegerValue(
     String flagKey,
     int defaultValue,
     EvaluationContext context,
-  ) =>
-      _provider.resolveIntegerValue(flagKey, defaultValue, context);
+  ) => _provider.resolveIntegerValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<String> resolveStringValue(
     String flagKey,
     String defaultValue,
     EvaluationContext context,
-  ) =>
-      _provider.resolveStringValue(flagKey, defaultValue, context);
+  ) => _provider.resolveStringValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<Map<String, Object?>> resolveStructureValue(
     String flagKey,
     Map<String, Object?> defaultValue,
     EvaluationContext context,
-  ) =>
-      _provider.resolveStructureValue(flagKey, defaultValue, context);
+  ) => _provider.resolveStructureValue(flagKey, defaultValue, context);
 }

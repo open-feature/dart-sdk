@@ -20,8 +20,8 @@ final class ProviderEvent {
     this.message,
     this.errorCode,
     Map<String, Object> metadata = const {},
-  })  : flagsChanged = List<String>.unmodifiable(flagsChanged),
-        metadata = immutableMetadata(metadata, path: 'eventMetadata');
+  }) : flagsChanged = List<String>.unmodifiable(flagsChanged),
+       metadata = immutableMetadata(metadata, path: 'eventMetadata');
 
   final ProviderEventType type;
   final List<String> flagsChanged;
@@ -40,8 +40,8 @@ final class ProviderEventDetails {
     this.message,
     this.errorCode,
     Map<String, Object> metadata = const {},
-  })  : flagsChanged = List<String>.unmodifiable(flagsChanged),
-        metadata = immutableMetadata(metadata, path: 'eventMetadata');
+  }) : flagsChanged = List<String>.unmodifiable(flagsChanged),
+       metadata = immutableMetadata(metadata, path: 'eventMetadata');
 
   final ProviderEventType type;
   final ProviderMetadata providerMetadata;

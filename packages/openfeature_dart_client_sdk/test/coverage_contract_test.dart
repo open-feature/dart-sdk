@@ -177,7 +177,7 @@ final class _ThrowingFinalHook extends HookAdapter {
 
 class _DelegatingProvider implements FeatureProvider {
   _DelegatingProvider([Map<String, Object> flags = const {'flag': true}])
-      : delegate = InMemoryProvider(flags);
+    : delegate = InMemoryProvider(flags);
 
   final InMemoryProvider delegate;
 
@@ -190,40 +190,35 @@ class _DelegatingProvider implements FeatureProvider {
     String flagKey,
     bool defaultValue,
     EvaluationContext context,
-  ) =>
-      delegate.resolveBooleanValue(flagKey, defaultValue, context);
+  ) => delegate.resolveBooleanValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<double> resolveDoubleValue(
     String flagKey,
     double defaultValue,
     EvaluationContext context,
-  ) =>
-      delegate.resolveDoubleValue(flagKey, defaultValue, context);
+  ) => delegate.resolveDoubleValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<int> resolveIntegerValue(
     String flagKey,
     int defaultValue,
     EvaluationContext context,
-  ) =>
-      delegate.resolveIntegerValue(flagKey, defaultValue, context);
+  ) => delegate.resolveIntegerValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<String> resolveStringValue(
     String flagKey,
     String defaultValue,
     EvaluationContext context,
-  ) =>
-      delegate.resolveStringValue(flagKey, defaultValue, context);
+  ) => delegate.resolveStringValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<Map<String, Object?>> resolveStructureValue(
     String flagKey,
     Map<String, Object?> defaultValue,
     EvaluationContext context,
-  ) =>
-      delegate.resolveStructureValue(flagKey, defaultValue, context);
+  ) => delegate.resolveStructureValue(flagKey, defaultValue, context);
 }
 
 final class _LifecycleProviderWithoutEvents extends _DelegatingProvider

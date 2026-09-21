@@ -47,9 +47,9 @@ void main() {
     final domainEvents = <ProviderEventDetails>[];
     api.addHandler(ProviderEventType.configurationChanged, apiEvents.add);
     api.getClient().addHandler(
-          ProviderEventType.configurationChanged,
-          defaultEvents.add,
-        );
+      ProviderEventType.configurationChanged,
+      defaultEvents.add,
+    );
     final fallbackClient = api.getClient('fallback');
     final fallbackSubscription = fallbackClient.addHandler(
       ProviderEventType.configurationChanged,
@@ -159,7 +159,7 @@ void main() {
 
 final class _EventProvider implements FeatureProvider, ProviderEventSource {
   _EventProvider({this.name = 'event-provider'})
-      : _delegate = InMemoryProvider({'flag': true});
+    : _delegate = InMemoryProvider({'flag': true});
 
   final String name;
   final InMemoryProvider _delegate;
@@ -195,38 +195,33 @@ final class _EventProvider implements FeatureProvider, ProviderEventSource {
     String flagKey,
     bool defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveBooleanValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveBooleanValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<double> resolveDoubleValue(
     String flagKey,
     double defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveDoubleValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveDoubleValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<int> resolveIntegerValue(
     String flagKey,
     int defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveIntegerValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveIntegerValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<String> resolveStringValue(
     String flagKey,
     String defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveStringValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveStringValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<Map<String, Object?>> resolveStructureValue(
     String flagKey,
     Map<String, Object?> defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveStructureValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveStructureValue(flagKey, defaultValue, context);
 }

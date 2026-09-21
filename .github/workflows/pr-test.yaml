@@ -43,7 +43,7 @@ jobs:
             minimum_sdk: 3.12.2
           - name: client
             path: packages/openfeature_dart_client_sdk
-            minimum_sdk: 3.6.0
+            minimum_sdk: 3.10.0
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
@@ -114,7 +114,7 @@ jobs:
             sdk: 3.12.2
           - name: client
             path: packages/openfeature_dart_client_sdk
-            sdk: 3.6.0
+            sdk: 3.10.0
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1

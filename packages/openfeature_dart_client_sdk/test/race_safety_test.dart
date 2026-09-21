@@ -250,7 +250,7 @@ final class _GatedContextProvider
         ProviderEventSource,
         ShutdownProvider {
   _GatedContextProvider({this.name = 'gated-provider'})
-      : _delegate = InMemoryProvider({'flag': true});
+    : _delegate = InMemoryProvider({'flag': true});
 
   final String name;
   final InMemoryProvider _delegate;
@@ -319,30 +319,26 @@ final class _GatedContextProvider
     String flagKey,
     double defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveDoubleValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveDoubleValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<int> resolveIntegerValue(
     String flagKey,
     int defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveIntegerValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveIntegerValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<String> resolveStringValue(
     String flagKey,
     String defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveStringValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveStringValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<Map<String, Object?>> resolveStructureValue(
     String flagKey,
     Map<String, Object?> defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveStructureValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveStructureValue(flagKey, defaultValue, context);
 }

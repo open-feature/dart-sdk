@@ -6,15 +6,15 @@ repository: https://github.com/open-feature/dart-server-sdk
 issue_tracker: https://github.com/open-feature/dart-server-sdk/issues
 
 environment:
-  sdk: '>=3.6.0 <4.0.0'
+  sdk: ^3.10.0
 
 dev_dependencies:
-  # Keep the lower bounds compatible with the package's minimum Dart SDK.
-  analyzer: '>=7.5.4 <9.0.0'
+  # Keep minimum-dependency tests compatible with supported Dart SDKs.
+  analyzer: ^8.1.1
   coverage: ^1.15.0
-  # Dart 3 requires the SDK-layout-aware frontend server client.
+  # Use the SDK-layout-aware frontend server client.
   frontend_server_client: ^4.0.0
-  lints: '>=5.0.0 <7.0.0'
+  lints: ^6.0.0
   # Keep the Chrome test runner on the two-argument connection callback API.
   shelf_web_socket: ^2.0.1
   test: ^1.26.3

@@ -11,7 +11,7 @@ import 'provider.dart';
 /// A provider for conformance tests and application tests.
 final class InMemoryProvider implements FeatureProvider, ProviderEventSource {
   InMemoryProvider([Map<String, Object> flags = const {}])
-      : _flags = _copyFlags(flags);
+    : _flags = _copyFlags(flags);
 
   Map<String, Object> _flags;
   final StreamController<ProviderEvent> _events =
@@ -44,40 +44,35 @@ final class InMemoryProvider implements FeatureProvider, ProviderEventSource {
     String flagKey,
     bool defaultValue,
     EvaluationContext context,
-  ) =>
-      _resolve(flagKey, defaultValue);
+  ) => _resolve(flagKey, defaultValue);
 
   @override
   ResolutionDetails<double> resolveDoubleValue(
     String flagKey,
     double defaultValue,
     EvaluationContext context,
-  ) =>
-      _resolve(flagKey, defaultValue);
+  ) => _resolve(flagKey, defaultValue);
 
   @override
   ResolutionDetails<int> resolveIntegerValue(
     String flagKey,
     int defaultValue,
     EvaluationContext context,
-  ) =>
-      _resolve(flagKey, defaultValue);
+  ) => _resolve(flagKey, defaultValue);
 
   @override
   ResolutionDetails<String> resolveStringValue(
     String flagKey,
     String defaultValue,
     EvaluationContext context,
-  ) =>
-      _resolve(flagKey, defaultValue);
+  ) => _resolve(flagKey, defaultValue);
 
   @override
   ResolutionDetails<Map<String, Object?>> resolveStructureValue(
     String flagKey,
     Map<String, Object?> defaultValue,
     EvaluationContext context,
-  ) =>
-      _resolve(flagKey, immutableStructure(defaultValue));
+  ) => _resolve(flagKey, immutableStructure(defaultValue));
 
   ResolutionDetails<T> _resolve<T>(String flagKey, T defaultValue) {
     if (!_flags.containsKey(flagKey)) {

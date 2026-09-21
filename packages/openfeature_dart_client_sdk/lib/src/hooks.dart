@@ -9,7 +9,7 @@ enum FlagValueType { boolean, string, integer, double, structure }
 /// Immutable hook hints supplied with one flag evaluation.
 final class HookHints {
   HookHints([Map<String, Object?> values = const {}])
-      : values = immutableStructure(values, path: 'hookHints');
+    : values = immutableStructure(values, path: 'hookHints');
 
   final Map<String, Object?> values;
 
@@ -87,8 +87,8 @@ final class EvaluationOptions {
   EvaluationOptions({
     Iterable<Hook> hooks = const [],
     Map<String, Object?> hookHints = const {},
-  })  : hooks = List<Hook>.unmodifiable(hooks),
-        hookHints = HookHints(hookHints);
+  }) : hooks = List<Hook>.unmodifiable(hooks),
+       hookHints = HookHints(hookHints);
 
   final List<Hook> hooks;
   final HookHints hookHints;

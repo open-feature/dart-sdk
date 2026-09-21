@@ -108,7 +108,7 @@ jobs:
           declare -A EXPECTED_MINIMUM_VERSIONS=(
             ["./pubspec.yaml"]="3.12.2"
             ["./packages/openfeature_dart_server_sdk/pubspec.yaml"]="3.12.2"
-            ["./packages/openfeature_dart_client_sdk/pubspec.yaml"]="3.6.0"
+            ["./packages/openfeature_dart_client_sdk/pubspec.yaml"]="3.10.0"
           )
           ALL_VALID="true"
 

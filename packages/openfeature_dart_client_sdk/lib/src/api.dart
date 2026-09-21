@@ -15,8 +15,7 @@ import 'provider.dart';
 /// This function is exported only from the experimental library.
 OpenFeatureAPI createIsolatedOpenFeatureAPI({
   Duration lifecycleTimeout = const Duration(seconds: 30),
-}) =>
-    OpenFeatureAPI._(lifecycleTimeout: lifecycleTimeout);
+}) => OpenFeatureAPI._(lifecycleTimeout: lifecycleTimeout);
 
 /// The static-context OpenFeature API.
 final class OpenFeatureAPI {
@@ -492,7 +491,7 @@ final class OpenFeatureAPI {
     ).then((_) => operation());
     final tail = result.then<void>(
       (_) {},
-      onError: (Object _, StackTrace __) {},
+      onError: (Object _, StackTrace _) {},
     );
     for (final key in keys) {
       _bindingMutationQueues[key] = tail;
@@ -524,7 +523,7 @@ final class OpenFeatureAPI {
     ).then((_) => operation());
     final tail = result.then<void>(
       (_) {},
-      onError: (Object _, StackTrace __) {},
+      onError: (Object _, StackTrace _) {},
     );
     for (final key in keys) {
       _providerMutationQueues[key] = tail;
@@ -547,8 +546,7 @@ final class OpenFeatureAPI {
     String? domain,
   ) async {
     if (provider is ProviderEventSource) {
-      record.eventSubscription = (provider as ProviderEventSource)
-          .events
+      record.eventSubscription = (provider as ProviderEventSource).events
           .listen((event) => _processEvent(provider, record, event));
     }
 
@@ -570,24 +568,24 @@ final class OpenFeatureAPI {
     record.lifecycleOperation = operation;
     var timedOut = false;
     try {
-      final status = await (() async {
-        await (provider as InitializableProvider).initialize(
-          _requestedContextForDomain(domain),
-          domain: domain,
-        );
-        operation.completeCallback();
-        return operation.future;
-      })()
-          .timeout(
-        lifecycleTimeout,
-        onTimeout: () {
-          timedOut = true;
-          throw OpenFeatureException(
-            'Provider initialization did not complete within '
-            '${lifecycleTimeout.inMilliseconds} ms.',
+      final status =
+          await (() async {
+            await (provider as InitializableProvider).initialize(
+              _requestedContextForDomain(domain),
+              domain: domain,
+            );
+            operation.completeCallback();
+            return operation.future;
+          })().timeout(
+            lifecycleTimeout,
+            onTimeout: () {
+              timedOut = true;
+              throw OpenFeatureException(
+                'Provider initialization did not complete within '
+                '${lifecycleTimeout.inMilliseconds} ms.',
+              );
+            },
           );
-        },
-      );
       if (status == ProviderStatus.error || status == ProviderStatus.fatal) {
         throw OpenFeatureException(
           'Provider initialization ended with status ${status.name}.',
@@ -634,24 +632,24 @@ final class OpenFeatureAPI {
     record.lifecycleOperation = operation;
     var timedOut = false;
     try {
-      final status = await (() async {
-        await (provider as ContextReconciliationProvider).onContextChanged(
-          previousContext,
-          newContext,
-        );
-        operation.completeCallback();
-        return operation.future;
-      })()
-          .timeout(
-        lifecycleTimeout,
-        onTimeout: () {
-          timedOut = true;
-          throw OpenFeatureException(
-            'Provider reconciliation did not complete within '
-            '${lifecycleTimeout.inMilliseconds} ms.',
+      final status =
+          await (() async {
+            await (provider as ContextReconciliationProvider).onContextChanged(
+              previousContext,
+              newContext,
+            );
+            operation.completeCallback();
+            return operation.future;
+          })().timeout(
+            lifecycleTimeout,
+            onTimeout: () {
+              timedOut = true;
+              throw OpenFeatureException(
+                'Provider reconciliation did not complete within '
+                '${lifecycleTimeout.inMilliseconds} ms.',
+              );
+            },
           );
-        },
-      );
       if (status == ProviderStatus.error || status == ProviderStatus.fatal) {
         throw OpenFeatureException(
           'Provider reconciliation ended with status ${status.name}.',
@@ -835,7 +833,8 @@ final class OpenFeatureAPI {
           handlerRecord.eventType != event.type) {
         continue;
       }
-      final isAssociated = handlerRecord.apiWide ||
+      final isAssociated =
+          handlerRecord.apiWide ||
           identical(_providerForDomain(handlerRecord.domain), provider);
       if (isAssociated) {
         _invokeHandler(handlerRecord, providerRecord, event);
@@ -1008,8 +1007,7 @@ final class OpenFeatureClient {
     String flagKey,
     bool defaultValue, {
     EvaluationOptions? options,
-  }) =>
-      getBooleanDetails(flagKey, defaultValue, options: options).value;
+  }) => getBooleanDetails(flagKey, defaultValue, options: options).value;
 
   FlagEvaluationDetails<bool> getBooleanDetails(
     String flagKey,
@@ -1030,8 +1028,7 @@ final class OpenFeatureClient {
     String flagKey,
     String defaultValue, {
     EvaluationOptions? options,
-  }) =>
-      getStringDetails(flagKey, defaultValue, options: options).value;
+  }) => getStringDetails(flagKey, defaultValue, options: options).value;
 
   FlagEvaluationDetails<String> getStringDetails(
     String flagKey,
@@ -1052,8 +1049,7 @@ final class OpenFeatureClient {
     String flagKey,
     int defaultValue, {
     EvaluationOptions? options,
-  }) =>
-      getIntegerDetails(flagKey, defaultValue, options: options).value;
+  }) => getIntegerDetails(flagKey, defaultValue, options: options).value;
 
   FlagEvaluationDetails<int> getIntegerDetails(
     String flagKey,
@@ -1074,8 +1070,7 @@ final class OpenFeatureClient {
     String flagKey,
     double defaultValue, {
     EvaluationOptions? options,
-  }) =>
-      getDoubleDetails(flagKey, defaultValue, options: options).value;
+  }) => getDoubleDetails(flagKey, defaultValue, options: options).value;
 
   FlagEvaluationDetails<double> getDoubleDetails(
     String flagKey,
@@ -1096,8 +1091,7 @@ final class OpenFeatureClient {
     String flagKey,
     Map<String, Object?> defaultValue, {
     EvaluationOptions? options,
-  }) =>
-      getStructureDetails(flagKey, defaultValue, options: options).value;
+  }) => getStructureDetails(flagKey, defaultValue, options: options).value;
 
   FlagEvaluationDetails<Map<String, Object?>> getStructureDetails(
     String flagKey,
@@ -1137,7 +1131,8 @@ final class OpenFeatureClient {
     ResolutionDetails<T> Function(
       FeatureProvider provider,
       EvaluationContext context,
-    ) resolve, {
+    )
+    resolve, {
     EvaluationOptions? options,
   }) {
     final provider = _api._providerForDomain(metadata.domain);
@@ -1146,7 +1141,7 @@ final class OpenFeatureClient {
     final hooks = <Hook>[..._api._hooks, ..._hooks, ...?options?.hooks];
     ProviderMetadata providerMetadata =
         _api._providerRecords[provider]?.metadata ??
-            const ProviderMetadata(name: 'unknown');
+        const ProviderMetadata(name: 'unknown');
     Object? setupError;
     try {
       providerMetadata = provider.metadata;
@@ -1233,8 +1228,9 @@ final class OpenFeatureClient {
     return FlagEvaluationDetails<T>(
       flagKey: flagKey,
       value: defaultValue,
-      errorCode:
-          error is OpenFeatureException ? error.errorCode : ErrorCode.general,
+      errorCode: error is OpenFeatureException
+          ? error.errorCode
+          : ErrorCode.general,
       errorMessage: error.toString(),
       reason: 'ERROR',
     );

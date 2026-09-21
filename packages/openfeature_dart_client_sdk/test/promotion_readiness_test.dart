@@ -297,40 +297,35 @@ class _DelegatingProvider implements FeatureProvider {
     String flagKey,
     bool defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveBooleanValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveBooleanValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<double> resolveDoubleValue(
     String flagKey,
     double defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveDoubleValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveDoubleValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<int> resolveIntegerValue(
     String flagKey,
     int defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveIntegerValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveIntegerValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<String> resolveStringValue(
     String flagKey,
     String defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveStringValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveStringValue(flagKey, defaultValue, context);
 
   @override
   ResolutionDetails<Map<String, Object?>> resolveStructureValue(
     String flagKey,
     Map<String, Object?> defaultValue,
     EvaluationContext context,
-  ) =>
-      _delegate.resolveStructureValue(flagKey, defaultValue, context);
+  ) => _delegate.resolveStructureValue(flagKey, defaultValue, context);
 }
 
 class _SilentLifecycleProvider extends _DelegatingProvider

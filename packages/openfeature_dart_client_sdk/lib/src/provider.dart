@@ -86,7 +86,7 @@ abstract interface class TrackingProvider {
 /// Data associated with one tracking call.
 final class TrackingEventDetails {
   TrackingEventDetails({this.value, Map<String, Object?> attributes = const {}})
-      : attributes = immutableStructure(attributes, path: 'trackingAttributes');
+    : attributes = immutableStructure(attributes, path: 'trackingAttributes');
 
   final num? value;
   final Map<String, Object?> attributes;
