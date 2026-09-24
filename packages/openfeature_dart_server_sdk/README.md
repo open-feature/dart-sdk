@@ -1,6 +1,8 @@
 <!-- markdownlint-disable MD033 -->
 For typed provider event registration, late-handler behavior and compatibility
 with existing streams, see [the event migration guide](doc/events-migration.md).
+For reusable cleanup and experimental isolated API instances, see
+[shutdown and isolation](doc/shutdown-and-isolation.md).
 
 <!-- x-hide-in-docs-start -->
 <p align="center">

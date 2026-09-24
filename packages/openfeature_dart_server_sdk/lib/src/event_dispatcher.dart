@@ -59,6 +59,13 @@ class EventDispatcher {
     _closed = true;
     await Future.wait(_scopes.toList().map((scope) => scope.close()));
   }
+
+  /// Clears handlers while retaining client views for reuse after API reset.
+  void reset() {
+    for (final scope in _scopes.toList()) {
+      scope._reset();
+    }
+  }
 }
 
 /// An API or client view of the shared dispatcher, not a second event bus.
@@ -70,7 +77,8 @@ class EventScope {
   final bool _legacyMetadataMatching;
   final Iterable<OpenFeatureEvent> Function(OpenFeatureEventType) _current;
   final _handlers = <OpenFeatureEventType, List<EventHandler>>{};
-  final _stream = StreamController<OpenFeatureEvent>.broadcast();
+  var _stream = StreamController<OpenFeatureEvent>.broadcast();
+  int _generation = 0;
   bool _closed = false;
 
   EventScope._(
@@ -81,7 +89,19 @@ class EventScope {
     this._legacyMetadataMatching,
   );
 
-  Stream<OpenFeatureEvent> get events => _stream.stream;
+  Stream<OpenFeatureEvent> get events {
+    final generation = _generation;
+    return _stream.stream.where((_) => generation == _generation);
+  }
+
+  void _reset() {
+    _generation++;
+    _handlers.clear();
+    // A paused old stream must not prevent API reset. Queued old events are
+    // filtered by generation; its subscribers still receive done on resuming.
+    unawaited(_stream.close());
+    _stream = StreamController<OpenFeatureEvent>.broadcast();
+  }
 
   void add(OpenFeatureEventType type, EventHandler handler) {
     if (_closed) throw StateError('Event scope is closed.');
