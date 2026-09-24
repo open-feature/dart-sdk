@@ -21,6 +21,10 @@ New providers can implement a minimal resolver contract and opt into lifecycle,
 hooks and tracking. See the [provider migration guide](doc/provider-capabilities-migration.md)
 for the additive API and legacy lifecycle policy.
 
+Evaluation options now carry invocation hooks and immutable hints. See the
+[hooks migration guide](doc/hooks-migration.md) for typed stage callbacks,
+registration order and the compatibility decision for legacy priorities.
+
 <p align="center" class="github-badges">
   <a href="https://github.com/open-feature/spec/releases/tag/v0.8.0">
     <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.8.0&color=yellow&style=for-the-badge" />

@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import '../lib/transaction_context.dart';
+import 'package:openfeature_dart_server_sdk/transaction_context.dart';
 
 void main() {
   group('TransactionContext', () {

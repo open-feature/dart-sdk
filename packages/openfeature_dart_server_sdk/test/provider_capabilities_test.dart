@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:test/test.dart';
-import '../lib/evaluation_context.dart';
-import '../lib/feature_provider.dart';
-import '../lib/hooks.dart';
-import '../lib/open_feature_api.dart';
-import '../lib/provider_capabilities.dart';
-import '../lib/src/provider_adapter.dart';
-import '../lib/provider_lifecycle.dart';
-import '../lib/src/provider_lifecycle_manager.dart';
+import 'package:openfeature_dart_server_sdk/evaluation_context.dart';
+import 'package:openfeature_dart_server_sdk/feature_provider.dart';
+import 'package:openfeature_dart_server_sdk/hooks.dart';
+import 'package:openfeature_dart_server_sdk/open_feature_api.dart';
+import 'package:openfeature_dart_server_sdk/provider_capabilities.dart';
+import 'package:openfeature_dart_server_sdk/src/provider_adapter.dart';
+import 'package:openfeature_dart_server_sdk/provider_lifecycle.dart';
+import 'package:openfeature_dart_server_sdk/src/provider_lifecycle_manager.dart';
 
 // This deliberately implements only metadata and the five typed resolvers.
 // No base class supplies hidden lifecycle, tracking, config or connect members.

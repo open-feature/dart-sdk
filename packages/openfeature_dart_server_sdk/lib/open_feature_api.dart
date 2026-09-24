@@ -174,6 +174,7 @@ class OpenFeatureAPI {
   final DomainManager _domainManager = DomainManager();
   late final ProviderLifecycleManager _lifecycleManager;
   final List<OpenFeatureHook> _hooks = [];
+  final List<Hook> _evaluationHooks = [];
   OpenFeatureEvaluationContext? _globalContext;
   StreamSubscription<Domain>? _domainSubscription;
   StreamSubscription<LogRecord>? _logSubscription;
@@ -480,13 +481,11 @@ class OpenFeatureAPI {
         const EvaluationContext(attributes: {});
 
     final hookManager = HookManager();
-    for (final hook in _hooks) {
-      hookManager.addHook(_wrapHook(hook));
-    }
 
     return FeatureClient(
       metadata: ClientMetadata(name: name, domain: domain ?? name),
       hookManager: hookManager,
+      apiHooksResolver: () => List.unmodifiable(_evaluationHooks),
       apiContext: resolveApiContext(),
       apiContextResolver: resolveApiContext,
       defaultContext: const EvaluationContext(attributes: {}),
@@ -528,7 +527,12 @@ class OpenFeatureAPI {
 
   void addHooks(List<OpenFeatureHook> hooks) {
     _hooks.addAll(hooks);
+    _evaluationHooks.addAll(hooks.map(_wrapHook));
   }
+
+  /// Adds typed hooks at API scope, including for already-created clients.
+  void addEvaluationHooks(Iterable<Hook> hooks) =>
+      _evaluationHooks.addAll(hooks);
 
   List<OpenFeatureHook> get hooks => List.unmodifiable(_hooks);
 

@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import '../lib/domain.dart';
+import 'package:openfeature_dart_server_sdk/domain.dart';
 
 void main() {
   group('DomainConfiguration', () {

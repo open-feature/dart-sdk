@@ -56,6 +56,7 @@ class FeatureClient {
   final Logger _logger = Logger('FeatureClient');
   final ClientMetadata metadata;
   final HookManager _hookManager;
+  final Iterable<Hook> Function()? _apiHooksResolver;
   final EvaluationContext _defaultContext;
   final EvaluationContext _apiContext;
   final EvaluationContext Function()? _apiContextResolver;
@@ -71,6 +72,7 @@ class FeatureClient {
   FeatureClient({
     required this.metadata,
     required HookManager hookManager,
+    Iterable<Hook> Function()? apiHooksResolver,
     required EvaluationContext defaultContext,
     EvaluationContext? apiContext,
     EvaluationContext Function()? apiContextResolver,
@@ -80,6 +82,7 @@ class FeatureClient {
     TransactionContextManager? transactionManager,
     Stream<OpenFeatureEvent>? eventStream,
   }) : _hookManager = hookManager,
+       _apiHooksResolver = apiHooksResolver,
        _defaultContext = defaultContext,
        _apiContext = apiContext ?? const EvaluationContext(attributes: {}),
        _apiContextResolver = apiContextResolver,
@@ -199,11 +202,14 @@ class FeatureClient {
       reason: result.reason,
       evaluationTime: result.evaluatedAt,
       additionalDetails: result.details,
+      errorCode: result.errorCode,
+      errorMessage: result.errorMessage,
+      flagMetadata: result.flagMetadata,
     );
   }
 
   Exception _asException(Object error) {
-    return error is Exception ? error : Exception(error.toString());
+    return error is Exception ? error : Exception(_safeErrorMessage(error));
   }
 
   Exception _providerErrorAsException<T>(FlagEvaluationResult<T> result) {
@@ -218,7 +224,7 @@ class FeatureClient {
     String flagKey,
     T defaultValue,
     Exception error,
-    FeatureProvider evaluationProvider,
+    String evaluatorId,
   ) {
     final errorCode = error is ProviderException
         ? error.code
@@ -227,7 +233,7 @@ class FeatureClient {
         : ErrorCode.GENERAL;
     final errorMessage = error is ProviderException
         ? error.message
-        : error.toString();
+        : _safeErrorMessage(error);
 
     return FlagEvaluationResult<T>(
       flagKey: flagKey,
@@ -237,7 +243,7 @@ class FeatureClient {
       errorMessage: errorMessage,
       details: error is ProviderException ? error.details : null,
       evaluatedAt: DateTime.now(),
-      evaluatorId: evaluationProvider.metadata.name,
+      evaluatorId: evaluatorId,
     );
   }
 
@@ -249,14 +255,20 @@ class FeatureClient {
   Future<FlagEvaluationResult<T>> _evaluateFlagResult<T>(
     String flagKey,
     T defaultValue,
-    Future<FlagEvaluationResult<T>> Function(Map<String, dynamic>?) evaluator, {
-    required FeatureProvider evaluationProvider,
+    Future<FlagEvaluationResult<T>> Function(
+      FeatureProvider,
+      Map<String, dynamic>?,
+    )
+    evaluator, {
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) async {
     final startTime = DateTime.now();
     var effectiveContext = <String, dynamic>{};
     final hookData = HookData();
-    List<Hook> providerHooks = const [];
+    List<Hook> executionHooks = const [];
+    final hints = options?.hints ?? const HookHints();
+    ProviderMetadata? hookProviderMetadata;
     final flagValueType = _inferFlagValueType(defaultValue);
     FlagEvaluationResult<T>? finalResult;
     EvaluationDetails? evaluationDetails;
@@ -264,22 +276,39 @@ class FeatureClient {
     _metrics.flagEvaluations++;
 
     try {
-      providerHooks = providerHooksFor(evaluationProvider);
+      executionHooks = List.unmodifiable([
+        ...?_apiHooksResolver?.call(),
+        ..._hookManager.registeredHooks,
+        ...?options?.hooks,
+      ]);
       effectiveContext = _buildEffectiveContext(context);
+      final evaluationProvider = provider;
+      executionHooks = List.unmodifiable([
+        ...executionHooks,
+        ...providerHooksFor(evaluationProvider),
+      ]);
+      final providerMetadata = evaluationProvider.metadata;
+      hookProviderMetadata = ProviderMetadata(
+        name: providerMetadata.name,
+        version: providerMetadata.version,
+        attributes: Map.unmodifiable(providerMetadata.attributes),
+      );
       effectiveContext = await _hookManager.executeHooks(
         HookStage.BEFORE,
         flagKey,
         effectiveContext,
         clientMetadata: metadata,
-        providerMetadata: evaluationProvider.metadata,
+        providerMetadata: hookProviderMetadata,
         defaultValue: defaultValue,
         flagValueType: flagValueType,
         hookData: hookData,
-        additionalHooks: providerHooks,
+        executionHooks: executionHooks,
+        hints: hints,
+        onContextChanged: (updated) => effectiveContext = updated,
       );
 
       _ensureProviderCanEvaluate(evaluationProvider);
-      finalResult = await evaluator(effectiveContext);
+      finalResult = await evaluator(evaluationProvider, effectiveContext);
       // A provider may return an error together with a cached or otherwise
       // unusable value. Only the application chooses its fallback (1.4.10).
       if (finalResult.errorCode != null) {
@@ -305,11 +334,12 @@ class FeatureClient {
           result: finalResult.value,
           evaluationDetails: evaluationDetails,
           clientMetadata: metadata,
-          providerMetadata: evaluationProvider.metadata,
+          providerMetadata: hookProviderMetadata,
           defaultValue: defaultValue,
           flagValueType: flagValueType,
           hookData: hookData,
-          additionalHooks: providerHooks,
+          executionHooks: executionHooks,
+          hints: hints,
         );
       } else {
         evaluationError = _providerErrorAsException(finalResult);
@@ -326,25 +356,28 @@ class FeatureClient {
           error: evaluationError,
           evaluationDetails: evaluationDetails,
           clientMetadata: metadata,
-          providerMetadata: evaluationProvider.metadata,
+          providerMetadata: hookProviderMetadata,
           defaultValue: defaultValue,
           flagValueType: flagValueType,
           hookData: hookData,
-          additionalHooks: providerHooks,
+          executionHooks: executionHooks,
+          hints: hints,
         );
       }
     } catch (e) {
       evaluationError = _asException(e);
-      _logger.warning('Error evaluating flag $flagKey: $e');
+      _logger.warning(
+        'Error evaluating flag $flagKey: ${_safeErrorMessage(e)}',
+      );
       if (finalResult == null || finalResult.errorCode == null) {
         finalResult = _exceptionResult(
           flagKey,
           defaultValue,
           evaluationError,
-          evaluationProvider,
+          hookProviderMetadata?.name ?? '',
         );
       }
-      evaluationDetails ??= _createEvaluationDetails(finalResult);
+      evaluationDetails = _createEvaluationDetails(finalResult);
       _recordEvaluationError(finalResult.errorCode, evaluationError);
 
       await _hookManager.executeHooks(
@@ -355,11 +388,12 @@ class FeatureClient {
         error: evaluationError,
         evaluationDetails: evaluationDetails,
         clientMetadata: metadata,
-        providerMetadata: evaluationProvider.metadata,
+        providerMetadata: hookProviderMetadata,
         defaultValue: defaultValue,
         flagValueType: flagValueType,
         hookData: hookData,
-        additionalHooks: providerHooks,
+        executionHooks: executionHooks,
+        hints: hints,
       );
     } finally {
       _metrics.responseTimes.add(DateTime.now().difference(startTime));
@@ -374,11 +408,12 @@ class FeatureClient {
         error: evaluationError,
         evaluationDetails: evaluationDetails,
         clientMetadata: metadata,
-        providerMetadata: evaluationProvider.metadata,
+        providerMetadata: hookProviderMetadata,
         defaultValue: defaultValue,
         flagValueType: flagValueType,
         hookData: hookData,
-        additionalHooks: providerHooks,
+        executionHooks: executionHooks,
+        hints: hints,
       );
     }
 
@@ -389,16 +424,20 @@ class FeatureClient {
   Future<T> _evaluateFlag<T>(
     String flagKey,
     T defaultValue,
-    Future<FlagEvaluationResult<T>> Function(Map<String, dynamic>?) evaluator, {
-    required FeatureProvider evaluationProvider,
+    Future<FlagEvaluationResult<T>> Function(
+      FeatureProvider,
+      Map<String, dynamic>?,
+    )
+    evaluator, {
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) async {
     final result = await _evaluateFlagResult(
       flagKey,
       defaultValue,
       evaluator,
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
     return result.value;
   }
@@ -407,19 +446,19 @@ class FeatureClient {
   Future<bool> getBooleanFlag(
     String flagKey, {
     EvaluationContext? context,
+    EvaluationOptions? options,
     bool defaultValue = false,
   }) {
-    final evaluationProvider = provider;
     return _evaluateFlag(
       flagKey,
       defaultValue,
-      (ctx) => evaluationProvider.getBooleanFlag(
+      (evaluationProvider, ctx) => evaluationProvider.getBooleanFlag(
         flagKey,
         defaultValue,
         context: ctx,
       ),
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
   }
 
@@ -427,16 +466,16 @@ class FeatureClient {
   Future<String> getStringFlag(
     String flagKey, {
     EvaluationContext? context,
+    EvaluationOptions? options,
     String defaultValue = '',
   }) {
-    final evaluationProvider = provider;
     return _evaluateFlag(
       flagKey,
       defaultValue,
-      (ctx) =>
+      (evaluationProvider, ctx) =>
           evaluationProvider.getStringFlag(flagKey, defaultValue, context: ctx),
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
   }
 
@@ -444,19 +483,19 @@ class FeatureClient {
   Future<int> getIntegerFlag(
     String flagKey, {
     EvaluationContext? context,
+    EvaluationOptions? options,
     int defaultValue = 0,
   }) {
-    final evaluationProvider = provider;
     return _evaluateFlag(
       flagKey,
       defaultValue,
-      (ctx) => evaluationProvider.getIntegerFlag(
+      (evaluationProvider, ctx) => evaluationProvider.getIntegerFlag(
         flagKey,
         defaultValue,
         context: ctx,
       ),
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
   }
 
@@ -464,32 +503,32 @@ class FeatureClient {
   Future<double> getDoubleFlag(
     String flagKey, {
     EvaluationContext? context,
+    EvaluationOptions? options,
     double defaultValue = 0.0,
   }) {
-    final evaluationProvider = provider;
     return _evaluateFlag(
       flagKey,
       defaultValue,
-      (ctx) =>
+      (evaluationProvider, ctx) =>
           evaluationProvider.getDoubleFlag(flagKey, defaultValue, context: ctx),
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
   }
 
   Future<Map<String, dynamic>> getObjectFlag(
     String flagKey, {
     EvaluationContext? context,
+    EvaluationOptions? options,
     Map<String, dynamic> defaultValue = const {},
   }) {
-    final evaluationProvider = provider;
     return _evaluateFlag(
       flagKey,
       defaultValue,
-      (ctx) =>
+      (evaluationProvider, ctx) =>
           evaluationProvider.getObjectFlag(flagKey, defaultValue, context: ctx),
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
   }
 
@@ -542,17 +581,19 @@ class FeatureClient {
 ///
 /// The legacy get*Flag/get*Details methods remain source-compatible during
 /// migration. These methods provide the required-default contract of 1.3.1.1
-/// and 1.4.1.1; evaluation options are tracked separately in issue #161.
+/// and 1.4.1.1, with invocation hooks and immutable hints in options.
 extension RequiredDefaultEvaluation on FeatureClient {
   /// Evaluates a boolean flag with an explicit application fallback.
   Future<bool> getBooleanValue(
     String flagKey, {
     required bool defaultValue,
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) async => (await getBooleanEvaluationDetails(
     flagKey,
     defaultValue: defaultValue,
     context: context,
+    options: options,
   )).value;
 
   /// Detailed boolean evaluation with an explicit application fallback.
@@ -560,6 +601,7 @@ extension RequiredDefaultEvaluation on FeatureClient {
     String flagKey, {
     required bool defaultValue,
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) => _withApplicationDefault(
     flagKey,
     defaultValue,
@@ -567,6 +609,7 @@ extension RequiredDefaultEvaluation on FeatureClient {
       flagKey,
       defaultValue: defaultValue,
       context: context,
+      options: options,
     ),
   );
 
@@ -575,10 +618,12 @@ extension RequiredDefaultEvaluation on FeatureClient {
     String flagKey, {
     required String defaultValue,
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) async => (await getStringEvaluationDetails(
     flagKey,
     defaultValue: defaultValue,
     context: context,
+    options: options,
   )).value;
 
   /// Detailed string evaluation with an explicit application fallback.
@@ -586,11 +631,16 @@ extension RequiredDefaultEvaluation on FeatureClient {
     String flagKey, {
     required String defaultValue,
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) => _withApplicationDefault(
     flagKey,
     defaultValue,
-    () =>
-        getStringDetails(flagKey, defaultValue: defaultValue, context: context),
+    () => getStringDetails(
+      flagKey,
+      defaultValue: defaultValue,
+      context: context,
+      options: options,
+    ),
   );
 
   /// Evaluates a integer flag with an explicit application fallback.
@@ -598,10 +648,12 @@ extension RequiredDefaultEvaluation on FeatureClient {
     String flagKey, {
     required int defaultValue,
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) async => (await getIntegerEvaluationDetails(
     flagKey,
     defaultValue: defaultValue,
     context: context,
+    options: options,
   )).value;
 
   /// Detailed integer evaluation with an explicit application fallback.
@@ -609,6 +661,7 @@ extension RequiredDefaultEvaluation on FeatureClient {
     String flagKey, {
     required int defaultValue,
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) => _withApplicationDefault(
     flagKey,
     defaultValue,
@@ -616,6 +669,7 @@ extension RequiredDefaultEvaluation on FeatureClient {
       flagKey,
       defaultValue: defaultValue,
       context: context,
+      options: options,
     ),
   );
 
@@ -624,10 +678,12 @@ extension RequiredDefaultEvaluation on FeatureClient {
     String flagKey, {
     required double defaultValue,
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) async => (await getDoubleEvaluationDetails(
     flagKey,
     defaultValue: defaultValue,
     context: context,
+    options: options,
   )).value;
 
   /// Detailed double evaluation with an explicit application fallback.
@@ -635,11 +691,16 @@ extension RequiredDefaultEvaluation on FeatureClient {
     String flagKey, {
     required double defaultValue,
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) => _withApplicationDefault(
     flagKey,
     defaultValue,
-    () =>
-        getDoubleDetails(flagKey, defaultValue: defaultValue, context: context),
+    () => getDoubleDetails(
+      flagKey,
+      defaultValue: defaultValue,
+      context: context,
+      options: options,
+    ),
   );
 
   /// Evaluates a object flag with an explicit application fallback.
@@ -647,10 +708,12 @@ extension RequiredDefaultEvaluation on FeatureClient {
     String flagKey, {
     required Map<String, dynamic> defaultValue,
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) async => (await getObjectEvaluationDetails(
     flagKey,
     defaultValue: defaultValue,
     context: context,
+    options: options,
   )).value;
 
   /// Detailed object evaluation with an explicit application fallback.
@@ -659,11 +722,16 @@ extension RequiredDefaultEvaluation on FeatureClient {
     String flagKey, {
     required Map<String, dynamic> defaultValue,
     EvaluationContext? context,
+    EvaluationOptions? options,
   }) => _withApplicationDefault(
     flagKey,
     defaultValue,
-    () =>
-        getObjectDetails(flagKey, defaultValue: defaultValue, context: context),
+    () => getObjectDetails(
+      flagKey,
+      defaultValue: defaultValue,
+      context: context,
+      options: options,
+    ),
   );
 }
 
@@ -681,7 +749,7 @@ Future<FlagEvaluationDetails<T>> _withApplicationDefault<T>(
       value: defaultValue,
       reason: 'ERROR',
       errorCode: error is ProviderException ? error.code : ErrorCode.GENERAL,
-      errorMessage: error.toString(),
+      errorMessage: _safeErrorMessage(error),
     );
   }
 }
@@ -696,19 +764,19 @@ extension ClientEvaluationDetails on FeatureClient {
   Future<FlagEvaluationDetails<bool>> getBooleanDetails(
     String flagKey, {
     EvaluationContext? context,
+    EvaluationOptions? options,
     bool defaultValue = false,
   }) async {
-    final evaluationProvider = provider;
     final result = await _evaluateFlagResult(
       flagKey,
       defaultValue,
-      (ctx) => evaluationProvider.getBooleanFlag(
+      (evaluationProvider, ctx) => evaluationProvider.getBooleanFlag(
         flagKey,
         defaultValue,
         context: ctx,
       ),
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
 
     return FlagEvaluationDetails.fromResult(result);
@@ -718,16 +786,16 @@ extension ClientEvaluationDetails on FeatureClient {
   Future<FlagEvaluationDetails<String>> getStringDetails(
     String flagKey, {
     EvaluationContext? context,
+    EvaluationOptions? options,
     String defaultValue = '',
   }) async {
-    final evaluationProvider = provider;
     final result = await _evaluateFlagResult(
       flagKey,
       defaultValue,
-      (ctx) =>
+      (evaluationProvider, ctx) =>
           evaluationProvider.getStringFlag(flagKey, defaultValue, context: ctx),
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
 
     return FlagEvaluationDetails.fromResult(result);
@@ -737,19 +805,19 @@ extension ClientEvaluationDetails on FeatureClient {
   Future<FlagEvaluationDetails<int>> getIntegerDetails(
     String flagKey, {
     EvaluationContext? context,
+    EvaluationOptions? options,
     int defaultValue = 0,
   }) async {
-    final evaluationProvider = provider;
     final result = await _evaluateFlagResult(
       flagKey,
       defaultValue,
-      (ctx) => evaluationProvider.getIntegerFlag(
+      (evaluationProvider, ctx) => evaluationProvider.getIntegerFlag(
         flagKey,
         defaultValue,
         context: ctx,
       ),
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
 
     return FlagEvaluationDetails.fromResult(result);
@@ -759,16 +827,16 @@ extension ClientEvaluationDetails on FeatureClient {
   Future<FlagEvaluationDetails<double>> getDoubleDetails(
     String flagKey, {
     EvaluationContext? context,
+    EvaluationOptions? options,
     double defaultValue = 0.0,
   }) async {
-    final evaluationProvider = provider;
     final result = await _evaluateFlagResult(
       flagKey,
       defaultValue,
-      (ctx) =>
+      (evaluationProvider, ctx) =>
           evaluationProvider.getDoubleFlag(flagKey, defaultValue, context: ctx),
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
 
     return FlagEvaluationDetails.fromResult(result);
@@ -778,18 +846,26 @@ extension ClientEvaluationDetails on FeatureClient {
   Future<FlagEvaluationDetails<Map<String, dynamic>>> getObjectDetails(
     String flagKey, {
     EvaluationContext? context,
+    EvaluationOptions? options,
     Map<String, dynamic> defaultValue = const {},
   }) async {
-    final evaluationProvider = provider;
     final result = await _evaluateFlagResult(
       flagKey,
       defaultValue,
-      (ctx) =>
+      (evaluationProvider, ctx) =>
           evaluationProvider.getObjectFlag(flagKey, defaultValue, context: ctx),
-      evaluationProvider: evaluationProvider,
       context: context,
+      options: options,
     );
 
     return FlagEvaluationDetails.fromResult(result);
+  }
+}
+
+String _safeErrorMessage(Object error) {
+  try {
+    return error.toString();
+  } catch (_) {
+    return 'Evaluation failed with an error that could not be formatted.';
   }
 }

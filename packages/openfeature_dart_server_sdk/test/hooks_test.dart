@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:test/test.dart';
-import '../lib/hooks.dart';
+import 'package:openfeature_dart_server_sdk/hooks.dart';
 
 class BrokenStringify {
   @override
