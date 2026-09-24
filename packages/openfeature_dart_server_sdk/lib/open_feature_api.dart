@@ -186,7 +186,8 @@ class OpenFeatureAPI {
   final StreamController<FeatureProvider> _providerStreamController;
   final EventDispatcher _eventDispatcher = EventDispatcher();
   late final EventScope _apiEvents;
-  final Map<FeatureProvider, OpenFeatureEvent> _lastStateEvents = Map.identity();
+  final Map<FeatureProvider, OpenFeatureEvent> _lastStateEvents =
+      Map.identity();
   final StreamController<Map<String, String>> _domainUpdatesController;
   Future<void>? _disposeFuture;
 
@@ -196,15 +197,19 @@ class OpenFeatureAPI {
           StreamController<Map<String, String>>.broadcast() {
     _configureLogging();
     _lifecycleManager = ProviderLifecycleManager(_handleProviderLifecycleEvent);
-    _apiEvents = _eventDispatcher.scope(current: (type) sync* {
-      final providers = HashSet<FeatureProvider>.identity()
-        ..add(_provider)
-        ..addAll(_providerRegistry.values)
-        ..addAll(_domainProviderBindings.values);
-      for (final provider in providers) {
-        yield* _currentEvents(provider, type);
-      }
-    });
+    _apiEvents = _eventDispatcher.scope(
+      current: (type) sync* {
+        final providers = HashSet<FeatureProvider>.identity()
+          ..add(_provider)
+          ..addAll(_providerRegistry.values)
+          ..addAll(_domainProviderBindings.values);
+        final requested = _requestedDefaultProvider;
+        if (requested != null) providers.add(requested);
+        for (final provider in providers) {
+          yield* _currentEvents(provider, type);
+        }
+      },
+    );
     _domainSubscription = _domainManager.domainUpdates.listen((domain) {
       if (!_disposed) {
         _domainUpdatesController.add({
@@ -342,8 +347,10 @@ class OpenFeatureAPI {
         _activatePendingBindings(provider.metadata.name, provider);
       }
       _providerStreamController.add(provider);
-      _notifyBindingState(provider,
-          domains: (domain) => !_domainProviderBindings.containsKey(domain));
+      _notifyBindingState(
+        provider,
+        domains: (domain) => !_domainProviderBindings.containsKey(domain),
+      );
       try {
         await _lifecycleManager.unbindDefault(previousProvider);
       } catch (error) {
@@ -564,10 +571,12 @@ class OpenFeatureAPI {
   StreamSubscription<OpenFeatureEvent> addHandler(
     void Function(OpenFeatureEvent event) handler,
   ) => events.listen((event) {
-    unawaited(Future<void>.sync(() => handler(event)).catchError(
-      (Object error, StackTrace stack) =>
-          _logger.warning('Event handler failed', error, stack),
-    ));
+    unawaited(
+      Future<void>.sync(() => handler(event)).catchError(
+        (Object error, StackTrace stack) =>
+            _logger.warning('Event handler failed', error, stack),
+      ),
+    );
   });
 
   Future<void> removeHandler(StreamSubscription<OpenFeatureEvent> handler) =>
@@ -708,7 +717,10 @@ class OpenFeatureAPI {
     _domainProviderIds[domain] = providerId;
     _domainManager.bindClientToProvider(domain, providerId);
     if (!identical(previousProvider ?? _provider, provider)) {
-      _notifyBindingState(provider, domains: (candidate) => candidate == domain);
+      _notifyBindingState(
+        provider,
+        domains: (candidate) => candidate == domain,
+      );
     }
     _emitEvent(
       OpenFeatureEventType.PROVIDER_CONFIGURATION_CHANGED,
@@ -830,27 +842,35 @@ class OpenFeatureAPI {
     if (_disposed) return;
     final stateType = switch (_lifecycleManager.statusOf(provider)) {
       ProviderState.READY => OpenFeatureEventType.PROVIDER_READY,
-      ProviderState.ERROR || ProviderState.FATAL =>
-        OpenFeatureEventType.PROVIDER_ERROR,
+      ProviderState.ERROR ||
+      ProviderState.FATAL => OpenFeatureEventType.PROVIDER_ERROR,
       ProviderState.STALE => OpenFeatureEventType.PROVIDER_STALE,
       ProviderState.SYNCHRONIZING => OpenFeatureEventType.PROVIDER_RECONCILING,
       _ => null,
     };
     if (type != stateType) return;
     final last = _lastStateEvents[provider];
-    yield last?.type == type ? last! : OpenFeatureEvent(
-      type,
-      'Provider ${provider.metadata.name} is ${_lifecycleManager.statusOf(provider).name}',
-      provider: provider,
-      providerMetadata: provider.metadata,
-      errorCode: _errorCodeFrom(null, state: _lifecycleManager.statusOf(provider)),
-    );
+    yield last?.type == type
+        ? last!
+        : OpenFeatureEvent(
+            type,
+            'Provider ${provider.metadata.name} is ${_lifecycleManager.statusOf(provider).name}',
+            provider: provider,
+            providerMetadata: provider.metadata,
+            errorCode: _errorCodeFrom(
+              null,
+              state: _lifecycleManager.statusOf(provider),
+            ),
+          );
   }
 
-  void _notifyBindingState(FeatureProvider provider,
-      {required bool Function(String) domains}) {
+  void _notifyBindingState(
+    FeatureProvider provider, {
+    required bool Function(String) domains,
+  }) {
     final events = OpenFeatureEventType.values
-        .expand((type) => _currentEvents(provider, type)).toList();
+        .expand((type) => _currentEvents(provider, type))
+        .toList();
     for (final event in events) {
       _eventDispatcher.emit(event, clientsOnly: true, domains: domains);
     }

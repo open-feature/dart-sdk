@@ -138,6 +138,27 @@ void main() {
   );
 
   test(
+    '5.3.3: global registration during initialization sees the pending provider state',
+    () async {
+      final provider = create();
+      final lateEvents = <OpenFeatureEvent>[];
+      api.addEventHandler(OpenFeatureEventType.PROVIDER_READY, (event) {
+        if (identical(event.provider, provider)) {
+          api.addEventHandler(
+            OpenFeatureEventType.PROVIDER_READY,
+            lateEvents.add,
+          );
+        }
+      });
+      await api.setProviderAndWait(provider);
+      expect(
+        lateEvents.where((event) => identical(event.provider, provider)),
+        hasLength(1),
+      );
+    },
+  );
+
+  test(
     '5.1.1: lifecycle compatibility names use the canonical event model',
     () {
       final event = ProviderLifecycleEvent(

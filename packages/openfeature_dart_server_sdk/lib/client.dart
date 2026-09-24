@@ -103,18 +103,23 @@ class FeatureClient {
         current: (type) sync* {
           final currentType = switch (providerStatus) {
             ProviderState.READY => OpenFeatureEventType.PROVIDER_READY,
-            ProviderState.ERROR || ProviderState.FATAL =>
-              OpenFeatureEventType.PROVIDER_ERROR,
+            ProviderState.ERROR ||
+            ProviderState.FATAL => OpenFeatureEventType.PROVIDER_ERROR,
             ProviderState.STALE => OpenFeatureEventType.PROVIDER_STALE,
-            ProviderState.SYNCHRONIZING => OpenFeatureEventType.PROVIDER_RECONCILING,
+            ProviderState.SYNCHRONIZING =>
+              OpenFeatureEventType.PROVIDER_RECONCILING,
             _ => null,
           };
           if (type == currentType) {
-            yield OpenFeatureEvent(type, 'Current provider state',
-                provider: this.provider,
-                providerMetadata: this.provider.metadata,
-                errorCode: providerStatus == ProviderState.FATAL
-                    ? ErrorCode.PROVIDER_FATAL : null);
+            yield OpenFeatureEvent(
+              type,
+              'Current provider state',
+              provider: this.provider,
+              providerMetadata: this.provider.metadata,
+              errorCode: providerStatus == ProviderState.FATAL
+                  ? ErrorCode.PROVIDER_FATAL
+                  : null,
+            );
           }
         },
       );
@@ -151,10 +156,12 @@ class FeatureClient {
   StreamSubscription<OpenFeatureEvent> addHandler(
     void Function(OpenFeatureEvent event) handler,
   ) => events.listen((event) {
-    unawaited(Future<void>.sync(() => handler(event)).catchError(
-      (Object error, StackTrace stack) =>
-          _logger.warning('Event handler failed', error, stack),
-    ));
+    unawaited(
+      Future<void>.sync(() => handler(event)).catchError(
+        (Object error, StackTrace stack) =>
+            _logger.warning('Event handler failed', error, stack),
+      ),
+    );
   });
 
   Future<void> removeHandler(StreamSubscription<OpenFeatureEvent> handler) =>
