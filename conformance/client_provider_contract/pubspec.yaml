@@ -1,0 +1,10 @@
+name: openfeature_client_provider_contract
+description: Unpublished shared provider validation harness for the Dart client SDK.
+publish_to: none
+version: 0.1.0
+environment:
+  sdk: ^3.10.0
+dependencies:
+  openfeature_dart_client_sdk:
+    path: ../../packages/openfeature_dart_client_sdk
+  test: ^1.26.3
