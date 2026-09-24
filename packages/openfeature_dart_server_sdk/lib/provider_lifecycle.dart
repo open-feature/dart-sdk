@@ -1,32 +1,22 @@
 import 'dart:async';
 
 import 'feature_provider.dart';
+import 'open_feature_event.dart';
 
 /// Lifecycle event types emitted by v0.9-capable providers.
-enum ProviderLifecycleEventType {
-  PROVIDER_READY,
-  PROVIDER_ERROR,
-  PROVIDER_CONFIGURATION_CHANGED,
-  PROVIDER_STALE,
-  PROVIDER_CONTEXT_CHANGED,
-  PROVIDER_RECONCILING,
-}
+typedef ProviderLifecycleEventType = OpenFeatureEventType;
 
 /// A lifecycle event emitted directly by a feature provider.
-class ProviderLifecycleEvent {
-  final ProviderLifecycleEventType type;
-  final String message;
-  final dynamic data;
-  final ErrorCode? errorCode;
-  final DateTime timestamp;
-
+class ProviderLifecycleEvent extends OpenFeatureEvent {
   ProviderLifecycleEvent(
-    this.type,
-    this.message, {
-    this.data,
-    this.errorCode,
-    DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+    super.type,
+    super.message, {
+    super.data,
+    super.errorCode,
+    super.flagsChanged,
+    super.eventMetadata,
+    super.timestamp,
+  });
 }
 
 /// Optional capability for providers that own their v0.9 lifecycle events.
@@ -36,10 +26,11 @@ class ProviderLifecycleEvent {
 /// normally and [ProviderLifecycleEventType.PROVIDER_ERROR] when it completes
 /// abnormally. OpenFeature v0.9 requires the corresponding event to be emitted
 /// before `initialize` terminates. The SDK temporarily tolerates delivery
-/// shortly afterward to ease migration of legacy asynchronous event sources;
-/// providers must not rely on that compatibility grace period.
-/// Providers that do not implement this interface use the deprecated legacy
-/// lifecycle adapter, which derives events from lifecycle return values.
+/// shortly afterward only for legacy [FeatureProvider] implementations. New
+/// ProviderInitialization capabilities receive no post-return grace.
+/// Providers without initialization need not emit initialization events.
+/// Legacy providers lacking this interface use LegacyProviderLifecycleAdapter
+/// compatibility, deriving events from lifecycle return values.
 abstract interface class ProviderEventSource {
   Stream<ProviderLifecycleEvent> get providerEvents;
 }

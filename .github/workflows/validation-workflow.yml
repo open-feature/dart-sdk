@@ -105,16 +105,28 @@ jobs:
           echo "Found the following pubspec.yaml files:"
           echo "$PUBSPEC_FILES"
 
-          # Define the minimum required Dart SDK version
-          MINIMUM_VERSION="3.12.2"
+          declare -A EXPECTED_MINIMUM_VERSIONS=(
+            ["./pubspec.yaml"]="3.12.2"
+            ["./packages/openfeature_dart_server_sdk/pubspec.yaml"]="3.12.2"
+            ["./packages/openfeature_dart_client_sdk/pubspec.yaml"]="3.10.0"
+            ["./conformance/client_provider_contract/pubspec.yaml"]="3.10.0"
+          )
           ALL_VALID="true"
 
           # Iterate over each pubspec.yaml file
           for PUBSPEC in $PUBSPEC_FILES; do
             echo "Checking $PUBSPEC..."
 
-            # Extract the Dart SDK version in the ^<version> format
-            SDK_VERSION=$(grep -Po '(?<=sdk:\s\^)[0-9]+\.[0-9]+\.[0-9]+' "$PUBSPEC" || echo "not_found")
+            EXPECTED_MINIMUM_VERSION="${EXPECTED_MINIMUM_VERSIONS[$PUBSPEC]:-}"
+            if [ -z "$EXPECTED_MINIMUM_VERSION" ]; then
+              echo "❌ No expected minimum Dart SDK version is configured for $PUBSPEC."
+              ALL_VALID="false"
+              continue
+            fi
+
+            # Extract the lower bound from ^<version> or >=<version>.
+            SDK_VERSION=$(sed -nE "s/^[[:space:]]+sdk:[[:space:]]*['\"]?(\^|>=)([0-9]+\.[0-9]+\.[0-9]+).*/\2/p" "$PUBSPEC")
+            SDK_VERSION="${SDK_VERSION:-not_found}"
             echo "Extracted Dart SDK version from $PUBSPEC: $SDK_VERSION"
 
             # Validate the extracted version
@@ -124,9 +136,8 @@ jobs:
               continue
             fi
 
-            # Compare the version
-            if [[ $(echo -e "${SDK_VERSION}\n${MINIMUM_VERSION}" | sort -V | head -n1) != "$MINIMUM_VERSION" ]]; then
-              echo "❌ Dart SDK version in $PUBSPEC must be at least $MINIMUM_VERSION, found $SDK_VERSION"
+            if [ "$SDK_VERSION" != "$EXPECTED_MINIMUM_VERSION" ]; then
+              echo "❌ Dart SDK version in $PUBSPEC must start at $EXPECTED_MINIMUM_VERSION, found $SDK_VERSION"
               ALL_VALID="false"
             else
               echo "✅ Dart SDK version in $PUBSPEC is satisfactory: $SDK_VERSION"

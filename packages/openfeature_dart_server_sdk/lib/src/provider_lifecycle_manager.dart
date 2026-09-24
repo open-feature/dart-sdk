@@ -2,6 +2,10 @@ import 'dart:async';
 import 'dart:collection';
 
 import '../feature_provider.dart';
+import '../evaluation_context.dart';
+import '../provider_capabilities.dart';
+import 'provider_adapter.dart';
+import 'provider_ownership.dart';
 import '../provider_lifecycle.dart';
 
 typedef ProviderLifecycleEventHandler =
@@ -13,20 +17,70 @@ typedef ProviderLifecycleEventHandler =
 /// Providers without that capability are supported by a deprecated compatibility
 /// path that derives ready/error events from lifecycle return values and state.
 class ProviderLifecycleManager {
-  static const Duration _lifecycleEventTimeout = Duration(seconds: 1);
+  static const Duration _lifecycleEventTimeout =
+      LegacyProviderLifecycleAdapter.eventDeliveryGrace;
 
   final ProviderLifecycleEventHandler _onProviderEvent;
+  final void Function(FeatureProvider)? _onRetired;
+  final Duration _shutdownTimeout;
   final HashMap<FeatureProvider, _ProviderLifecycleRecord> _records =
       HashMap.identity();
   bool _disposed = false;
+  Future<void>? _shutdownAllFuture;
 
-  ProviderLifecycleManager(this._onProviderEvent);
+  ProviderLifecycleManager(
+    this._onProviderEvent, {
+    void Function(FeatureProvider)? onRetired,
+    Duration shutdownTimeout = const Duration(seconds: 5),
+  }) : _onRetired = onRetired,
+       _shutdownTimeout = shutdownTimeout {
+    if (shutdownTimeout <= Duration.zero) {
+      throw ArgumentError.value(
+        shutdownTimeout,
+        'shutdownTimeout',
+        'Must be positive',
+      );
+    }
+  }
+
+  Map<FeatureProvider, Future<void>> get pendingInitializations =>
+      Map<FeatureProvider, Future<void>>.identity()..addEntries([
+        for (final entry in _records.entries)
+          if (entry.value.initialization != null)
+            MapEntry(entry.key, entry.value.initialization!),
+      ]);
+
+  /// Detaches all records immediately and shuts down each lifecycle once.
+  /// Provider shutdown must abort its own pending initialization (2.5.2).
+  Future<void> shutdownAll() => _shutdownAllFuture ??= _shutdownAll();
+
+  Future<void> _shutdownAll() async {
+    _disposed = true;
+    final records = _records.entries.toList();
+    for (final entry in records) {
+      final record = entry.value;
+      record.defaultBinding = false;
+      record.domains.clear();
+      final signal = record.initializationSignal;
+      if (signal != null && !signal.isCompleted) {
+        signal.completeError(
+          StateError('Provider initialization was canceled by shutdown.'),
+        );
+      }
+    }
+    // Start every cleanup even if another provider stalls or fails.
+    await Future.wait(
+      records.map((entry) => _shutdownAfterFinalUse(entry.key, entry.value)),
+    );
+  }
 
   _ProviderLifecycleRecord _recordFor(FeatureProvider provider) {
     if (_disposed) {
       throw StateError('ProviderLifecycleManager has been disposed.');
     }
     return _records.putIfAbsent(provider, () {
+      ProviderOwnership.ensureAvailable(provider);
+      if (provider is ResolverProviderAdapter) provider.beginLifecycle();
       final record = _ProviderLifecycleRecord(
         status: _normalizeState(provider.state),
         usesLegacyLifecycle: provider is! ProviderEventSource,
@@ -44,6 +98,10 @@ class ProviderLifecycleManager {
 
   ProviderState statusOf(FeatureProvider provider) =>
       _disposed ? ProviderState.NOT_READY : _recordFor(provider).status;
+
+  /// Reads tracked state without reviving a retired provider or subscribing.
+  ProviderState? trackedStatusOf(FeatureProvider provider) =>
+      _disposed ? null : _records[provider]?.status;
 
   bool usesLegacyLifecycle(FeatureProvider provider) =>
       _recordFor(provider).usesLegacyLifecycle;
@@ -117,13 +175,55 @@ class ProviderLifecycleManager {
     await _shutdownAfterFinalUse(provider, record);
   }
 
-  Future<void> initialize(FeatureProvider provider) {
+  Future<void> initialize(
+    FeatureProvider provider, {
+    EvaluationContext? context,
+    String? domain,
+  }) {
     final record = _recordFor(provider);
     final activeShutdown = record.shutdown;
     if (activeShutdown != null) {
       // A provider cannot be initialized safely until its prior binding has
       // finished shutting down and its lifecycle record has been discarded.
-      return _initializeAfterShutdown(provider, activeShutdown);
+      return _initializeAfterShutdown(
+        provider,
+        activeShutdown,
+        context?.snapshot(),
+        domain,
+      );
+    }
+
+    if (provider is ResolverProviderAdapter &&
+        !provider.requiresInitialization) {
+      // 2.8.5: resolver-only providers are ready without initialization events.
+      if (!record.lifecycleObserved && record.status == ProviderState.READY) {
+        record.lifecycleObserved = true;
+        _onProviderEvent(
+          provider,
+          ProviderLifecycleEvent(
+            ProviderLifecycleEventType.PROVIDER_READY,
+            'Provider ready without initialization: ${provider.metadata.name}',
+          ),
+        );
+      }
+      return Future.value();
+    }
+
+    if (provider is ProviderInitialization) {
+      if (provider is DomainScopedProvider &&
+          record.initializationDomainSet &&
+          record.initializationDomain != domain) {
+        return Future.error(
+          const ProviderException(
+            'A domain-scoped provider cannot initialize for another domain.',
+            code: ErrorCode.INVALID_CONTEXT,
+          ),
+        );
+      }
+      if (!record.initializationDomainSet) {
+        record.initializationDomainSet = true;
+        record.initializationDomain = domain;
+      }
     }
 
     if (record.status == ProviderState.READY &&
@@ -138,7 +238,12 @@ class ProviderLifecycleManager {
 
     final initialization = record.usesLegacyLifecycle
         ? _initializeLegacyProvider(provider, record)
-        : _initializeEventProvider(provider, record);
+        : _initializeEventProvider(
+            provider,
+            record,
+            context?.snapshot() ?? EvaluationContext.immutable(),
+            domain,
+          );
     record.initialization = initialization;
     return initialization.whenComplete(() {
       record.initialization = null;
@@ -148,6 +253,8 @@ class ProviderLifecycleManager {
   Future<void> _initializeAfterShutdown(
     FeatureProvider provider,
     Future<void> activeShutdown,
+    EvaluationContext? context,
+    String? domain,
   ) async {
     try {
       await activeShutdown;
@@ -156,8 +263,11 @@ class ProviderLifecycleManager {
       // must create and initialize a fresh record instead of inheriting the
       // prior shutdown failure.
     }
-    _recordFor(provider).status = ProviderState.NOT_READY;
-    await initialize(provider);
+    _recordFor(provider).status =
+        provider is ResolverProviderAdapter && !provider.requiresInitialization
+        ? ProviderState.READY
+        : ProviderState.NOT_READY;
+    await initialize(provider, context: context, domain: domain);
   }
 
   Future<void> _initializeLegacyProvider(
@@ -167,8 +277,11 @@ class ProviderLifecycleManager {
     var errorEventEmitted = false;
     try {
       if (record.status == ProviderState.NOT_READY) {
-        await provider.initialize();
+        await LegacyProviderLifecycleAdapter.initialize(provider);
       }
+
+      if (_disposed)
+        throw StateError('Provider initialization was canceled by shutdown.');
 
       final observedStatus = _normalizeState(provider.state);
       record.status = observedStatus;
@@ -204,6 +317,7 @@ class ProviderLifecycleManager {
         code: errorCode ?? ErrorCode.PROVIDER_NOT_READY,
       );
     } catch (error) {
+      if (_disposed) rethrow;
       if (!errorEventEmitted) {
         record.status = _statusForError(error, provider.state);
         _onProviderEvent(
@@ -224,6 +338,8 @@ class ProviderLifecycleManager {
   Future<void> _initializeEventProvider(
     FeatureProvider provider,
     _ProviderLifecycleRecord record,
+    EvaluationContext context,
+    String? domain,
   ) async {
     if (record.status != ProviderState.NOT_READY) {
       throw ProviderException(
@@ -233,19 +349,40 @@ class ProviderLifecycleManager {
     }
 
     final signal = Completer<ProviderLifecycleEvent>();
+    // Shutdown may cancel the signal while provider initialization is awaited.
+    // Observe early cancellation without consuming its eventual awaited error.
+    signal.future.ignore();
     record.initializationSignal = signal;
 
     Object? initializationError;
     StackTrace? initializationStack;
     try {
-      await provider.initialize();
+      if (provider case final ProviderInitialization initialization) {
+        await initialization.initializeProvider(context, domain: domain);
+      } else {
+        await LegacyProviderLifecycleAdapter.initialize(provider);
+      }
     } catch (error, stackTrace) {
       initializationError = error;
       initializationStack = stackTrace;
     }
 
     ProviderLifecycleEvent event;
+    if (_disposed)
+      throw StateError('Provider initialization was canceled by shutdown.');
     try {
+      if (provider is ProviderInitialization && !signal.isCompleted) {
+        record.strictInitializationFailed = true;
+        record.status = _statusForError(
+          initializationError ?? StateError('Missing initialization event'),
+          ProviderState.ERROR,
+        );
+        throw ProviderException(
+          'Provider ${provider.metadata.name} must emit its lifecycle event '
+          'before initializeProvider terminates.',
+          code: ErrorCode.GENERAL,
+        );
+      }
       event = await signal.future.timeout(_lifecycleEventTimeout);
     } on TimeoutException {
       Error.throwWithStackTrace(
@@ -271,6 +408,13 @@ class ProviderLifecycleManager {
     }
     if (initializationError != null) {
       if (event.type != ProviderLifecycleEventType.PROVIDER_ERROR) {
+        if (provider is ProviderInitialization) {
+          record.strictInitializationFailed = true;
+          record.status = _statusForError(
+            initializationError,
+            ProviderState.ERROR,
+          );
+        }
         throw ProviderException(
           'Provider ${provider.metadata.name} emitted ${event.type.name} after '
           'initialization failed.',
@@ -303,7 +447,9 @@ class ProviderLifecycleManager {
     _ProviderLifecycleRecord record,
     ProviderLifecycleEvent event,
   ) {
-    if (_disposed || !identical(_records[provider], record)) {
+    if (_disposed ||
+        !identical(_records[provider], record) ||
+        record.strictInitializationFailed) {
       return;
     }
     record.status = _statusForEvent(event, record.status);
@@ -347,7 +493,27 @@ class ProviderLifecycleManager {
     Object? firstError;
     StackTrace? firstStack;
     try {
-      await provider.shutdown();
+      final cleanup = Future<void>.sync(() {
+        if (provider case final ProviderShutdown shutdown) {
+          return shutdown.shutdownProvider();
+        }
+        return LegacyProviderLifecycleAdapter.shutdown(provider);
+      });
+      await cleanup.timeout(
+        _shutdownTimeout,
+        onTimeout: () {
+          ProviderOwnership.quarantineUntil(provider, cleanup);
+          throw ProviderException(
+            'Provider ${provider.metadata.name} shutdown timed out after '
+            '${_shutdownTimeout.inMilliseconds}ms.',
+            code: ErrorCode.GENERAL,
+            details: {
+              'operation': 'shutdown',
+              'timeoutMs': _shutdownTimeout.inMilliseconds,
+            },
+          );
+        },
+      );
     } catch (error, stackTrace) {
       firstError = error;
       firstStack = stackTrace;
@@ -356,7 +522,24 @@ class ProviderLifecycleManager {
       // regardless of whether the provider's shutdown future succeeds.
       record.status = ProviderState.NOT_READY;
       try {
-        await record.eventSubscription?.cancel();
+        final cancellation = record.eventSubscription?.cancel();
+        if (cancellation != null) {
+          await cancellation.timeout(
+            _shutdownTimeout,
+            onTimeout: () {
+              // Cancellation may itself release provider-owned transport resources.
+              ProviderOwnership.quarantineUntil(provider, cancellation);
+              throw ProviderException(
+                'Provider ${provider.metadata.name} event cancellation timed out.',
+                code: ErrorCode.GENERAL,
+                details: {
+                  'operation': 'event cancellation',
+                  'timeoutMs': _shutdownTimeout.inMilliseconds,
+                },
+              );
+            },
+          );
+        }
       } catch (error, stackTrace) {
         firstError ??= error;
         firstStack ??= stackTrace;
@@ -365,6 +548,7 @@ class ProviderLifecycleManager {
       record.lifecycleObserved = false;
       if (identical(_records[provider], record)) {
         _records.remove(provider);
+        _onRetired?.call(provider);
       }
     }
     if (firstError != null) {
@@ -459,6 +643,9 @@ class _ProviderLifecycleRecord {
   ProviderState status;
   final bool usesLegacyLifecycle;
   bool lifecycleObserved = false;
+  bool strictInitializationFailed = false;
+  bool initializationDomainSet = false;
+  String? initializationDomain;
   bool defaultBinding = false;
   final Set<String> domains = {};
   StreamSubscription<ProviderLifecycleEvent>? eventSubscription;

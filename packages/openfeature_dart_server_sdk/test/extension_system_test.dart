@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import '../lib/extension_system.dart';
+import 'package:openfeature_dart_server_sdk/extension_system.dart';
 
 class TestExtension implements Extension {
   final states = <String>[];

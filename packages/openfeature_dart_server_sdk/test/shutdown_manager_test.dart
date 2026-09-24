@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import '../lib/shutdown_manager.dart';
+import 'package:openfeature_dart_server_sdk/shutdown_manager.dart';
 
 void main() {
   group('ShutdownManager', () {

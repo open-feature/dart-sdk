@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
-import '../lib/feature_provider.dart';
-import '../lib/open_feature_event.dart';
+import 'package:openfeature_dart_server_sdk/feature_provider.dart';
+import 'package:openfeature_dart_server_sdk/open_feature_event.dart';
 
 void main() {
   group('OpenFeatureEvent', () {

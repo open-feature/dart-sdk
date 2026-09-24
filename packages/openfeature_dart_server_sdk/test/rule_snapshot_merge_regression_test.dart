@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
-import '../lib/evaluation_context.dart';
-import '../lib/open_feature_api.dart';
-import '../lib/src/context_snapshot.dart';
+import 'package:openfeature_dart_server_sdk/evaluation_context.dart';
+import 'package:openfeature_dart_server_sdk/open_feature_api.dart';
+import 'package:openfeature_dart_server_sdk/src/context_snapshot.dart';
 
 enum Plan { paid }
 

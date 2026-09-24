@@ -4,6 +4,9 @@ This package is the vendor-neutral OpenFeature SDK for Dart client
 applications. It uses the static-context paradigm. It has no Flutter or
 `dart:io` dependency.
 
+This source checkout supports Dart 3.10 or later. The published beta below
+requires Dart 3.12.2 until a release containing the lower SDK floor is published.
+
 The package is in beta. The first beta defines the public client and provider
 contracts. It provides synchronous typed evaluation, event handlers, hooks,
 ordered context changes, and an in-memory provider. Later beta changes will

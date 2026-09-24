@@ -207,6 +207,10 @@ void main() {
       await api.setProviderAndWait(provider);
       final nextContext = EvaluationContext(targetingKey: 'next-user');
       EvaluationContext? handlerContext;
+      final reconciling = <ProviderStatus>[];
+      api.getClient().addHandler(ProviderEventType.reconciling, (_) {
+        reconciling.add(api.getClient().providerStatus);
+      });
       api.getClient().addHandler(ProviderEventType.contextChanged, (_) {
         api.getClient().getBooleanValue('flag', false);
         handlerContext = provider.lastEvaluationContext;
@@ -214,6 +218,7 @@ void main() {
 
       final contextChange = api.setEvaluationContextAndWait(nextContext);
       await provider.waitForChange(1);
+      expect(reconciling, [ProviderStatus.reconciling]);
       provider.allowChange(0);
       await contextChange;
 

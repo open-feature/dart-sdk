@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'src/tracking_details.dart';
 
 /// Provider states for lifecycle management
 enum ProviderState {
@@ -181,14 +182,59 @@ class ProviderException implements Exception {
 
 /// Tracking event details for the Tracking API (spec Section 6)
 class TrackingEventDetails {
-  final double? value;
+  final num? value;
   final Map<String, dynamic> attributes;
 
   const TrackingEventDetails({this.value, this.attributes = const {}});
+
+  /// Validates and freezes custom fields for asynchronous tracking transports.
+  /// The legacy const constructor retains its original attribute semantics.
+  TrackingEventDetails.immutable({
+    this.value,
+    Map<String, dynamic> attributes = const {},
+  }) : attributes = snapshotTrackingDetails(attributes);
 }
 
-/// Feature provider interface
-abstract class FeatureProvider {
+/// Minimal provider contract: metadata and five typed resolvers (2.1-2.2).
+/// Initialization, shutdown, hooks and tracking are optional capabilities
+/// declared in provider_capabilities.dart.
+abstract interface class Provider {
+  ProviderMetadata get metadata;
+
+  Future<FlagEvaluationResult<bool>> getBooleanFlag(
+    String flagKey,
+    bool defaultValue, {
+    Map<String, dynamic>? context,
+  });
+
+  Future<FlagEvaluationResult<String>> getStringFlag(
+    String flagKey,
+    String defaultValue, {
+    Map<String, dynamic>? context,
+  });
+
+  Future<FlagEvaluationResult<int>> getIntegerFlag(
+    String flagKey,
+    int defaultValue, {
+    Map<String, dynamic>? context,
+  });
+
+  Future<FlagEvaluationResult<double>> getDoubleFlag(
+    String flagKey,
+    double defaultValue, {
+    Map<String, dynamic>? context,
+  });
+
+  Future<FlagEvaluationResult<Map<String, dynamic>>> getObjectFlag(
+    String flagKey,
+    Map<String, dynamic> defaultValue, {
+    Map<String, dynamic>? context,
+  });
+}
+
+/// Source-compatible provider interface for existing implementations.
+/// New implementations can implement [Provider] and optional capabilities.
+abstract class FeatureProvider implements Provider {
   String get name;
   ProviderState get state;
   ProviderConfig get config;

@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
-import '../lib/open_feature_api.dart';
-import '../lib/feature_provider.dart';
-import '../lib/open_feature_event.dart';
+import 'package:openfeature_dart_server_sdk/open_feature_api.dart';
+import 'package:openfeature_dart_server_sdk/feature_provider.dart';
+import 'package:openfeature_dart_server_sdk/open_feature_event.dart';
 
 class TestProvider implements FeatureProvider {
   final Map<String, dynamic> _flags;

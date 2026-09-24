@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 
-import '../lib/feature_provider.dart';
-import '../lib/open_feature_api.dart';
-import '../lib/open_feature_event.dart';
-import '../lib/provider_lifecycle.dart';
-import '../lib/src/provider_lifecycle_manager.dart';
+import 'package:openfeature_dart_server_sdk/feature_provider.dart';
+import 'package:openfeature_dart_server_sdk/open_feature_api.dart';
+import 'package:openfeature_dart_server_sdk/open_feature_event.dart';
+import 'package:openfeature_dart_server_sdk/provider_lifecycle.dart';
+import 'package:openfeature_dart_server_sdk/src/provider_lifecycle_manager.dart';
 
 class _LegacyProvider implements FeatureProvider {
   final String providerName;
@@ -585,6 +585,10 @@ void main() {
       expect(first.initializeCount, 2);
       expect(identical(api.provider, first), isTrue);
       expect(api.providerStatus, ProviderState.READY);
+      // Reset now propagates provider shutdown too. The rebound provider's
+      // second lifecycle still fails cleanup, but the API must reset anyway.
+      await expectLater(api.shutdown(), throwsStateError);
+      expect(first.shutdownCount, 2);
     });
 
     test('latest concurrent default provider request wins', () async {

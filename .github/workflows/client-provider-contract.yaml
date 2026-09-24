@@ -1,0 +1,54 @@
+name: Client Provider Contract
+on:
+  push:
+    branches: [development, main]
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  merge_group:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  reference:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [vm, chrome]
+        sdk: ['3.10.0', stable]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Install harness dependencies
+        working-directory: conformance/client_provider_contract
+        run: dart pub get
+      - name: Analyze and format harness
+        working-directory: conformance/client_provider_contract
+        run: |
+          dart analyze
+          dart format --output=none --set-exit-if-changed lib test
+      - name: Test receipt accounting
+        run: python3 -m unittest discover -s tool -p test_client_provider_evidence.py
+      - name: Run reference contract (not independent provider evidence)
+        run: >-
+          python3 tool/client_provider_evidence.py
+          --classification reference
+          --canonical-repository https://github.com/open-feature/dart-sdk
+          --provider-repo .
+          --working-directory conformance/client_provider_contract
+          --test-target test/reference_contract_test.dart
+          --platform ${{ matrix.platform }}
+          --output build/client-provider-contract/${{ matrix.platform }}
+      - name: Upload reference receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: client-contract-reference-${{ matrix.platform }}-${{ matrix.sdk }}
+          path: build/client-provider-contract/
+          if-no-files-found: error

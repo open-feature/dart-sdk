@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:test/test.dart';
-import '../lib/client.dart';
-import '../lib/evaluation_context.dart';
-import '../lib/feature_provider.dart';
-import '../lib/hooks.dart';
-import '../lib/open_feature_api.dart';
-import '../lib/transaction_context.dart';
+import 'package:openfeature_dart_server_sdk/client.dart';
+import 'package:openfeature_dart_server_sdk/evaluation_context.dart';
+import 'package:openfeature_dart_server_sdk/feature_provider.dart';
+import 'package:openfeature_dart_server_sdk/hooks.dart';
+import 'package:openfeature_dart_server_sdk/open_feature_api.dart';
+import 'package:openfeature_dart_server_sdk/transaction_context.dart';
 
 class CapturingProvider extends InMemoryProvider {
   final contexts = <String, Map<String, dynamic>>{};
