@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.26](https://github.com/open-feature/dart-sdk/compare/v0.0.25...v0.0.26) (2026-09-24)
+
+
+### 🧹 Chore
+
+* promote SDK implementation and conformance evidence to main ([#188](https://github.com/open-feature/dart-sdk/issues/188)) ([675b9af](https://github.com/open-feature/dart-sdk/commit/675b9af76301649c6b1796ad2672c1579fbc6281))
+
 ## [0.0.25](https://github.com/open-feature/dart-sdk/compare/v0.0.24...v0.0.25) (2026-09-17)
 
 
