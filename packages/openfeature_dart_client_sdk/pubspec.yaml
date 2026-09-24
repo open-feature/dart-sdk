@@ -6,13 +6,13 @@ repository: https://github.com/open-feature/dart-sdk
 issue_tracker: https://github.com/open-feature/dart-sdk/issues
 
 environment:
-  sdk: ^3.12.2
+  sdk: ^3.10.0
 
 dev_dependencies:
-  # Keep minimum-dependency tests on analyzer dependencies compatible with Dart 3.12.
+  # Keep minimum-dependency tests compatible with supported Dart SDKs.
   analyzer: ^8.1.1
   coverage: ^1.15.0
-  # Dart 3.12 requires the SDK-layout-aware frontend server client.
+  # Use the SDK-layout-aware frontend server client.
   frontend_server_client: ^4.0.0
   lints: ^6.0.0
   # Keep the Chrome test runner on the two-argument connection callback API.
