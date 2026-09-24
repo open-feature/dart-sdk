@@ -7,6 +7,19 @@ continues after a provider failure; the returned future reports the first failur
 after all cleanup operations settle. The same API can be configured again even
 when cleanup reports an error.
 
+Provider shutdown has a five-second deadline per provider. Event-subscription
+cancellation has a separate five-second deadline. A deadline failure is reported
+as a `ProviderException` with `ErrorCode.GENERAL`; the lifecycle record is retired
+and cleanup of other providers continues. This also bounds provider cleanup on
+`dispose()` and `OpenFeatureAPI.resetInstance()`.
+
+A Dart timeout stops waiting; it does not cancel the provider's underlying work.
+A provider whose cleanup times out cannot start another lifecycle in any API
+until that work settles, even if the old API has reset. Use a fresh provider
+instance to resume immediately. Late completion or failure does not restore the
+old binding or change the already-reported timeout. Providers remain responsible
+for cancelling their own I/O and releasing resources.
+
 Shutdown removes API providers, domain bindings, API hooks, global evaluation
 context, event handlers and transaction propagation state. Existing clients
 resolve the reset API's initial no-op provider and return application defaults.

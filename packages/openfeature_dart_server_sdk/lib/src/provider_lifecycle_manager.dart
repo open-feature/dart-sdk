@@ -5,6 +5,7 @@ import '../feature_provider.dart';
 import '../evaluation_context.dart';
 import '../provider_capabilities.dart';
 import 'provider_adapter.dart';
+import 'provider_ownership.dart';
 import '../provider_lifecycle.dart';
 
 typedef ProviderLifecycleEventHandler =
@@ -21,6 +22,7 @@ class ProviderLifecycleManager {
 
   final ProviderLifecycleEventHandler _onProviderEvent;
   final void Function(FeatureProvider)? _onRetired;
+  final Duration _shutdownTimeout;
   final HashMap<FeatureProvider, _ProviderLifecycleRecord> _records =
       HashMap.identity();
   bool _disposed = false;
@@ -29,7 +31,17 @@ class ProviderLifecycleManager {
   ProviderLifecycleManager(
     this._onProviderEvent, {
     void Function(FeatureProvider)? onRetired,
-  }) : _onRetired = onRetired;
+    Duration shutdownTimeout = const Duration(seconds: 5),
+  }) : _onRetired = onRetired,
+       _shutdownTimeout = shutdownTimeout {
+    if (shutdownTimeout <= Duration.zero) {
+      throw ArgumentError.value(
+        shutdownTimeout,
+        'shutdownTimeout',
+        'Must be positive',
+      );
+    }
+  }
 
   Map<FeatureProvider, Future<void>> get pendingInitializations =>
       Map<FeatureProvider, Future<void>>.identity()..addEntries([
@@ -67,6 +79,7 @@ class ProviderLifecycleManager {
       throw StateError('ProviderLifecycleManager has been disposed.');
     }
     return _records.putIfAbsent(provider, () {
+      ProviderOwnership.ensureAvailable(provider);
       if (provider is ResolverProviderAdapter) provider.beginLifecycle();
       final record = _ProviderLifecycleRecord(
         status: _normalizeState(provider.state),
@@ -250,7 +263,10 @@ class ProviderLifecycleManager {
       // must create and initialize a fresh record instead of inheriting the
       // prior shutdown failure.
     }
-    _recordFor(provider).status = ProviderState.NOT_READY;
+    _recordFor(provider).status =
+        provider is ResolverProviderAdapter && !provider.requiresInitialization
+        ? ProviderState.READY
+        : ProviderState.NOT_READY;
     await initialize(provider, context: context, domain: domain);
   }
 
@@ -477,11 +493,27 @@ class ProviderLifecycleManager {
     Object? firstError;
     StackTrace? firstStack;
     try {
-      if (provider case final ProviderShutdown shutdown) {
-        await shutdown.shutdownProvider();
-      } else {
-        await LegacyProviderLifecycleAdapter.shutdown(provider);
-      }
+      final cleanup = Future<void>.sync(() {
+        if (provider case final ProviderShutdown shutdown) {
+          return shutdown.shutdownProvider();
+        }
+        return LegacyProviderLifecycleAdapter.shutdown(provider);
+      });
+      await cleanup.timeout(
+        _shutdownTimeout,
+        onTimeout: () {
+          ProviderOwnership.quarantineUntil(provider, cleanup);
+          throw ProviderException(
+            'Provider ${provider.metadata.name} shutdown timed out after '
+            '${_shutdownTimeout.inMilliseconds}ms.',
+            code: ErrorCode.GENERAL,
+            details: {
+              'operation': 'shutdown',
+              'timeoutMs': _shutdownTimeout.inMilliseconds,
+            },
+          );
+        },
+      );
     } catch (error, stackTrace) {
       firstError = error;
       firstStack = stackTrace;
@@ -490,7 +522,24 @@ class ProviderLifecycleManager {
       // regardless of whether the provider's shutdown future succeeds.
       record.status = ProviderState.NOT_READY;
       try {
-        await record.eventSubscription?.cancel();
+        final cancellation = record.eventSubscription?.cancel();
+        if (cancellation != null) {
+          await cancellation.timeout(
+            _shutdownTimeout,
+            onTimeout: () {
+              // Cancellation may itself release provider-owned transport resources.
+              ProviderOwnership.quarantineUntil(provider, cancellation);
+              throw ProviderException(
+                'Provider ${provider.metadata.name} event cancellation timed out.',
+                code: ErrorCode.GENERAL,
+                details: {
+                  'operation': 'event cancellation',
+                  'timeoutMs': _shutdownTimeout.inMilliseconds,
+                },
+              );
+            },
+          );
+        }
       } catch (error, stackTrace) {
         firstError ??= error;
         firstStack ??= stackTrace;
