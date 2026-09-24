@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.25](https://github.com/open-feature/dart-sdk/compare/v0.0.24...v0.0.25) (2026-09-17)
+
+
+### 🧹 Chore
+
+* promote context snapshots and repository rename to main ([#174](https://github.com/open-feature/dart-sdk/issues/174)) ([1270e2e](https://github.com/open-feature/dart-sdk/commit/1270e2e6af2b0d4be24858756c07a7aadf90e80f))
+
 ## [0.0.24](https://github.com/open-feature/dart-server-sdk/compare/v0.0.23...v0.0.24) (2026-08-28)
 
 This release repackages the server SDK under
