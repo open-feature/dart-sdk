@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 import 'evaluation_context.dart';
 import 'feature_provider.dart';
+import 'provider_capabilities.dart';
+import 'src/provider_adapter.dart';
 import 'hooks.dart';
 import 'open_feature_event.dart';
 import 'transaction_context.dart';
@@ -254,6 +256,7 @@ class FeatureClient {
     final startTime = DateTime.now();
     var effectiveContext = <String, dynamic>{};
     final hookData = HookData();
+    List<Hook> providerHooks = const [];
     final flagValueType = _inferFlagValueType(defaultValue);
     FlagEvaluationResult<T>? finalResult;
     EvaluationDetails? evaluationDetails;
@@ -261,6 +264,7 @@ class FeatureClient {
     _metrics.flagEvaluations++;
 
     try {
+      providerHooks = providerHooksFor(evaluationProvider);
       effectiveContext = _buildEffectiveContext(context);
       effectiveContext = await _hookManager.executeHooks(
         HookStage.BEFORE,
@@ -271,6 +275,7 @@ class FeatureClient {
         defaultValue: defaultValue,
         flagValueType: flagValueType,
         hookData: hookData,
+        additionalHooks: providerHooks,
       );
 
       _ensureProviderCanEvaluate(evaluationProvider);
@@ -304,6 +309,7 @@ class FeatureClient {
           defaultValue: defaultValue,
           flagValueType: flagValueType,
           hookData: hookData,
+          additionalHooks: providerHooks,
         );
       } else {
         evaluationError = _providerErrorAsException(finalResult);
@@ -324,6 +330,7 @@ class FeatureClient {
           defaultValue: defaultValue,
           flagValueType: flagValueType,
           hookData: hookData,
+          additionalHooks: providerHooks,
         );
       }
     } catch (e) {
@@ -352,6 +359,7 @@ class FeatureClient {
         defaultValue: defaultValue,
         flagValueType: flagValueType,
         hookData: hookData,
+        additionalHooks: providerHooks,
       );
     } finally {
       _metrics.responseTimes.add(DateTime.now().difference(startTime));
@@ -370,6 +378,7 @@ class FeatureClient {
         defaultValue: defaultValue,
         flagValueType: flagValueType,
         hookData: hookData,
+        additionalHooks: providerHooks,
       );
     }
 
@@ -495,11 +504,19 @@ class FeatureClient {
     try {
       final effectiveContext = _buildEffectiveContext(context);
       final trackingProvider = provider;
-      await trackingProvider.track(
-        trackingEventName,
-        evaluationContext: effectiveContext,
-        trackingDetails: trackingDetails,
-      );
+      if (trackingProvider case final ProviderTracking tracking) {
+        await tracking.trackEvent(
+          trackingEventName,
+          evaluationContext: effectiveContext,
+          trackingDetails: trackingDetails,
+        );
+      } else {
+        await trackingProvider.track(
+          trackingEventName,
+          evaluationContext: effectiveContext,
+          trackingDetails: trackingDetails,
+        );
+      }
     } catch (e) {
       _logger.warning('Error sending tracking event "$trackingEventName": $e');
     }

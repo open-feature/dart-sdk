@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:collection';
 
 import '../feature_provider.dart';
+import '../evaluation_context.dart';
+import '../provider_capabilities.dart';
+import 'provider_adapter.dart';
 import '../provider_lifecycle.dart';
 
 typedef ProviderLifecycleEventHandler =
@@ -13,7 +16,8 @@ typedef ProviderLifecycleEventHandler =
 /// Providers without that capability are supported by a deprecated compatibility
 /// path that derives ready/error events from lifecycle return values and state.
 class ProviderLifecycleManager {
-  static const Duration _lifecycleEventTimeout = Duration(seconds: 1);
+  static const Duration _lifecycleEventTimeout =
+      LegacyProviderLifecycleAdapter.eventDeliveryGrace;
 
   final ProviderLifecycleEventHandler _onProviderEvent;
   final HashMap<FeatureProvider, _ProviderLifecycleRecord> _records =
@@ -117,13 +121,55 @@ class ProviderLifecycleManager {
     await _shutdownAfterFinalUse(provider, record);
   }
 
-  Future<void> initialize(FeatureProvider provider) {
+  Future<void> initialize(
+    FeatureProvider provider, {
+    EvaluationContext? context,
+    String? domain,
+  }) {
     final record = _recordFor(provider);
     final activeShutdown = record.shutdown;
     if (activeShutdown != null) {
       // A provider cannot be initialized safely until its prior binding has
       // finished shutting down and its lifecycle record has been discarded.
-      return _initializeAfterShutdown(provider, activeShutdown);
+      return _initializeAfterShutdown(
+        provider,
+        activeShutdown,
+        context?.snapshot(),
+        domain,
+      );
+    }
+
+    if (provider is ResolverProviderAdapter &&
+        !provider.requiresInitialization) {
+      // 2.8.5: resolver-only providers are ready without initialization events.
+      if (!record.lifecycleObserved && record.status == ProviderState.READY) {
+        record.lifecycleObserved = true;
+        _onProviderEvent(
+          provider,
+          ProviderLifecycleEvent(
+            ProviderLifecycleEventType.PROVIDER_READY,
+            'Provider ready without initialization: ${provider.metadata.name}',
+          ),
+        );
+      }
+      return Future.value();
+    }
+
+    if (provider is ProviderInitialization) {
+      if (provider is DomainScopedProvider &&
+          record.initializationDomainSet &&
+          record.initializationDomain != domain) {
+        return Future.error(
+          const ProviderException(
+            'A domain-scoped provider cannot initialize for another domain.',
+            code: ErrorCode.INVALID_CONTEXT,
+          ),
+        );
+      }
+      if (!record.initializationDomainSet) {
+        record.initializationDomainSet = true;
+        record.initializationDomain = domain;
+      }
     }
 
     if (record.status == ProviderState.READY &&
@@ -138,7 +184,12 @@ class ProviderLifecycleManager {
 
     final initialization = record.usesLegacyLifecycle
         ? _initializeLegacyProvider(provider, record)
-        : _initializeEventProvider(provider, record);
+        : _initializeEventProvider(
+            provider,
+            record,
+            context?.snapshot() ?? EvaluationContext.immutable(),
+            domain,
+          );
     record.initialization = initialization;
     return initialization.whenComplete(() {
       record.initialization = null;
@@ -148,6 +199,8 @@ class ProviderLifecycleManager {
   Future<void> _initializeAfterShutdown(
     FeatureProvider provider,
     Future<void> activeShutdown,
+    EvaluationContext? context,
+    String? domain,
   ) async {
     try {
       await activeShutdown;
@@ -157,7 +210,7 @@ class ProviderLifecycleManager {
       // prior shutdown failure.
     }
     _recordFor(provider).status = ProviderState.NOT_READY;
-    await initialize(provider);
+    await initialize(provider, context: context, domain: domain);
   }
 
   Future<void> _initializeLegacyProvider(
@@ -167,7 +220,7 @@ class ProviderLifecycleManager {
     var errorEventEmitted = false;
     try {
       if (record.status == ProviderState.NOT_READY) {
-        await provider.initialize();
+        await LegacyProviderLifecycleAdapter.initialize(provider);
       }
 
       final observedStatus = _normalizeState(provider.state);
@@ -224,6 +277,8 @@ class ProviderLifecycleManager {
   Future<void> _initializeEventProvider(
     FeatureProvider provider,
     _ProviderLifecycleRecord record,
+    EvaluationContext context,
+    String? domain,
   ) async {
     if (record.status != ProviderState.NOT_READY) {
       throw ProviderException(
@@ -238,7 +293,11 @@ class ProviderLifecycleManager {
     Object? initializationError;
     StackTrace? initializationStack;
     try {
-      await provider.initialize();
+      if (provider case final ProviderInitialization initialization) {
+        await initialization.initializeProvider(context, domain: domain);
+      } else {
+        await LegacyProviderLifecycleAdapter.initialize(provider);
+      }
     } catch (error, stackTrace) {
       initializationError = error;
       initializationStack = stackTrace;
@@ -246,6 +305,18 @@ class ProviderLifecycleManager {
 
     ProviderLifecycleEvent event;
     try {
+      if (provider is ProviderInitialization && !signal.isCompleted) {
+        record.strictInitializationFailed = true;
+        record.status = _statusForError(
+          initializationError ?? StateError('Missing initialization event'),
+          ProviderState.ERROR,
+        );
+        throw ProviderException(
+          'Provider ${provider.metadata.name} must emit its lifecycle event '
+          'before initializeProvider terminates.',
+          code: ErrorCode.GENERAL,
+        );
+      }
       event = await signal.future.timeout(_lifecycleEventTimeout);
     } on TimeoutException {
       Error.throwWithStackTrace(
@@ -271,6 +342,13 @@ class ProviderLifecycleManager {
     }
     if (initializationError != null) {
       if (event.type != ProviderLifecycleEventType.PROVIDER_ERROR) {
+        if (provider is ProviderInitialization) {
+          record.strictInitializationFailed = true;
+          record.status = _statusForError(
+            initializationError,
+            ProviderState.ERROR,
+          );
+        }
         throw ProviderException(
           'Provider ${provider.metadata.name} emitted ${event.type.name} after '
           'initialization failed.',
@@ -303,7 +381,9 @@ class ProviderLifecycleManager {
     _ProviderLifecycleRecord record,
     ProviderLifecycleEvent event,
   ) {
-    if (_disposed || !identical(_records[provider], record)) {
+    if (_disposed ||
+        !identical(_records[provider], record) ||
+        record.strictInitializationFailed) {
       return;
     }
     record.status = _statusForEvent(event, record.status);
@@ -347,7 +427,11 @@ class ProviderLifecycleManager {
     Object? firstError;
     StackTrace? firstStack;
     try {
-      await provider.shutdown();
+      if (provider case final ProviderShutdown shutdown) {
+        await shutdown.shutdownProvider();
+      } else {
+        await LegacyProviderLifecycleAdapter.shutdown(provider);
+      }
     } catch (error, stackTrace) {
       firstError = error;
       firstStack = stackTrace;
@@ -459,6 +543,9 @@ class _ProviderLifecycleRecord {
   ProviderState status;
   final bool usesLegacyLifecycle;
   bool lifecycleObserved = false;
+  bool strictInitializationFailed = false;
+  bool initializationDomainSet = false;
+  String? initializationDomain;
   bool defaultBinding = false;
   final Set<String> domains = {};
   StreamSubscription<ProviderLifecycleEvent>? eventSubscription;

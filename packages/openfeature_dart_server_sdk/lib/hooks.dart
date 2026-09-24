@@ -193,10 +193,11 @@ class HookManager {
     dynamic defaultValue,
     FlagValueType? flagValueType,
     HookData? hookData,
+    Iterable<Hook> additionalHooks = const [],
   }) async {
     var currentContext = Map<String, dynamic>.from(context ?? const {});
     final evaluationHookData = hookData ?? HookData();
-    for (final hook in _hooksForStage(stage)) {
+    for (final hook in _hooksForStage(stage, additionalHooks)) {
       final hookContext = HookContext(
         flagKey: flagKey,
         evaluationContext: currentContext,
@@ -242,11 +243,12 @@ class HookManager {
     );
   }
 
-  List<Hook> _hooksForStage(HookStage stage) {
+  List<Hook> _hooksForStage(HookStage stage, Iterable<Hook> additionalHooks) {
+    final combined = [..._hooks, ...additionalHooks];
     if (stage == HookStage.BEFORE) {
-      return List.unmodifiable(_hooks);
+      return List.unmodifiable(combined);
     }
-    return _hooks.reversed.toList(growable: false);
+    return combined.reversed.toList(growable: false);
   }
 
   /// Execute a single hook with timeout

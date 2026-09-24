@@ -17,6 +17,10 @@ This is an incremental v0.9 improvement, not a full conformance claim.
 
 <!-- x-hide-in-docs-end -->
 
+New providers can implement a minimal resolver contract and opt into lifecycle,
+hooks and tracking. See the [provider migration guide](doc/provider-capabilities-migration.md)
+for the additive API and legacy lifecycle policy.
+
 <p align="center" class="github-badges">
   <a href="https://github.com/open-feature/spec/releases/tag/v0.8.0">
     <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.8.0&color=yellow&style=for-the-badge" />
