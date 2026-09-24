@@ -76,16 +76,35 @@ stage failure rules. No old hook method is removed or analyzer-deprecated here.
 `HookHints.immutable` captures nested maps/lists and rejects unsupported values,
 non-string map keys and cycles. Hints accept string keys and boolean, string,
 number, DateTime and structured values; `targetingKey` is an ordinary hint key.
-The legacy const `HookHints` constructor remains; its caller-owned values are
-captured when wrapped in options or supplied to the manager.
+Top-level hint values cannot be null; nested structures may contain null. This
+hint-specific rule does not restrict evaluation contexts, which accept null at
+every depth. The legacy const `HookHints` constructor remains; its caller-owned
+values are captured when wrapped in options or supplied to a new typed hook.
+Direct standalone execution of legacy hooks retains its existing hints.
 
-Runtime hook contexts contain private immutable snapshots of evaluation fields,
-structured defaults/results and provider metadata. Client metadata is immutable.
-Before contributions merge into the next hook's context and the provider input;
-they do not mutate invocation inputs. Partial contributions survive a later
-before failure for error/finally observers. Direct construction of the legacy
-`HookContext` remains a diagnostic compatibility surface; runtime immutability is
-provided by the SDK execution path.
+Registering a new `EvaluationHook` opts that hook into private immutable snapshots
+of its evaluation-context view and structured defaults/results. Its default is
+captured before provider execution, including for an after-only hook. Context
+views are captured per callback; they do not freeze the provider's legacy input
+for the whole invocation. Use `EvaluationContext.immutable` or `.snapshot()` to
+capture caller-owned evaluation data at its source. Client and provider metadata
+are immutable in the new hook context.
+
+Typed before-hook contributions are captured before merging into subsequent
+hooks and provider inputs. Partial contributions survive a later before failure
+for error/finally observers. This does not change legacy `Hook`/`BaseHook` context,
+default or result value types and identities. Legacy nested aliasing and mutable
+outer provider maps remain as documented in the context migration guide. The
+public `EvaluationDetails` constructor also retains its legacy value behavior;
+the SDK supplies private snapshots to new typed callbacks.
+
+Invalid values encountered by typed-hook snapshots return the application's
+exact fallback. Context-validation errors use `INVALID_CONTEXT`; invalid default
+or result snapshots use `GENERAL`. Error/finally hooks still run: values that
+cannot be represented as immutable snapshots are preserved as legacy diagnostic
+references in those cleanup callbacks. Those invalid values carry no deep
+immutability guarantee. Registering a typed hook with existing opaque context
+data therefore requires an explicit compatibility review.
 
 `HookData` is intentionally **mutable** and accepts arbitrary Dart objects. It is
 isolated by hook object identity and invocation, survives across supported stages,
@@ -102,7 +121,7 @@ registered API/client/invocation error and finally hooks. Provider hooks are
 available only once a provider has been resolved.
 
 Structured defaults supplied by the application retain their return identity;
-hooks receive an immutable private copy. `EvaluationDetails` now carries
+typed hooks receive an immutable private copy when valid. `EvaluationDetails` now carries
 `errorCode`, `errorMessage` and `flagMetadata`. Its value, reason, variant, errors,
 metadata and evaluation time match the application details on success/failure.
 Legacy hooks receive hints on every stage through `HookContext.hints`, details
@@ -120,6 +139,7 @@ From `packages/openfeature_dart_server_sdk`:
 ```sh
 dart pub get
 dart test test/hooks_regression_test.dart test/hook_contract_test.dart
+dart test test/hook_legacy_compatibility_test.dart test/context_review_regression_test.dart
 dart test
 dart analyze
 dart run example/hook_options_example.dart
@@ -139,6 +159,7 @@ while finally observes true. They pass with this implementation.
 | 4.4.1-4.4.2; 2.3 | All four scopes, reversed cleanup, late registration, stable in-flight sequence and removal |
 | 4.4.3-4.4.7 | Short-circuit, remaining cleanup after exceptions, timeout, failing metadata, unformattable exception and provider lookup |
 | Evaluation options across types | All twenty canonical/legacy value/detail methods exercise invocation hooks and hints |
+| Legacy coexistence and failure containment | `hook_legacy_compatibility_test.dart`: opaque/typed/cyclic legacy values, original defaults/results, after-only capture, invalid typed inputs/results and continued error/finally cleanup |
 
 External compatibility was checked with IntelliToggle's canonical GitLab provider
 source and PairQueue's backend using local dependency overrides. These are local

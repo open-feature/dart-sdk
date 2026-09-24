@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'package:logging/logging.dart';
 import 'client.dart';
 import 'domain.dart';
@@ -17,20 +18,23 @@ import 'src/provider_lifecycle_manager.dart';
 class OpenFeatureEvaluationContext {
   final EvaluationContext _context;
   String? get targetingKey => _context.targetingKey;
-  Map<String, dynamic> get attributes => _context.attributes;
+  // Merges involving legacy contexts can retain a mutable backing map.
+  Map<String, dynamic> get attributes =>
+      UnmodifiableMapView(_context.attributes);
 
   OpenFeatureEvaluationContext(
     Map<String, dynamic> attributes, {
     String? targetingKey,
-  }) : _context = EvaluationContext.immutable(
-         attributes: attributes,
+  }) : _context = EvaluationContext(
+         attributes: Map<String, dynamic>.unmodifiable(attributes),
          targetingKey: targetingKey,
        );
 
   OpenFeatureEvaluationContext._(this._context);
 
   OpenFeatureEvaluationContext merge(OpenFeatureEvaluationContext other) {
-    return OpenFeatureEvaluationContext._(_context.merge(other._context));
+    final merged = _context.merge(other._context);
+    return OpenFeatureEvaluationContext._(merged);
   }
 
   EvaluationContext toEvaluationContext() => _context;

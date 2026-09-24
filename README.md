@@ -12,11 +12,11 @@
   <a href="https://dart.dev/">
     <img alt="Built with Dart" src="https://img.shields.io/badge/Built%20with-Dart-blue.svg?style=for-the-badge" />
   </a>
-  <a href="https://codecov.io/gh/open-feature/dart-server-sdk">
-    <img alt="Code Coverage" src="https://codecov.io/gh/open-feature/dart-server-sdk/branch/main/graph/badge.svg?token=FZ17BHNSU5" />
+  <a href="https://codecov.io/gh/open-feature/dart-sdk">
+    <img alt="Code Coverage" src="https://codecov.io/gh/open-feature/dart-sdk/branch/main/graph/badge.svg?token=FZ17BHNSU5" />
   </a>
-  <a href="https://github.com/open-feature/dart-server-sdk/actions/workflows/validation-workflow.yml">
-    <img alt="GitHub CI Status" src="https://github.com/open-feature/dart-server-sdk/actions/workflows/validation-workflow.yml/badge.svg?style=for-the-badge" />
+  <a href="https://github.com/open-feature/dart-sdk/actions/workflows/validation-workflow.yml">
+    <img alt="GitHub CI Status" src="https://github.com/open-feature/dart-sdk/actions/workflows/validation-workflow.yml/badge.svg?style=for-the-badge" />
   </a>
 </p>
 
@@ -47,7 +47,7 @@ repository root must set the package path:
 dependencies:
   openfeature_dart_server_sdk:
     git:
-      url: https://github.com/open-feature/dart-server-sdk.git
+      url: https://github.com/open-feature/dart-sdk.git
       path: packages/openfeature_dart_server_sdk
 ```
 

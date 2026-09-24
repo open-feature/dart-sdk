@@ -83,9 +83,8 @@ class FeatureClient {
     Stream<OpenFeatureEvent>? eventStream,
   }) : _hookManager = hookManager,
        _apiHooksResolver = apiHooksResolver,
-       _defaultContext = defaultContext.snapshot(),
-       _apiContext =
-           apiContext?.snapshot() ?? const EvaluationContext(attributes: {}),
+       _defaultContext = defaultContext,
+       _apiContext = apiContext ?? const EvaluationContext(attributes: {}),
        _apiContextResolver = apiContextResolver,
        _fallbackProvider = provider ?? InMemoryProvider({}),
        _providerResolver = providerResolver,
@@ -156,12 +155,12 @@ class FeatureClient {
 
   Map<String, dynamic> _buildEffectiveContext(EvaluationContext? context) {
     final apiContext = _apiContextResolver?.call() ?? _apiContext;
-    return snapshotContextMap({
+    return {
       ...apiContext.toProviderContext(),
       ..._transactionManager.currentContext?.effectiveAttributes ?? {},
       ..._defaultContext.toProviderContext(),
       ...context?.toProviderContext() ?? {},
-    });
+    };
   }
 
   void _ensureProviderCanEvaluate(FeatureProvider evaluationProvider) {
@@ -229,6 +228,8 @@ class FeatureClient {
   ) {
     final errorCode = error is ProviderException
         ? error.code
+        : error is InvalidContextException
+        ? ErrorCode.INVALID_CONTEXT
         : ErrorCode.GENERAL;
     final errorMessage = error is ProviderException
         ? error.message
@@ -267,7 +268,6 @@ class FeatureClient {
     final hookData = HookData();
     List<Hook> executionHooks = const [];
     final hints = options?.hints ?? const HookHints();
-    dynamic hookDefaultValue;
     ProviderMetadata? hookProviderMetadata;
     final flagValueType = _inferFlagValueType(defaultValue);
     FlagEvaluationResult<T>? finalResult;
@@ -281,7 +281,6 @@ class FeatureClient {
         ..._hookManager.registeredHooks,
         ...?options?.hooks,
       ]);
-      hookDefaultValue = snapshotContextMap({'value': defaultValue})['value'];
       effectiveContext = _buildEffectiveContext(context);
       final evaluationProvider = provider;
       executionHooks = List.unmodifiable([
@@ -300,7 +299,7 @@ class FeatureClient {
         effectiveContext,
         clientMetadata: metadata,
         providerMetadata: hookProviderMetadata,
-        defaultValue: hookDefaultValue,
+        defaultValue: defaultValue,
         flagValueType: flagValueType,
         hookData: hookData,
         executionHooks: executionHooks,
@@ -336,7 +335,7 @@ class FeatureClient {
           evaluationDetails: evaluationDetails,
           clientMetadata: metadata,
           providerMetadata: hookProviderMetadata,
-          defaultValue: hookDefaultValue,
+          defaultValue: defaultValue,
           flagValueType: flagValueType,
           hookData: hookData,
           executionHooks: executionHooks,
@@ -358,7 +357,7 @@ class FeatureClient {
           evaluationDetails: evaluationDetails,
           clientMetadata: metadata,
           providerMetadata: hookProviderMetadata,
-          defaultValue: hookDefaultValue,
+          defaultValue: defaultValue,
           flagValueType: flagValueType,
           hookData: hookData,
           executionHooks: executionHooks,
@@ -390,7 +389,7 @@ class FeatureClient {
         evaluationDetails: evaluationDetails,
         clientMetadata: metadata,
         providerMetadata: hookProviderMetadata,
-        defaultValue: hookDefaultValue,
+        defaultValue: defaultValue,
         flagValueType: flagValueType,
         hookData: hookData,
         executionHooks: executionHooks,
@@ -410,7 +409,7 @@ class FeatureClient {
         evaluationDetails: evaluationDetails,
         clientMetadata: metadata,
         providerMetadata: hookProviderMetadata,
-        defaultValue: hookDefaultValue,
+        defaultValue: defaultValue,
         flagValueType: flagValueType,
         hookData: hookData,
         executionHooks: executionHooks,

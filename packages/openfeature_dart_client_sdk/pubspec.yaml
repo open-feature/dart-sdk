@@ -1,9 +1,9 @@
 name: openfeature_dart_client_sdk
 description: Official static-context Dart client SDK for OpenFeature.
 version: 0.0.1-beta.1 # x-release-please-version
-homepage: https://github.com/open-feature/dart-server-sdk
-repository: https://github.com/open-feature/dart-server-sdk
-issue_tracker: https://github.com/open-feature/dart-server-sdk/issues
+homepage: https://github.com/open-feature/dart-sdk
+repository: https://github.com/open-feature/dart-sdk
+issue_tracker: https://github.com/open-feature/dart-sdk/issues
 
 environment:
   sdk: ^3.12.2

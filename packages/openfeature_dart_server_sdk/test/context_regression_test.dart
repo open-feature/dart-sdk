@@ -1,21 +1,24 @@
 import 'package:test/test.dart';
 import '../lib/evaluation_context.dart';
-import '../lib/open_feature_api.dart';
 import '../lib/transaction_context.dart';
 
 void main() {
-  test('global adapter snapshots nested caller data', () {
+  test('explicit context snapshots nested caller data', () {
     final nested = {'tier': 'standard'};
-    final context = OpenFeatureEvaluationContext({'account': nested});
+    final context = EvaluationContext.immutable(
+      attributes: {'account': nested},
+    );
     nested['tier'] = 'premium';
     expect(context.attributes['account']['tier'], 'standard');
   });
 
-  test('transaction snapshots nested caller data', () {
+  test('transaction accepts explicitly snapshotted caller data', () {
     final groups = ['first'];
     final context = TransactionContext(
       transactionId: 'request',
-      attributes: {'groups': groups},
+      attributes: EvaluationContext.immutable(
+        attributes: {'groups': groups},
+      ).attributes,
     );
     groups.add('second');
     expect(context.effectiveAttributes['groups'], ['first']);

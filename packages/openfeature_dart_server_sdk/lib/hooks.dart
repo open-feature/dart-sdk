@@ -3,9 +3,10 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'evaluation_context.dart';
+import 'src/context_snapshot.dart';
+import 'src/immutable.dart';
 import 'client.dart';
 import 'feature_provider.dart';
-import 'src/context_snapshot.dart';
 
 /// Defines the stages in the hook lifecycle
 /// Used internally by the hook manager for execution ordering
@@ -69,19 +70,29 @@ class EvaluationDetails {
 
   EvaluationDetails({
     required this.flagKey,
-    required dynamic value,
+    required this.value,
     this.variant,
     this.reason = 'DEFAULT',
     required this.evaluationTime,
-    Map<String, dynamic>? additionalDetails,
+    this.additionalDetails,
     this.errorCode,
     this.errorMessage,
-    Map<String, dynamic> flagMetadata = const {},
-  }) : value = _snapshotHookValue(value),
-       additionalDetails = additionalDetails == null
-           ? null
-           : Map.unmodifiable(additionalDetails),
-       flagMetadata = _snapshotHookValue(flagMetadata);
+    this.flagMetadata = const {},
+  });
+
+  EvaluationDetails _snapshot({required bool cleanup}) => EvaluationDetails(
+    flagKey: flagKey,
+    value: _snapshotHookValue(value, cleanup: cleanup),
+    variant: variant,
+    reason: reason,
+    evaluationTime: evaluationTime,
+    additionalDetails: additionalDetails == null
+        ? null
+        : Map.unmodifiable(additionalDetails!),
+    errorCode: errorCode,
+    errorMessage: errorMessage,
+    flagMetadata: _snapshotHookValue(flagMetadata, cleanup: cleanup),
+  );
 }
 
 /// Mutable data container that propagates between hook stages (spec Section 4.6)
@@ -90,6 +101,18 @@ class EvaluationDetails {
 class HookData {
   final Map<String, dynamic> _data = {};
   final Map<Object, HookData> _scopedData = HashMap.identity();
+  bool _defaultCaptured = false;
+  dynamic _capturedDefault;
+
+  dynamic _captureDefault(dynamic value, {required bool cleanup}) {
+    if (!_defaultCaptured) {
+      // Retain the original for cleanup if strict capture rejects legacy data.
+      _capturedDefault = value;
+      _defaultCaptured = true;
+      _capturedDefault = _snapshotHookValue(value, cleanup: cleanup);
+    }
+    return _capturedDefault;
+  }
 
   /// Set a value in hook data
   void set(String key, dynamic value) {
@@ -150,11 +173,19 @@ class HookContext {
 class HookHints {
   final Map<String, dynamic> hints;
 
-  /// Legacy constructor; runtime entry points capture an immutable snapshot.
+  /// Legacy constructor; options and typed hooks capture an immutable snapshot.
   const HookHints({this.hints = const {}});
 
-  factory HookHints.immutable(Map<String, dynamic> hints) =>
-      HookHints(hints: snapshotContextMap(hints, validateTargetingKey: false));
+  factory HookHints.immutable(Map<String, dynamic> hints) {
+    // Hints have their own top-level value contract (4.2.1); evaluation
+    // contexts intentionally continue to accept null at every depth.
+    for (final entry in hints.entries) {
+      if (entry.value == null) {
+        throw ArgumentError('hints.${entry.key}: hint values must not be null');
+      }
+    }
+    return HookHints(hints: snapshotContextMap(hints, path: 'hints'));
+  }
 
   HookHints snapshot() => HookHints.immutable(hints);
 }
@@ -226,16 +257,34 @@ class HookManager {
     List<Hook>? executionHooks,
     void Function(Map<String, dynamic>)? onContextChanged,
   }) async {
-    var currentContext = snapshotContextMap(context ?? const {});
+    var currentContext = Map<String, dynamic>.from(context ?? const {});
     final evaluationHookData = hookData ?? HookData();
-    final immutableHints = (hints ?? const HookHints()).snapshot();
+    final suppliedHints = hints ?? const HookHints();
+    final cleanup = stage == HookStage.ERROR || stage == HookStage.FINALLY;
     for (final hook in _hooksForStage(stage, additionalHooks, executionHooks)) {
       try {
+        final typed = hook is EvaluationHook;
+        final scopedData = evaluationHookData._scopeFor(hook);
+        // Capture before the provider await, including hooks with no before
+        // callback. Legacy hooks retain their original values and types.
+        final hookDefault = typed
+            ? scopedData._captureDefault(defaultValue, cleanup: cleanup)
+            : defaultValue;
         if (hook is EvaluationHook && !hook.stages.contains(stage)) continue;
+        final hookHints = typed ? suppliedHints.snapshot() : suppliedHints;
+        final hookDetails = typed
+            ? evaluationDetails?._snapshot(cleanup: cleanup)
+            : evaluationDetails;
         final hookContext = HookContext(
           flagKey: flagKey,
-          evaluationContext: currentContext,
-          result: _snapshotHookValue(result),
+          evaluationContext: typed
+              ? _snapshotHookValue(
+                  currentContext,
+                  cleanup: cleanup,
+                  evaluationContext: true,
+                )
+              : currentContext,
+          result: typed ? _snapshotHookValue(result, cleanup: cleanup) : result,
           error: error,
           clientMetadata: clientMetadata,
           providerMetadata: providerMetadata == null
@@ -245,11 +294,11 @@ class HookManager {
                   version: providerMetadata.version,
                   attributes: Map.unmodifiable(providerMetadata.attributes),
                 ),
-          defaultValue: _snapshotHookValue(defaultValue),
+          defaultValue: hookDefault,
           flagValueType: flagValueType,
-          hookData: evaluationHookData._scopeFor(hook),
-          hints: immutableHints,
-          evaluationDetails: evaluationDetails,
+          hookData: scopedData,
+          hints: hookHints,
+          evaluationDetails: hookDetails,
         );
 
         final contextUpdates = await _executeHookWithTimeout(
@@ -257,17 +306,14 @@ class HookManager {
           stage,
           hookContext,
           hook.metadata.config.timeout,
-          evaluationDetails,
-          hints == null ? null : immutableHints,
+          hookDetails,
+          hints == null ? null : hookHints,
         );
 
         if (stage == HookStage.BEFORE &&
             contextUpdates != null &&
             contextUpdates.isNotEmpty) {
-          currentContext = snapshotContextMap({
-            ...currentContext,
-            ...contextUpdates,
-          });
+          currentContext = {...currentContext, ...contextUpdates};
           onContextChanged?.call(currentContext);
         }
       } catch (e) {
@@ -730,11 +776,24 @@ class OpenTelemetryHook extends BaseHook {
   }
 }
 
-// Hook-visible structured values are private snapshots. Application fallbacks
-// themselves retain identity and are never replaced by these copies.
-dynamic _snapshotHookValue(dynamic value) => value is Map || value is List
-    ? snapshotContextMap({'value': value})['value']
-    : value;
+// Only the new typed hook surface opts into structured snapshots. Invalid
+// legacy values remain available to error/finally diagnostics, so failed
+// capture cannot suppress cleanup or escape the application's evaluation.
+dynamic _snapshotHookValue(
+  dynamic value, {
+  bool cleanup = false,
+  bool evaluationContext = false,
+}) {
+  if (value is! Map && value is! List) return value;
+  try {
+    return evaluationContext
+        ? snapshotContextMap(value as Map<String, dynamic>)
+        : immutableValue(value);
+  } on ArgumentError {
+    if (!cleanup) rethrow;
+    return value;
+  }
+}
 
 /// Immutable per-invocation hook registration and hints.
 class EvaluationOptions {
@@ -761,7 +820,9 @@ typedef ErrorEvaluationHook =
     );
 
 /// A hook declaring only its supported stages, with typed stage arguments.
-/// Existing Hook/BaseHook implementations remain supported unchanged.
+/// Registering this hook opts its input views into strict structured snapshots.
+/// Legacy Hook/BaseHook value behavior remains unchanged; invalid snapshot data
+/// is retained as diagnostic references during error/finally cleanup.
 class EvaluationHook extends BaseHook {
   final BeforeEvaluationHook? _before;
   final AfterEvaluationHook? _after;
@@ -792,7 +853,10 @@ class EvaluationHook extends BaseHook {
 
   @override
   Future<Map<String, dynamic>?> before(HookContext context) async =>
-      (await _before?.call(context, context.hints))?.toProviderContext();
+      (await _before?.call(
+        context,
+        context.hints,
+      ))?.snapshot().toProviderContext();
   @override
   Future<void> after(HookContext context) async {
     await _after?.call(context, context.evaluationDetails!, context.hints);

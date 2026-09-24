@@ -50,7 +50,7 @@ For `0.0.1-beta.1`, an authorized OpenFeature publisher must:
 
 4. Transfer the package to the verified `openfeature.dev` publisher on pub.dev.
 5. Configure pub.dev automated publishing for this GitHub repository and the
-   `openfeature_dart_client_sdk-v*` tag pattern.
+   `openfeature_dart_client_sdk-v{{version}}` tag pattern.
 6. Set the GitHub repository variable `CLIENT_PUBDEV_BOOTSTRAPPED` to `true`.
 
 Until the repository variable is enabled, client release tags deliberately
