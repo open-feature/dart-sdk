@@ -1,0 +1,42 @@
+name: Server Conformance Evidence
+on:
+  push:
+    branches: [development, main]
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evidence:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+      - name: Install server dependencies
+        working-directory: packages/openfeature_dart_server_sdk
+        run: dart pub get
+      - name: Test evidence reporter
+        run: python3 -m unittest discover -s tool -p test_server_conformance.py
+      - name: Run exact-checkout evidence report
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 tool/server_conformance.py
+      - name: Verify published and candidate legacy consumers
+        run: python3 tool/server_compatibility.py
+      - name: Upload evidence and explicit release blockers
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: server-v0.9-candidate-evidence
+          path: build/server-conformance/
+          if-no-files-found: error
+          retention-days: 30

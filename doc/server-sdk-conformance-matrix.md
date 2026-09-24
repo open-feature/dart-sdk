@@ -3,7 +3,10 @@
 Status: maintainer proposal
 Tracks: [#121](https://github.com/open-feature/dart-sdk/issues/121)
 Specification baseline: [OpenFeature v0.9.0](https://github.com/open-feature/spec/releases/tag/v0.9.0)
-Implementation baseline: lifecycle work proposed in #131
+Implementation baseline: merged foundations plus candidate PRs #183/#184; final evidence remains under review.
+
+For the pinned 145-entry candidate inventory, reproducible CI report, compatibility
+fixture and remaining release gates, see [server conformance evidence](server-conformance-evidence.md).
 
 ## Purpose and scope
 

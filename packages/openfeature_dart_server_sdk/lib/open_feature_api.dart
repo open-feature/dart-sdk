@@ -583,7 +583,10 @@ class OpenFeatureAPI {
     return _providerRegistry[boundProviderName] ?? _provider;
   }
 
-  /// Get or create a client
+  /// Creates a client with an optional domain (1.1.6).
+  FeatureClient createClient({String? domain}) => getClient(domain ?? '');
+
+  /// Get or create a client using the legacy positional name.
   FeatureClient getClient(String name, {String? domain}) {
     FeatureProvider resolveProvider() =>
         _resolveProviderForClient(name, domain);
@@ -607,11 +610,15 @@ class OpenFeatureAPI {
           ? ProviderState.NOT_READY
           : _lifecycleManager.statusOf(provider),
       transactionManager: _transactionManager,
-      eventScope: _eventDispatcher.scope(
-        provider: resolveProvider,
-        domain: domain ?? name,
-        current: (type) => _currentEvents(resolveProvider(), type),
-      ),
+      // Permanent disposal must not make client creation throw (1.1.7).
+      // A detached client still uses the not-ready resolver and safe defaults.
+      eventScope: _disposed
+          ? null
+          : _eventDispatcher.scope(
+              provider: resolveProvider,
+              domain: domain ?? name,
+              current: (type) => _currentEvents(resolveProvider(), type),
+            ),
     );
   }
 
