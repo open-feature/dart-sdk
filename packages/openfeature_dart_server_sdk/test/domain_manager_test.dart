@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
-import '../lib/domain_manager.dart';
-import '../lib/domain.dart';
+import 'package:openfeature_dart_server_sdk/domain_manager.dart';
+import 'package:openfeature_dart_server_sdk/domain.dart';
 
 void main() {
   late DomainManager manager;

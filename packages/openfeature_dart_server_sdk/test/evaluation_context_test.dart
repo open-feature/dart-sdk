@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import '../lib/evaluation_context.dart';
+import 'package:openfeature_dart_server_sdk/evaluation_context.dart';
 
 void main() {
   group('TargetingRule', () {

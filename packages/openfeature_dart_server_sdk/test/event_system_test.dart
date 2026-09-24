@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import '../lib/event_system.dart';
+import 'package:openfeature_dart_server_sdk/event_system.dart';
 
 void main() {
   group('OpenFeatureEvent', () {

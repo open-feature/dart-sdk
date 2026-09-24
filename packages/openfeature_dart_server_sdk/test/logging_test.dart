@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:logging/logging.dart';
-import '../lib/logging.dart';
+import 'package:openfeature_dart_server_sdk/logging.dart';
 
 void main() {
   group('StructuredLogEntry', () {

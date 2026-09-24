@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:test/test.dart';
-import '../lib/client.dart';
-import '../lib/evaluation_context.dart';
-import '../lib/feature_provider.dart';
-import '../lib/hooks.dart';
+import 'package:openfeature_dart_server_sdk/client.dart';
+import 'package:openfeature_dart_server_sdk/evaluation_context.dart';
+import 'package:openfeature_dart_server_sdk/feature_provider.dart';
+import 'package:openfeature_dart_server_sdk/hooks.dart';
 
 class ObjectProvider extends InMemoryProvider {
   Map<String, dynamic> result = {'remote': true};

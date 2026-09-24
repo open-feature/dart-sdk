@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
-import '../lib/evaluation_context.dart';
-import '../lib/transaction_context.dart';
+import 'package:openfeature_dart_server_sdk/evaluation_context.dart';
+import 'package:openfeature_dart_server_sdk/transaction_context.dart';
 
 void main() {
   test('explicit context snapshots nested caller data', () {
