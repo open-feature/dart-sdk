@@ -36,17 +36,19 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        sdk: [3.12.2, stable, beta]
+        sdk: [minimum, stable, beta]
         package:
           - name: server
             path: packages/openfeature_dart_server_sdk
+            minimum_sdk: 3.12.2
           - name: client
             path: packages/openfeature_dart_client_sdk
+            minimum_sdk: 3.10.0
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         with:
-          sdk: ${{ matrix.sdk }}
+          sdk: ${{ matrix.sdk == 'minimum' && matrix.package.minimum_sdk || matrix.sdk }}
 
       - name: Install dependencies
         working-directory: ${{ matrix.package.path }}
@@ -72,7 +74,7 @@ jobs:
         if: >-
           matrix.package.name == 'client' &&
           matrix.os == 'ubuntu-latest' &&
-          matrix.sdk == '3.12.2'
+          matrix.sdk == 'minimum'
         working-directory: ${{ matrix.package.path }}
         run: dart test -p chrome test/web_compile_smoke.dart
 
@@ -109,13 +111,15 @@ jobs:
         package:
           - name: server
             path: packages/openfeature_dart_server_sdk
+            sdk: 3.12.2
           - name: client
             path: packages/openfeature_dart_client_sdk
+            sdk: 3.10.0
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
         with:
-          sdk: 3.12.2
+          sdk: ${{ matrix.package.sdk }}
 
       - name: Install minimum dependencies
         working-directory: ${{ matrix.package.path }}
