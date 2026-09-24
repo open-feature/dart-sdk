@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'src/tracking_details.dart';
 
 /// Provider states for lifecycle management
 enum ProviderState {
@@ -181,10 +182,17 @@ class ProviderException implements Exception {
 
 /// Tracking event details for the Tracking API (spec Section 6)
 class TrackingEventDetails {
-  final double? value;
+  final num? value;
   final Map<String, dynamic> attributes;
 
   const TrackingEventDetails({this.value, this.attributes = const {}});
+
+  /// Validates and freezes custom fields for asynchronous tracking transports.
+  /// The legacy const constructor retains its original attribute semantics.
+  TrackingEventDetails.immutable({
+    this.value,
+    Map<String, dynamic> attributes = const {},
+  }) : attributes = snapshotTrackingDetails(attributes);
 }
 
 /// Minimal provider contract: metadata and five typed resolvers (2.1-2.2).

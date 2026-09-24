@@ -185,7 +185,7 @@ class FeatureClient {
     final apiContext = _apiContextResolver?.call() ?? _apiContext;
     return {
       ...apiContext.toProviderContext(),
-      ..._transactionManager.currentContext?.effectiveAttributes ?? {},
+      ..._transactionManager.effectiveContext,
       ..._defaultContext.toProviderContext(),
       ...context?.toProviderContext() ?? {},
     };
@@ -560,7 +560,23 @@ class FeatureClient {
     );
   }
 
-  /// Tracking API (spec Section 6) - record a tracking event
+  /// Experimental nonblocking tracking (6.1.1.1). Transport errors are contained.
+  /// Use [track] only when existing application code needs to await transport.
+  void trackEvent(
+    String trackingEventName, {
+    EvaluationContext? context,
+    TrackingEventDetails? trackingDetails,
+  }) {
+    unawaited(
+      track(
+        trackingEventName,
+        context: context,
+        trackingDetails: trackingDetails,
+      ),
+    );
+  }
+
+  /// Compatibility tracking API that can be awaited for transport completion.
   Future<void> track(
     String trackingEventName, {
     EvaluationContext? context,

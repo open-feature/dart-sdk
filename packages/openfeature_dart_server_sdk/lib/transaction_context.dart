@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
 import 'package:meta/meta.dart';
+import 'evaluation_context.dart';
+import 'experimental/transaction_context.dart';
 
 /// Transaction context holder
 class TransactionContext {
@@ -41,6 +43,43 @@ class TransactionContextManager {
   final _fallback = _TransactionState(0);
   final _ownedContexts = HashSet<TransactionContext>.identity();
   int _generation = 0;
+  final Object _propagationScopeKey = Object();
+  Object _propagationEpoch = Object();
+  TransactionContextPropagator? _propagator;
+
+  /// Experimental carrier registration. Null removes the carrier.
+  void setTransactionContextPropagator(
+    TransactionContextPropagator? propagator,
+  ) {
+    _propagationEpoch = Object();
+    _propagator = propagator;
+  }
+
+  /// Runs the operation even when no carrier has been registered.
+  Future<T> setTransactionContext<T>(
+    EvaluationContext context,
+    FutureOr<T> Function() operation,
+  ) async {
+    final propagator = _propagator;
+    if (propagator == null) return await operation();
+    final snapshot = context.snapshot();
+    return await runZoned(
+      () => propagator.setTransactionContext(snapshot, operation),
+      zoneValues: {_propagationScopeKey: _propagationEpoch},
+    );
+  }
+
+  /// Explicit carriers replace the legacy manager's context while registered.
+  Map<String, dynamic> get effectiveContext {
+    final scope = Zone.current[_propagationScopeKey];
+    if (scope != null && !identical(scope, _propagationEpoch)) return const {};
+    final propagator = _propagator;
+    if (propagator != null) {
+      return propagator.getTransactionContext()?.toProviderContext() ??
+          const {};
+    }
+    return currentContext?.effectiveAttributes ?? const {};
+  }
 
   TransactionContextManager._internal();
 
@@ -53,44 +92,47 @@ class TransactionContextManager {
     final state =
         Zone.current[_zoneStateKey] as _TransactionState? ?? _fallback;
     if (state.generation != _generation) {
-      state.contexts.clear();
       state.stack.clear();
       state.generation = _generation;
     }
     return state;
   }
 
-  Map<String, TransactionContext> get _contexts => _state.contexts;
-
-  List<String> get _contextStack => _state.stack;
+  List<TransactionContext> get _contextStack => _state.stack;
 
   TransactionContext? get currentContext {
     if (_contextStack.isEmpty) return null;
-    return _contexts[_contextStack.last];
+    return _contextStack.last;
   }
 
   void pushContext(TransactionContext context, {Duration? timeout}) {
-    _contexts[context.transactionId] = context;
-    _contextStack.add(context.transactionId);
+    _contextStack.add(context);
     _ownedContexts.add(context);
     context.scheduleCleanup(timeout ?? const Duration(minutes: 5));
   }
 
   TransactionContext? popContext() {
     if (_contextStack.isEmpty) return null;
-    final contextId = _contextStack.removeLast();
-    final context = _contexts.remove(contextId);
-    context?.cleanup();
-    _ownedContexts.remove(context);
+    final context = _contextStack.removeLast();
+    try {
+      context.cleanup();
+    } finally {
+      _ownedContexts.remove(context);
+    }
     return context;
   }
 
   void clearContext(String transactionId) {
-    final context = _contexts.remove(transactionId);
-    if (context != null) {
-      _contextStack.remove(transactionId);
-      context.cleanup();
-      _ownedContexts.remove(context);
+    final index = _contextStack.lastIndexWhere(
+      (c) => c.transactionId == transactionId,
+    );
+    if (index >= 0) {
+      final context = _contextStack.removeAt(index);
+      try {
+        context.cleanup();
+      } finally {
+        _ownedContexts.remove(context);
+      }
     }
   }
 
@@ -113,9 +155,7 @@ class TransactionContextManager {
     Future<T> Function() operation,
   ) async {
     final generation = _generation;
-    final state = _TransactionState(generation)
-      ..contexts.addAll(_contexts)
-      ..stack.addAll(_contextStack);
+    final state = _TransactionState(generation)..stack.addAll(_contextStack);
 
     return await runZoned(() async {
       final context = TransactionContext(
@@ -136,9 +176,14 @@ class TransactionContextManager {
   }
 
   void cleanup() {
+    setTransactionContextPropagator(null);
+    final contexts = _ownedContexts.toList();
+    _ownedContexts.clear();
+    _generation++;
+    _fallback.stack.clear();
     Object? firstError;
     StackTrace? firstStack;
-    for (final context in _ownedContexts) {
+    for (final context in contexts) {
       try {
         context.cleanup();
       } catch (error, stack) {
@@ -146,10 +191,6 @@ class TransactionContextManager {
         firstStack ??= stack;
       }
     }
-    _ownedContexts.clear();
-    _generation++;
-    _fallback.contexts.clear();
-    _fallback.stack.clear();
     if (firstError != null) {
       Error.throwWithStackTrace(firstError, firstStack ?? StackTrace.current);
     }
@@ -158,7 +199,6 @@ class TransactionContextManager {
 
 class _TransactionState {
   int generation;
-  final contexts = <String, TransactionContext>{};
-  final stack = <String>[];
+  final stack = <TransactionContext>[];
   _TransactionState(this.generation);
 }

@@ -15,6 +15,7 @@ import 'src/provider_lifecycle_manager.dart';
 import 'src/event_dispatcher.dart';
 import 'src/provider_ownership.dart';
 import 'transaction_context.dart';
+import 'experimental/transaction_context.dart';
 
 /// Compatibility adapter for the legacy positional-map API.
 /// New code can use [EvaluationContext.immutable] and
@@ -248,6 +249,24 @@ class OpenFeatureAPI {
   /// The ordinary singleton retains the legacy singleton manager.
   TransactionContextManager get transactionContextManager =>
       _transactionManager;
+
+  /// Experimental: replace the request-context carrier, or remove it with null.
+  void setTransactionContextPropagator(
+    TransactionContextPropagator? propagator,
+  ) {
+    _ensureMutable();
+    _transactionManager.setTransactionContextPropagator(propagator);
+  }
+
+  /// Experimental: run an operation in the registered carrier's request scope.
+  /// Without a carrier the operation still runs, but this context is ignored.
+  Future<T> setTransactionContext<T>(
+    EvaluationContext context,
+    FutureOr<T> Function() operation,
+  ) {
+    _ensureMutable();
+    return _transactionManager.setTransactionContext(context, operation);
+  }
 
   void _ensureMutable() {
     if (_disposed || _resetting) {
