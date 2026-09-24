@@ -22,7 +22,8 @@ abstract interface class ProviderHooks {
   List<Hook> get hooks;
 }
 
-/// Optional tracking transport. Full tracking details/API work is issue #164.
+/// Optional experimental tracking transport. Cleanup/flush belongs to the
+/// provider's shutdown capability; the SDK does not impose a vendor transport.
 abstract interface class ProviderTracking {
   Future<void> trackEvent(
     String name, {

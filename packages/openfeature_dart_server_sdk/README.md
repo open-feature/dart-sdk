@@ -1,6 +1,13 @@
 <!-- markdownlint-disable MD033 -->
 For typed provider event registration, late-handler behavior and compatibility
 with existing streams, see [the event migration guide](doc/events-migration.md).
+For reusable cleanup and experimental isolated API instances, see
+[shutdown and isolation](doc/shutdown-and-isolation.md).
+For experimental tracking and request context carriers, see
+[tracking and transactions](doc/tracking-and-transactions.md).
+Candidate requirement evidence and release gates are documented in the
+[conformance report guide](https://github.com/open-feature/dart-sdk/blob/development/doc/server-conformance-evidence.md).
+The candidate report does not declare full v0.9 conformance.
 
 <!-- x-hide-in-docs-start -->
 <p align="center">

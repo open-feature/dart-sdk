@@ -1,0 +1,26 @@
+import 'package:openfeature_dart_server_sdk/client.dart';
+import 'package:openfeature_dart_server_sdk/evaluation_context.dart';
+import 'package:openfeature_dart_server_sdk/feature_provider.dart';
+import 'package:openfeature_dart_server_sdk/open_feature_api.dart';
+import 'package:openfeature_dart_server_sdk/transaction_context.dart';
+
+Future<void> main() async {
+  final api = OpenFeatureAPI();
+  final provider = InMemoryProvider({'enabled': true});
+  await api.setProviderAndWait(provider);
+  api.setGlobalContext(OpenFeatureEvaluationContext({'application': 'legacy'}));
+  final FeatureClient client = api.getClient('legacy');
+  await TransactionContextManager().withContext('request', {'request': 'legacy'}, () async {
+    final value = await client.getBooleanFlag('enabled', defaultValue: false,
+      context: const EvaluationContext(targetingKey: 'subject', attributes: {}));
+    if (!value) throw StateError('Legacy flag evaluation failed');
+    final details = await client.getBooleanDetails('enabled', defaultValue: false);
+    if (!details.value) throw StateError('Legacy details failed');
+    const tracking = TrackingEventDetails(value: 1.5, attributes: {'currency': 'USD'});
+    final num? numericValue = tracking.value;
+    if (numericValue != 1.5) throw StateError('Legacy tracking value changed');
+    await client.track('legacy-event', trackingDetails: tracking);
+  });
+  await client.dispose();
+  await OpenFeatureAPI.resetInstance();
+}

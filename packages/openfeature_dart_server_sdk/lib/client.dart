@@ -185,7 +185,7 @@ class FeatureClient {
     final apiContext = _apiContextResolver?.call() ?? _apiContext;
     return {
       ...apiContext.toProviderContext(),
-      ..._transactionManager.currentContext?.effectiveAttributes ?? {},
+      ..._transactionManager.effectiveContext,
       ..._defaultContext.toProviderContext(),
       ...context?.toProviderContext() ?? {},
     };
@@ -337,6 +337,20 @@ class FeatureClient {
 
       _ensureProviderCanEvaluate(evaluationProvider);
       finalResult = await evaluator(evaluationProvider, effectiveContext);
+      if (finalResult.flagKey != flagKey && finalResult.errorCode == null) {
+        // The SDK's details identify the requested flag, even when a provider
+        // uses an internal alias in its resolution payload (1.4.5).
+        finalResult = FlagEvaluationResult<T>(
+          flagKey: flagKey,
+          value: finalResult.value,
+          reason: finalResult.reason,
+          variant: finalResult.variant,
+          flagMetadata: finalResult.flagMetadata,
+          details: finalResult.details,
+          evaluatedAt: finalResult.evaluatedAt,
+          evaluatorId: finalResult.evaluatorId,
+        );
+      }
       // A provider may return an error together with a cached or otherwise
       // unusable value. Only the application chooses its fallback (1.4.10).
       if (finalResult.errorCode != null) {
@@ -560,7 +574,23 @@ class FeatureClient {
     );
   }
 
-  /// Tracking API (spec Section 6) - record a tracking event
+  /// Experimental nonblocking tracking (6.1.1.1). Transport errors are contained.
+  /// Use [track] only when existing application code needs to await transport.
+  void trackEvent(
+    String trackingEventName, {
+    EvaluationContext? context,
+    TrackingEventDetails? trackingDetails,
+  }) {
+    unawaited(
+      track(
+        trackingEventName,
+        context: context,
+        trackingDetails: trackingDetails,
+      ),
+    );
+  }
+
+  /// Compatibility tracking API that can be awaited for transport completion.
   Future<void> track(
     String trackingEventName, {
     EvaluationContext? context,

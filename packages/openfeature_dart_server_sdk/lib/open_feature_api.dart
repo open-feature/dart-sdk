@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'client.dart';
 import 'domain.dart';
 import 'domain_manager.dart';
@@ -12,6 +13,9 @@ import 'provider_lifecycle.dart';
 import 'src/provider_adapter.dart';
 import 'src/provider_lifecycle_manager.dart';
 import 'src/event_dispatcher.dart';
+import 'src/provider_ownership.dart';
+import 'transaction_context.dart';
+import 'experimental/transaction_context.dart';
 
 /// Compatibility adapter for the legacy positional-map API.
 /// New code can use [EvaluationContext.immutable] and
@@ -161,10 +165,18 @@ class OpenFeatureAPI {
   static final Logger _logger = Logger('OpenFeatureAPI');
   static OpenFeatureAPI? _instance;
 
-  final _providerAdapters = Expando<FeatureProvider>('provider adapters');
-  FeatureProvider _adaptProvider(Provider provider) {
-    if (provider is FeatureProvider) return provider;
-    return _providerAdapters[provider] ??= ResolverProviderAdapter(provider);
+  var _providerAdapters = Expando<FeatureProvider>('provider adapters');
+  Object _ownerToken = Object();
+  final Map<Provider, FeatureProvider> _ownedProviders = Map.identity();
+  FeatureProvider _adaptProvider(Provider definition) {
+    _ensureMutable();
+    final provider = ProviderOwnership.definition(definition);
+    final adapted = provider is FeatureProvider
+        ? provider
+        : (_providerAdapters[provider] ??= ResolverProviderAdapter(provider));
+    ProviderOwnership.claim(provider, _ownerToken);
+    _ownedProviders[ProviderOwnership.definition(provider)] = adapted;
+    return adapted;
   }
 
   late FeatureProvider _provider;
@@ -172,8 +184,9 @@ class OpenFeatureAPI {
   final Map<String, FeatureProvider> _domainProviderBindings = {};
   final Map<String, String> _domainProviderIds = {};
   final Map<String, int> _domainBindingGenerations = {};
-  final DomainManager _domainManager = DomainManager();
-  late final ProviderLifecycleManager _lifecycleManager;
+  DomainManager _domainManager = DomainManager();
+  late ProviderLifecycleManager _lifecycleManager;
+  late final TransactionContextManager _transactionManager;
   final List<OpenFeatureHook> _hooks = [];
   final List<Hook> _evaluationHooks = [];
   OpenFeatureEvaluationContext? _globalContext;
@@ -182,21 +195,27 @@ class OpenFeatureAPI {
   int _defaultBindingGeneration = 0;
   FeatureProvider? _requestedDefaultProvider;
   bool _disposed = false;
+  bool _resetting = false;
+  int _epoch = 0;
+  Future<void>? _shutdownFuture;
 
-  final StreamController<FeatureProvider> _providerStreamController;
+  StreamController<FeatureProvider> _providerStreamController;
   final EventDispatcher _eventDispatcher = EventDispatcher();
   late final EventScope _apiEvents;
   final Map<FeatureProvider, OpenFeatureEvent> _lastStateEvents =
       Map.identity();
-  final StreamController<Map<String, String>> _domainUpdatesController;
+  StreamController<Map<String, String>> _domainUpdatesController;
   Future<void>? _disposeFuture;
 
-  OpenFeatureAPI._internal()
+  OpenFeatureAPI._internal({bool isolated = false})
     : _providerStreamController = StreamController<FeatureProvider>.broadcast(),
       _domainUpdatesController =
           StreamController<Map<String, String>>.broadcast() {
-    _configureLogging();
-    _lifecycleManager = ProviderLifecycleManager(_handleProviderLifecycleEvent);
+    if (!isolated) _configureLogging();
+    _transactionManager = isolated
+        ? TransactionContextManager.isolated()
+        : TransactionContextManager();
+    _lifecycleManager = _newLifecycleManager();
     _apiEvents = _eventDispatcher.scope(
       current: (type) sync* {
         final providers = HashSet<FeatureProvider>.identity()
@@ -210,14 +229,7 @@ class OpenFeatureAPI {
         }
       },
     );
-    _domainSubscription = _domainManager.domainUpdates.listen((domain) {
-      if (!_disposed) {
-        _domainUpdatesController.add({
-          'clientId': domain.clientId,
-          'providerName': domain.providerName,
-        });
-      }
-    });
+    _listenToDomains();
     final defaultProvider = _ImmediateReadyProvider();
     _defaultBindingGeneration++;
     _requestedDefaultProvider = defaultProvider;
@@ -227,6 +239,77 @@ class OpenFeatureAPI {
   factory OpenFeatureAPI() {
     _instance ??= OpenFeatureAPI._internal();
     return _instance!;
+  }
+
+  /// Internal bridge; opt in through experimental/isolated.dart instead.
+  @internal
+  factory OpenFeatureAPI.isolated() => OpenFeatureAPI._internal(isolated: true);
+
+  /// The transaction manager associated with this API.
+  /// The ordinary singleton retains the legacy singleton manager.
+  TransactionContextManager get transactionContextManager =>
+      _transactionManager;
+
+  /// Experimental: replace the request-context carrier, or remove it with null.
+  void setTransactionContextPropagator(
+    TransactionContextPropagator? propagator,
+  ) {
+    _ensureMutable();
+    _transactionManager.setTransactionContextPropagator(propagator);
+  }
+
+  /// Experimental: run an operation in the registered carrier's request scope.
+  /// Without a carrier the operation still runs, but this context is ignored.
+  Future<T> setTransactionContext<T>(
+    EvaluationContext context,
+    FutureOr<T> Function() operation,
+  ) {
+    _ensureMutable();
+    return _transactionManager.setTransactionContext(context, operation);
+  }
+
+  void _ensureMutable() {
+    if (_disposed || _resetting) {
+      throw StateError(
+        'API configuration is unavailable during shutdown or after disposal.',
+      );
+    }
+  }
+
+  ProviderLifecycleManager _newLifecycleManager() {
+    final epoch = _epoch;
+    return ProviderLifecycleManager(
+      (provider, event) {
+        if (epoch == _epoch) _handleProviderLifecycleEvent(provider, event);
+      },
+      onRetired: (provider) {
+        if (epoch != _epoch ||
+            identical(_provider, provider) ||
+            identical(_requestedDefaultProvider, provider) ||
+            _providerRegistry.values.any(
+              (value) => identical(value, provider),
+            ) ||
+            _domainProviderBindings.values.any(
+              (value) => identical(value, provider),
+            ))
+          return;
+        final definition = ProviderOwnership.definition(provider);
+        _ownedProviders.remove(definition);
+        ProviderOwnership.release(definition, _ownerToken);
+      },
+    );
+  }
+
+  void _listenToDomains() {
+    final epoch = _epoch;
+    _domainSubscription = _domainManager.domainUpdates.listen((domain) {
+      if (!_disposed && !_resetting && epoch == _epoch) {
+        _domainUpdatesController.add({
+          'clientId': domain.clientId,
+          'providerName': domain.providerName,
+        });
+      }
+    });
   }
 
   void _configureLogging() {
@@ -286,20 +369,22 @@ class OpenFeatureAPI {
     FeatureProvider provider, {
     required bool rethrowInitializationError,
   }) async {
+    final epoch = _epoch;
+    final manager = _lifecycleManager;
     final requestGeneration = ++_defaultBindingGeneration;
     _requestedDefaultProvider = provider;
     Object? initializationError;
     StackTrace? initializationStack;
 
     try {
-      await _lifecycleManager.initialize(provider, context: evaluationContext);
+      await manager.initialize(provider, context: evaluationContext);
     } catch (error, stackTrace) {
       initializationError = error;
       initializationStack = stackTrace;
       _logger.severe('Failed to initialize provider: $error');
     }
 
-    if (_disposed) {
+    if (_disposed || epoch != _epoch) {
       if (initializationError != null && rethrowInitializationError) {
         Error.throwWithStackTrace(
           initializationError,
@@ -361,6 +446,7 @@ class OpenFeatureAPI {
         _emitEvent(
           OpenFeatureEventType.PROVIDER_ERROR,
           'Replaced provider shutdown failed: ${previousProvider.name}',
+          epoch: epoch,
           data: error,
           provider: previousProvider,
           providerMetadata: previousProvider.metadata,
@@ -382,11 +468,12 @@ class OpenFeatureAPI {
   /// The identifier defaults to provider metadata for backwards compatibility.
   /// Callers registering same-name instances must supply distinct identifiers.
   String registerProvider(Provider definition, {String? providerId}) {
-    final provider = _adaptProvider(definition);
-    final id = providerId ?? provider.metadata.name;
+    _ensureMutable();
+    final id = providerId ?? definition.metadata.name;
     if (id.isEmpty) {
       throw ArgumentError.value(id, 'providerId', 'must not be empty');
     }
+    final provider = _adaptProvider(definition);
     _lifecycleManager.track(provider);
     final replacedProvider = _providerRegistry[id];
     _providerRegistry[id] = provider;
@@ -445,6 +532,8 @@ class OpenFeatureAPI {
 
   /// Shutdown the current provider after its final binding is removed.
   Future<void> shutdownProvider() async {
+    _ensureMutable();
+    final epoch = _epoch;
     _logger.info('Shutting down provider: ${_provider.name}');
     final provider = _provider;
     final replacement = _ImmediateReadyProvider();
@@ -458,6 +547,7 @@ class OpenFeatureAPI {
       _emitEvent(
         OpenFeatureEventType.PROVIDER_ERROR,
         'Provider shutdown failed: ${provider.name}',
+        epoch: epoch,
         data: e,
         provider: provider,
         providerMetadata: provider.metadata,
@@ -465,7 +555,9 @@ class OpenFeatureAPI {
       );
     }
 
-    if (requestGeneration == _defaultBindingGeneration) {
+    if (!_disposed &&
+        epoch == _epoch &&
+        requestGeneration == _defaultBindingGeneration) {
       _installDefaultProvider(replacement);
     }
   }
@@ -491,7 +583,10 @@ class OpenFeatureAPI {
     return _providerRegistry[boundProviderName] ?? _provider;
   }
 
-  /// Get or create a client
+  /// Creates a client with an optional domain (1.1.6).
+  FeatureClient createClient({String? domain}) => getClient(domain ?? '');
+
+  /// Get or create a client using the legacy positional name.
   FeatureClient getClient(String name, {String? domain}) {
     FeatureProvider resolveProvider() =>
         _resolveProviderForClient(name, domain);
@@ -511,12 +606,19 @@ class OpenFeatureAPI {
       defaultContext: const EvaluationContext(attributes: {}),
       provider: selectedProvider,
       providerResolver: resolveProvider,
-      providerStatusResolver: _lifecycleManager.statusOf,
-      eventScope: _eventDispatcher.scope(
-        provider: resolveProvider,
-        domain: domain ?? name,
-        current: (type) => _currentEvents(resolveProvider(), type),
-      ),
+      providerStatusResolver: (provider) => _disposed || _resetting
+          ? ProviderState.NOT_READY
+          : _lifecycleManager.statusOf(provider),
+      transactionManager: _transactionManager,
+      // Permanent disposal must not make client creation throw (1.1.7).
+      // A detached client still uses the not-ready resolver and safe defaults.
+      eventScope: _disposed
+          ? null
+          : _eventDispatcher.scope(
+              provider: resolveProvider,
+              domain: domain ?? name,
+              current: (type) => _currentEvents(resolveProvider(), type),
+            ),
     );
   }
 
@@ -539,6 +641,7 @@ class OpenFeatureAPI {
       _globalContext?.toEvaluationContext();
 
   void setGlobalContext(OpenFeatureEvaluationContext context) {
+    _ensureMutable();
     _logger.info('Setting global context');
     _globalContext = context;
     _emitEvent(
@@ -550,19 +653,24 @@ class OpenFeatureAPI {
   OpenFeatureEvaluationContext? get globalContext => _globalContext;
 
   void addHooks(List<OpenFeatureHook> hooks) {
+    _ensureMutable();
     _hooks.addAll(hooks);
     _evaluationHooks.addAll(hooks.map(_wrapHook));
   }
 
   /// Adds typed hooks at API scope, including for already-created clients.
-  void addEvaluationHooks(Iterable<Hook> hooks) =>
-      _evaluationHooks.addAll(hooks);
+  void addEvaluationHooks(Iterable<Hook> hooks) {
+    _ensureMutable();
+    _evaluationHooks.addAll(hooks);
+  }
 
   List<OpenFeatureHook> get hooks => List.unmodifiable(_hooks);
 
   /// Registers a typed handler, immediately replaying an applicable state.
-  void addEventHandler(OpenFeatureEventType type, EventHandler handler) =>
-      _apiEvents.add(type, handler);
+  void addEventHandler(OpenFeatureEventType type, EventHandler handler) {
+    _ensureMutable();
+    _apiEvents.add(type, handler);
+  }
 
   void removeEventHandler(OpenFeatureEventType type, EventHandler handler) =>
       _apiEvents.remove(type, handler);
@@ -583,6 +691,7 @@ class OpenFeatureAPI {
       handler.cancel();
 
   void bindClientToProvider(String clientId, String providerId) {
+    _ensureMutable();
     final provider = _providerRegistry[providerId];
     final request = _recordDomainBindingRequest(clientId, providerId);
     if (provider == null) {
@@ -613,6 +722,7 @@ class OpenFeatureAPI {
     String clientId,
     String providerId,
   ) async {
+    _ensureMutable();
     final provider = _providerRegistry[providerId];
     if (provider == null) {
       throw ArgumentError.value(providerId, 'providerId', 'is not registered');
@@ -653,6 +763,7 @@ class OpenFeatureAPI {
     final generation = (_domainBindingGenerations[domain] ?? 0) + 1;
     _domainBindingGenerations[domain] = generation;
     return _DomainBindingRequest(
+      epoch: _epoch,
       domain: domain,
       providerId: providerId,
       generation: generation,
@@ -662,7 +773,8 @@ class OpenFeatureAPI {
   }
 
   void _rollbackDomainBindingRequest(_DomainBindingRequest request) {
-    if (_domainProviderIds[request.domain] != request.providerId ||
+    if (request.epoch != _epoch ||
+        _domainProviderIds[request.domain] != request.providerId ||
         _domainBindingGenerations[request.domain] != request.generation) {
       return;
     }
@@ -680,6 +792,7 @@ class OpenFeatureAPI {
     String providerId,
     FeatureProvider provider,
   ) async {
+    final epoch = _epoch;
     final requestGenerations = <String, int>{
       for (final domain in domains)
         domain: _domainBindingGenerations[domain] ?? 0,
@@ -689,12 +802,16 @@ class OpenFeatureAPI {
       context: evaluationContext,
       domain: requestGenerations.keys.firstOrNull,
     );
+    if (_disposed || epoch != _epoch) {
+      throw StateError('Provider binding was canceled by shutdown.');
+    }
     for (final request in requestGenerations.entries) {
       await _bindDomainProvider(
         request.key,
         providerId,
         provider,
         request.value,
+        epoch,
       );
     }
   }
@@ -704,8 +821,11 @@ class OpenFeatureAPI {
     String providerId,
     FeatureProvider provider,
     int requestGeneration,
+    int epoch,
   ) async {
-    if (_domainProviderIds[domain] != providerId ||
+    if (_disposed ||
+        epoch != _epoch ||
+        _domainProviderIds[domain] != providerId ||
         _domainBindingGenerations[domain] != requestGeneration ||
         !identical(_providerRegistry[providerId], provider)) {
       return;
@@ -740,6 +860,7 @@ class OpenFeatureAPI {
         _emitEvent(
           OpenFeatureEventType.PROVIDER_ERROR,
           'Provider shutdown failed after removal from $domain',
+          epoch: epoch,
           data: error,
           provider: previousProvider,
           providerMetadata: previousProvider.metadata,
@@ -812,8 +933,9 @@ class OpenFeatureAPI {
     DateTime? timestamp,
     List<String>? flagsChanged,
     Map<String, Object> eventMetadata = const {},
+    int? epoch,
   }) {
-    if (_disposed) {
+    if (_disposed || _resetting || (epoch != null && epoch != _epoch)) {
       return;
     }
     final event = OpenFeatureEvent(
@@ -839,7 +961,7 @@ class OpenFeatureAPI {
     FeatureProvider provider,
     OpenFeatureEventType type,
   ) sync* {
-    if (_disposed) return;
+    if (_disposed || _resetting) return;
     final stateType = switch (_lifecycleManager.statusOf(provider)) {
       ProviderState.READY => OpenFeatureEventType.PROVIDER_READY,
       ProviderState.ERROR ||
@@ -876,6 +998,113 @@ class OpenFeatureAPI {
     }
   }
 
+  /// Shuts down every provider and resets this API for reuse (1.6).
+  /// Concurrent calls share one operation; cleanup continues after failures.
+  Future<void> shutdown() {
+    if (_disposed) return _disposeFuture ?? Future<void>.value();
+    return _shutdownFuture ?? _beginShutdown();
+  }
+
+  Future<void> _beginShutdown() {
+    final completer = Completer<void>();
+    _shutdownFuture = completer.future;
+    unawaited(
+      _reset().then(
+        (_) {
+          _shutdownFuture = null;
+          completer.complete();
+        },
+        onError: (Object error, StackTrace stack) {
+          _shutdownFuture = null;
+          completer.completeError(error, stack);
+        },
+      ),
+    );
+    return completer.future;
+  }
+
+  Future<void> _reset() async {
+    _resetting = true;
+    _epoch++;
+    _defaultBindingGeneration++;
+    final manager = _lifecycleManager;
+    final pending = manager.pendingInitializations;
+    final owned = Map<Provider, FeatureProvider>.identity()
+      ..addAll(_ownedProviders);
+    final ownerToken = _ownerToken;
+    _ownerToken = Object();
+    _ownedProviders.clear();
+    _providerAdapters = Expando<FeatureProvider>('provider adapters');
+    _providerRegistry.clear();
+    _domainProviderBindings.clear();
+    _domainProviderIds.clear();
+    _domainBindingGenerations.clear();
+    _requestedDefaultProvider = null;
+    _provider = _ImmediateReadyProvider();
+    _globalContext = null;
+    _hooks.clear();
+    _evaluationHooks.clear();
+    _lastStateEvents.clear();
+    _eventDispatcher.reset();
+    final domainSubscription = _domainSubscription;
+    _domainSubscription = null;
+    final domains = _domainManager;
+    _domainManager = DomainManager();
+    // Observers from the previous API generation are detached. Do not let a
+    // paused compatibility stream hold provider shutdown or API reuse open.
+    unawaited(_providerStreamController.close());
+    unawaited(_domainUpdatesController.close());
+    _providerStreamController = StreamController<FeatureProvider>.broadcast();
+    _domainUpdatesController =
+        StreamController<Map<String, String>>.broadcast();
+    Object? firstError;
+    StackTrace? firstStack;
+    Future<void> attempt(FutureOr<void> Function() operation) async {
+      try {
+        await operation();
+      } catch (error, stack) {
+        firstError ??= error;
+        firstStack ??= stack;
+      }
+    }
+
+    // Start shutdown before awaiting cancellation of ancillary SDK streams.
+    final shutdown = manager.shutdownAll();
+    await Future.wait([
+      attempt(() => shutdown),
+      attempt(() => domainSubscription?.cancel()),
+      attempt(domains.dispose),
+      attempt(_transactionManager.cleanup),
+    ]);
+    for (final entry in owned.entries) {
+      void release() => ProviderOwnership.release(entry.key, ownerToken);
+      final initialization = pending[entry.value];
+      if (initialization == null) {
+        release();
+      } else {
+        // An uncooperative initialize may still mutate its provider object.
+        // Reserve that object until it settles, without blocking API reset.
+        unawaited(
+          initialization.then<void>(
+            (_) => release(),
+            onError: (Object _, StackTrace __) => release(),
+          ),
+        );
+      }
+    }
+    _resetting = false;
+    if (!_disposed) {
+      _lifecycleManager = _newLifecycleManager();
+      _listenToDomains();
+      _requestedDefaultProvider = _provider;
+      _installDefaultProvider(_provider);
+    }
+    if (firstError != null) {
+      Error.throwWithStackTrace(firstError!, firstStack ?? StackTrace.current);
+    }
+  }
+
+  /// Permanent cleanup. Use shutdown when the same API and clients must be reused.
   Future<void> dispose() => _disposeFuture ??= _dispose();
 
   Future<void> _dispose() async {
@@ -891,6 +1120,8 @@ class OpenFeatureAPI {
         firstStack ??= stackTrace;
       }
     }
+
+    await attempt(() => _shutdownFuture ?? _beginShutdown());
 
     final domainSubscription = _domainSubscription;
     _domainSubscription = null;
@@ -927,13 +1158,19 @@ class OpenFeatureAPI {
   }
 
   Stream<FeatureProvider> get providerUpdates =>
-      _providerStreamController.stream;
+      _generationStream(_providerStreamController.stream);
   Stream<OpenFeatureEvent> get events => _apiEvents.events;
   Stream<Map<String, String>> get domainUpdates =>
-      _domainUpdatesController.stream;
+      _generationStream(_domainUpdatesController.stream);
+
+  Stream<T> _generationStream<T>(Stream<T> stream) {
+    final epoch = _epoch;
+    return stream.where((_) => epoch == _epoch);
+  }
 }
 
 class _DomainBindingRequest {
+  final int epoch;
   final String domain;
   final String providerId;
   final int generation;
@@ -941,6 +1178,7 @@ class _DomainBindingRequest {
   final String? previousProviderId;
 
   const _DomainBindingRequest({
+    required this.epoch,
     required this.domain,
     required this.providerId,
     required this.generation,

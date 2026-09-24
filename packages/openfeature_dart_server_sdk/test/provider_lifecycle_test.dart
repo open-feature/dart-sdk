@@ -585,6 +585,10 @@ void main() {
       expect(first.initializeCount, 2);
       expect(identical(api.provider, first), isTrue);
       expect(api.providerStatus, ProviderState.READY);
+      // Reset now propagates provider shutdown too. The rebound provider's
+      // second lifecycle still fails cleanup, but the API must reset anyway.
+      await expectLater(api.shutdown(), throwsStateError);
+      expect(first.shutdownCount, 2);
     });
 
     test('latest concurrent default provider request wins', () async {
