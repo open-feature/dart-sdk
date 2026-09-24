@@ -161,20 +161,33 @@ class EvaluationContext {
   final EvaluationContext? parent;
   final List<TargetingRule> rules;
   final Duration cacheDuration;
+  final Map<String, dynamic>? _providerSnapshot;
   static final _cache = _EvaluationCache();
 
-  /// Legacy const-compatible construction. Caller-owned fields are captured
-  /// when this value crosses an SDK boundary, not at construction time.
-  /// Prefer [EvaluationContext.immutable] for new code.
+  /// Legacy const-compatible construction, retaining caller-owned values.
+  /// Use [EvaluationContext.immutable] to opt into deep snapshot semantics.
   const EvaluationContext({
     this.targetingKey,
     required this.attributes,
     this.parent,
     this.rules = const [],
     this.cacheDuration = const Duration(minutes: 5),
-  });
+  }) : _providerSnapshot = null;
 
-  /// Copies and freezes all evaluation fields, including nested maps/lists.
+  EvaluationContext._snapshot({
+    required this.targetingKey,
+    required this.attributes,
+    required this.parent,
+    required this.rules,
+    required this.cacheDuration,
+  }) : _providerSnapshot = Map<String, dynamic>.unmodifiable({
+         ...?parent?.toProviderContext(),
+         ...attributes,
+       });
+
+  /// Copies and freezes evaluation fields, including nested maps/lists.
+  /// Rule operands outside maps/lists are retained by reference; callers must
+  /// keep custom mutable operands stable for the lifetime of the snapshot.
   /// The map-form `targetingKey` is a compatibility alias for [targetingKey];
   /// an explicit argument takes precedence at the same context level.
   factory EvaluationContext.immutable({
@@ -184,25 +197,34 @@ class EvaluationContext {
     List<TargetingRule> rules = const [],
     Duration cacheDuration = const Duration(minutes: 5),
   }) {
-    final copied = Map<String, dynamic>.of(snapshotContextMap(attributes));
-    final mapKey = copied.remove('targetingKey') as String?;
-    return EvaluationContext(
-      targetingKey: targetingKey ?? mapKey,
-      attributes: Map<String, dynamic>.unmodifiable(copied),
+    final mapKey = attributes['targetingKey'];
+    if (attributes.containsKey('targetingKey') && mapKey is! String) {
+      throw InvalidContextException('attributes.targetingKey must be a string');
+    }
+    final localKey = targetingKey ?? mapKey as String?;
+    final copied = snapshotContextMap({
+      ...attributes,
+      if (localKey != null) 'targetingKey': localKey,
+    });
+    return EvaluationContext._snapshot(
+      targetingKey: localKey,
+      attributes: copied,
       parent: parent?.snapshot(),
-      rules: List<TargetingRule>.unmodifiable(rules),
+      rules: _snapshotRules(rules, HashSet<TargetingRule>.identity(), 'rules'),
       cacheDuration: cacheDuration,
     );
   }
 
   /// Captures a legacy context and its complete parent chain for SDK use.
-  EvaluationContext snapshot() => EvaluationContext.immutable(
-    targetingKey: targetingKey,
-    attributes: attributes,
-    parent: parent,
-    rules: rules,
-    cacheDuration: cacheDuration,
-  );
+  EvaluationContext snapshot() => _providerSnapshot != null
+      ? this
+      : EvaluationContext.immutable(
+          targetingKey: targetingKey,
+          attributes: attributes,
+          parent: parent,
+          rules: rules,
+          cacheDuration: cacheDuration,
+        );
 
   /// Return the complete context in the legacy provider-map representation.
   ///
@@ -210,6 +232,7 @@ class EvaluationContext {
   /// `targetingKey` so providers using the map-based compatibility interface do
   /// not lose the subject of the evaluation.
   Map<String, dynamic> toProviderContext() {
+    if (_providerSnapshot != null) return _providerSnapshot;
     final result = <String, dynamic>{
       ...parent?.toProviderContext() ?? const <String, dynamic>{},
       ...attributes,
@@ -217,20 +240,46 @@ class EvaluationContext {
     if (targetingKey != null) {
       result['targetingKey'] = targetingKey;
     }
-    return snapshotContextMap(result);
+    return result;
   }
 
   /// Get an attribute value, checking parent context if not found
   dynamic getAttribute(String key) {
+    if (key == 'targetingKey' && targetingKey != null) return targetingKey;
+    if (_providerSnapshot != null && attributes.containsKey(key)) {
+      return attributes[key];
+    }
     return attributes[key] ?? parent?.getAttribute(key);
   }
 
   /// Create a new context by merging with another
-  /// Per spec: overriding context targeting key takes precedence
+  /// Explicit keys precede map aliases and inherited keys; the right explicit
+  /// key wins over the left explicit key.
+  /// SDK context levels are merged separately in API -> transaction -> client
+  /// -> invocation order. Mixing in a legacy context retains legacy semantics.
   EvaluationContext merge(EvaluationContext other) {
-    return EvaluationContext.immutable(
-      attributes: {...toProviderContext(), ...other.toProviderContext()},
-      rules: [...rules, ...other.rules],
+    final merged = {...toProviderContext(), ...other.toProviderContext()};
+    String? localKey(EvaluationContext context) =>
+        context.targetingKey ??
+        (context.attributes['targetingKey'] is String
+            ? context.attributes['targetingKey'] as String
+            : null);
+    final key =
+        other.targetingKey ?? targetingKey ?? localKey(other) ?? localKey(this);
+    if (key != null) merged['targetingKey'] = key;
+    final mergedRules = [...rules, ...other.rules];
+    if (_providerSnapshot != null && other._providerSnapshot != null) {
+      return EvaluationContext.immutable(
+        targetingKey: key,
+        attributes: merged,
+        rules: mergedRules,
+        cacheDuration: cacheDuration,
+      );
+    }
+    return EvaluationContext(
+      targetingKey: key,
+      attributes: merged,
+      rules: mergedRules,
       cacheDuration: cacheDuration,
     );
   }
@@ -279,6 +328,15 @@ class EvaluationContext {
     List<TargetingRule>? childRules,
     Duration? childCacheDuration,
   }) {
+    if (_providerSnapshot != null) {
+      return EvaluationContext.immutable(
+        targetingKey: childTargetingKey ?? targetingKey,
+        attributes: childAttributes,
+        parent: this,
+        rules: childRules ?? [],
+        cacheDuration: childCacheDuration ?? cacheDuration,
+      );
+    }
     return EvaluationContext(
       targetingKey: childTargetingKey ?? targetingKey,
       attributes: childAttributes,
@@ -286,5 +344,72 @@ class EvaluationContext {
       rules: childRules ?? [],
       cacheDuration: childCacheDuration ?? cacheDuration,
     );
+  }
+}
+
+List<TargetingRule> _snapshotRules(
+  List<TargetingRule> rules,
+  Set<TargetingRule> ancestors,
+  String path,
+) => List<TargetingRule>.unmodifiable([
+  for (var i = 0; i < rules.length; i++)
+    _snapshotRule(rules[i], ancestors, '$path[$i]'),
+]);
+
+TargetingRule _snapshotRule(
+  TargetingRule rule,
+  Set<TargetingRule> ancestors,
+  String path,
+) {
+  if (!ancestors.add(rule)) {
+    throw InvalidContextException('$path must be acyclic');
+  }
+  try {
+    return TargetingRule(
+      rule.attribute,
+      rule.operator,
+      _snapshotRuleValue(rule.value, '$path.value', HashSet<Object>.identity()),
+      metadata: rule.metadata == null
+          ? null
+          : snapshotContextMap(rule.metadata!, path: '$path.metadata'),
+      subRules: _snapshotRules(rule.subRules, ancestors, '$path.subRules'),
+    );
+  } finally {
+    ancestors.remove(rule);
+  }
+}
+
+// Rule operands have a wider value model than context attributes. Freeze their
+// maps/lists without imposing the attribute scalar or string-key restrictions.
+dynamic _snapshotRuleValue(dynamic value, String path, Set<Object> ancestors) {
+  if (value is! List && value is! Map) return value;
+  if (!ancestors.add(value)) {
+    throw InvalidContextException('$path: structures must be acyclic');
+  }
+  try {
+    if (value is List) {
+      return List<dynamic>.unmodifiable([
+        for (var i = 0; i < value.length; i++)
+          _snapshotRuleValue(value[i], '$path[$i]', ancestors),
+      ]);
+    }
+    final result = <dynamic, dynamic>{};
+    var index = 0;
+    for (final entry in (value as Map).entries) {
+      final key = _snapshotRuleValue(
+        entry.key,
+        '$path.keys[$index]',
+        ancestors,
+      );
+      result[key] = _snapshotRuleValue(
+        entry.value,
+        '$path.values[$index]',
+        ancestors,
+      );
+      index++;
+    }
+    return Map<dynamic, dynamic>.unmodifiable(result);
+  } finally {
+    ancestors.remove(value);
   }
 }

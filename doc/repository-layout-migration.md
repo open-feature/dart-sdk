@@ -3,7 +3,7 @@
 The Dart server and client SDKs now use the same package layout:
 
 ```text
-dart-server-sdk/
+dart-sdk/
 |-- packages/
 |   |-- openfeature_dart_server_sdk/
 |   `-- openfeature_dart_client_sdk/
@@ -21,7 +21,7 @@ Repository-relative consumers must update paths that assumed the server SDK
 was at the repository root. This includes Git dependencies, local path
 dependencies, scripts, and CI jobs.
 
-Before:
+Before (historical layout; not a current dependency configuration):
 
 ```yaml
 dependencies:
@@ -36,7 +36,7 @@ After:
 dependencies:
   openfeature_dart_server_sdk:
     git:
-      url: https://github.com/open-feature/dart-server-sdk.git
+      url: https://github.com/open-feature/dart-sdk.git
       path: packages/openfeature_dart_server_sdk
 ```
 

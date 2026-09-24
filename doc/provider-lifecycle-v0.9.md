@@ -2,7 +2,7 @@
 
 Status: implementation preview
 
-Tracks: [#121](https://github.com/open-feature/dart-server-sdk/issues/121)
+Tracks: [#121](https://github.com/open-feature/dart-sdk/issues/121)
 
 OpenFeature v0.9 makes the provider the source of lifecycle events. The SDK
 updates provider status from those events before it invokes API or client event

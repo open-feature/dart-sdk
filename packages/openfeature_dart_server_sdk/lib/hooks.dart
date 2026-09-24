@@ -3,7 +3,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'client.dart';
 import 'feature_provider.dart';
-import 'src/context_snapshot.dart';
 
 /// Defines the stages in the hook lifecycle
 /// Used internally by the hook manager for execution ordering
@@ -196,7 +195,7 @@ class HookManager {
     HookData? hookData,
     Iterable<Hook> additionalHooks = const [],
   }) async {
-    var currentContext = snapshotContextMap(context ?? const {});
+    var currentContext = Map<String, dynamic>.from(context ?? const {});
     final evaluationHookData = hookData ?? HookData();
     for (final hook in _hooksForStage(stage, additionalHooks)) {
       final hookContext = HookContext(
@@ -224,10 +223,7 @@ class HookManager {
         if (stage == HookStage.BEFORE &&
             contextUpdates != null &&
             contextUpdates.isNotEmpty) {
-          currentContext = snapshotContextMap({
-            ...currentContext,
-            ...contextUpdates,
-          });
+          currentContext = {...currentContext, ...contextUpdates};
         }
       } catch (e) {
         if (stage == HookStage.BEFORE || stage == HookStage.AFTER) {

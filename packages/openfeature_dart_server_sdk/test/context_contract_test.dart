@@ -76,13 +76,13 @@ void main() {
         },
       );
       expect(context.targetingKey, 'explicit');
-      expect(context.attributes.containsKey('targetingKey'), isFalse);
+      expect(context.attributes['targetingKey'], 'explicit');
       expect(context.getAttribute('when'), when);
       expect(context.toProviderContext(), {
         ...context.attributes,
         'targetingKey': 'explicit',
       });
-      expect(context.attributes.length, 6);
+      expect(context.attributes.length, 7);
     });
 
     test('nested fields are copied and frozen through every accessor', () {
@@ -117,7 +117,6 @@ void main() {
       'set': {'x'},
       'non-string map key': {1: 'bad'},
       'cycle': cyclic,
-      'top-level null': null,
     }.entries) {
       test('3.1.2: rejects ${entry.key} deliberately', () {
         expect(
@@ -219,30 +218,27 @@ void main() {
       );
     }
 
-    test(
-      'legacy client/api maps are captured at client construction',
-      () async {
-        final apiData = {'value': 'api-before'};
-        final clientData = {'value': 'client-before'};
-        final provider = CapturingProvider();
-        final client = clientFor(
-          provider,
-          api: EvaluationContext(attributes: {'api': apiData}),
-          client: EvaluationContext(attributes: {'client': clientData}),
-        );
-        addTearDown(client.dispose);
-        apiData['value'] = 'after';
-        clientData['value'] = 'after';
-        await client.getBooleanFlag('flag');
-        expect(provider.contexts['flag'], {
-          'api': {'value': 'api-before'},
-          'client': {'value': 'client-before'},
-        });
-      },
-    );
+    test('explicit snapshots isolate client/api maps', () async {
+      final apiData = {'value': 'api-before'};
+      final clientData = {'value': 'client-before'};
+      final provider = CapturingProvider();
+      final client = clientFor(
+        provider,
+        api: EvaluationContext.immutable(attributes: {'api': apiData}),
+        client: EvaluationContext.immutable(attributes: {'client': clientData}),
+      );
+      addTearDown(client.dispose);
+      apiData['value'] = 'after';
+      clientData['value'] = 'after';
+      await client.getBooleanFlag('flag');
+      expect(provider.contexts['flag'], {
+        'api': {'value': 'api-before'},
+        'client': {'value': 'client-before'},
+      });
+    });
 
     test(
-      'invocation snapshot survives mutation while a before hook awaits',
+      'explicit invocation snapshot survives an awaited before hook',
       () async {
         final entered = Completer<void>();
         final release = Completer<void>();
@@ -264,7 +260,7 @@ void main() {
         final nested = {'tier': 'before'};
         final result = client.getBooleanFlag(
           'flag',
-          context: EvaluationContext(attributes: {'nested': nested}),
+          context: EvaluationContext.immutable(attributes: {'nested': nested}),
         );
         await entered.future;
         nested['tier'] = 'after';
@@ -274,52 +270,56 @@ void main() {
       },
     );
 
-    test(
-      'before-hook returned fields are frozen before subsequent hooks',
-      () async {
-        final nested = {'source': 'first'};
-        final hooks = HookManager()
-          ..addHook(CallbackHook((_) async => {'nested': nested}))
-          ..addHook(
-            CallbackHook((context) async {
-              nested['source'] = 'changed';
-              expect(context.evaluationContext['nested']['source'], 'first');
-              return null;
-            }),
-          );
-        final provider = CapturingProvider();
-        final client = clientFor(provider, hooks: hooks);
-        addTearDown(client.dispose);
-        expect(await client.getBooleanFlag('flag'), isTrue);
-        expect(provider.contexts['flag']!['nested']['source'], 'first');
-        expect(
-          () => provider.contexts['flag']!['nested']['source'] = 'mutated',
-          throwsUnsupportedError,
+    test('before hooks can explicitly snapshot returned fields', () async {
+      final nested = {'source': 'first'};
+      final hooks = HookManager()
+        ..addHook(
+          CallbackHook(
+            (_) async => EvaluationContext.immutable(
+              attributes: {'nested': nested},
+            ).attributes,
+          ),
+        )
+        ..addHook(
+          CallbackHook((context) async {
+            nested['source'] = 'changed';
+            expect(context.evaluationContext['nested']['source'], 'first');
+            return null;
+          }),
         );
-      },
-    );
+      final provider = CapturingProvider();
+      final client = clientFor(provider, hooks: hooks);
+      addTearDown(client.dispose);
+      expect(await client.getBooleanFlag('flag'), isTrue);
+      expect(provider.contexts['flag']!['nested']['source'], 'first');
+      expect(
+        () => provider.contexts['flag']!['nested']['source'] = 'mutated',
+        throwsUnsupportedError,
+      );
+    });
 
-    test(
-      'invalid invocation and hook values default without calling provider',
-      () async {
-        final provider = CapturingProvider();
-        final client = clientFor(provider);
-        addTearDown(client.dispose);
-        final result = await client.getBooleanDetails(
-          'invalid',
-          defaultValue: false,
-          context: EvaluationContext(attributes: {'bad': Object()}),
-        );
-        expect(result.value, isFalse);
-        expect(result.errorCode, ErrorCode.GENERAL);
-        client.addHook(CallbackHook((_) async => {'bad': Object()}));
-        expect(
-          await client.getBooleanFlag('hook', defaultValue: false),
-          isFalse,
-        );
-        expect(provider.contexts, isEmpty);
-      },
-    );
+    test('explicit invalid hook snapshots report INVALID_CONTEXT', () async {
+      final provider = CapturingProvider();
+      final client = clientFor(provider);
+      addTearDown(client.dispose);
+      client.addHook(
+        CallbackHook(
+          (_) async => EvaluationContext.immutable(
+            attributes: {
+              'account': {'bad': Object()},
+            },
+          ).attributes,
+        ),
+      );
+      final result = await client.getBooleanDetails(
+        'hook',
+        defaultValue: false,
+      );
+      expect(result.value, isFalse);
+      expect(result.errorCode, ErrorCode.INVALID_CONTEXT);
+      expect(result.errorMessage, contains('attributes.account.bad'));
+      expect(provider.contexts, isEmpty);
+    });
 
     test(
       '3.3: overlapping transactions retain their own nested values',
@@ -333,18 +333,26 @@ void main() {
         final a = {'role': 'a'};
         final b = {'role': 'b'};
         await Future.wait([
-          manager.withContext('a', {'user': a}, () async {
-            firstEntered.complete();
-            await secondEntered.future;
-            a['role'] = 'mutated';
-            await client.getBooleanFlag('a');
-          }),
-          manager.withContext('b', {'user': b}, () async {
-            await firstEntered.future;
-            secondEntered.complete();
-            b['role'] = 'mutated';
-            await client.getBooleanFlag('b');
-          }),
+          manager.withContext(
+            'a',
+            EvaluationContext.immutable(attributes: {'user': a}).attributes,
+            () async {
+              firstEntered.complete();
+              await secondEntered.future;
+              a['role'] = 'mutated';
+              await client.getBooleanFlag('a');
+            },
+          ),
+          manager.withContext(
+            'b',
+            EvaluationContext.immutable(attributes: {'user': b}).attributes,
+            () async {
+              await firstEntered.future;
+              secondEntered.complete();
+              b['role'] = 'mutated';
+              await client.getBooleanFlag('b');
+            },
+          ),
         ]);
         expect(provider.contexts['a']!['user']['role'], 'a');
         expect(provider.contexts['b']!['user']['role'], 'b');

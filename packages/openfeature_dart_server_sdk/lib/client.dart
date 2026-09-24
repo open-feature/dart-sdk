@@ -75,9 +75,8 @@ class FeatureClient {
     TransactionContextManager? transactionManager,
     Stream<OpenFeatureEvent>? eventStream,
   }) : _hookManager = hookManager,
-       _defaultContext = defaultContext.snapshot(),
-       _apiContext =
-           apiContext?.snapshot() ?? const EvaluationContext(attributes: {}),
+       _defaultContext = defaultContext,
+       _apiContext = apiContext ?? const EvaluationContext(attributes: {}),
        _apiContextResolver = apiContextResolver,
        _fallbackProvider = provider ?? InMemoryProvider({}),
        _providerResolver = providerResolver,
@@ -148,12 +147,12 @@ class FeatureClient {
 
   Map<String, dynamic> _buildEffectiveContext(EvaluationContext? context) {
     final apiContext = _apiContextResolver?.call() ?? _apiContext;
-    return snapshotContextMap({
+    return {
       ...apiContext.toProviderContext(),
       ..._transactionManager.currentContext?.effectiveAttributes ?? {},
       ..._defaultContext.toProviderContext(),
       ...context?.toProviderContext() ?? {},
-    });
+    };
   }
 
   void _ensureProviderCanEvaluate(FeatureProvider evaluationProvider) {
@@ -218,6 +217,8 @@ class FeatureClient {
   ) {
     final errorCode = error is ProviderException
         ? error.code
+        : error is InvalidContextException
+        ? ErrorCode.INVALID_CONTEXT
         : ErrorCode.GENERAL;
     final errorMessage = error is ProviderException
         ? error.message

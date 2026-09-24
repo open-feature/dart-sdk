@@ -268,38 +268,37 @@ browser integration.
 
 ## Repository Migration
 
-Migration follows independently reviewed phases:
+The repository rename to `open-feature/dart-sdk` and relocation of both SDKs
+under `packages/` are complete. The independently reviewed phases are:
 
-1. **Architecture:** approve this architecture, package boundaries, naming,
-   versioning, and the v0.9.0 conformance matrix.
-2. **Package safety and CI:** add package discovery, per-package
-   analysis/tests, per-package publication dry runs, and release routing that
-   preserves existing server releases.
-3. **Additive client beta:** add `packages/openfeature_dart_client_sdk/`, its
-   tests, changelog, documentation, and `0.0.1-beta.1` release path.
-4. **Package alignment:** relocate the server package to
-   `packages/openfeature_dart_server_sdk/`, preserve its release history and
-   tag format, and document the path change for Git consumers.
+1. **Architecture baseline:** this document records the package boundaries,
+   naming, versioning, and v0.9.0 conformance gates.
+2. **Package safety and CI (implemented):** per-package analysis/tests,
+   publication dry runs, and release routing preserve existing server releases.
+3. **Additive client beta (published):** `packages/openfeature_dart_client_sdk/`
+   contains the client package; `0.0.1-beta.1` is published.
+4. **Package alignment (complete):** the server package is under
+   `packages/openfeature_dart_server_sdk/`, with its release history and tag
+   format preserved. Git consumers must use the documented package path.
 5. **Provider and platform validation:** exercise exact client commits or
    immutable prereleases across pure Dart web, Flutter consumers, and
    independently maintained providers.
 6. **Stable client release:** publish `0.0.1` only after the conformance and
    release gates in this document pass.
 
-The established server tag format remains `v0.0.x`; for example, its next
-release may be `v0.0.24`. Client tags include the component to avoid ambiguity,
+The established server tag format remains `v0.0.x`; for example, its current
+published release is `v0.0.24`. Client tags include the component to avoid ambiguity,
 for example `openfeature_dart_client_sdk-v0.0.1-beta.1` and
 `openfeature_dart_client_sdk-v0.0.1`.
 
-Automated pub.dev publishing can update only an existing package. The first
-client prerelease must therefore be published manually from the exact release
-tag by an authorized uploader, transferred to the appropriate verified
-publisher, and then configured for tag-bound OIDC publishing.
+The client package bootstrap is complete. Both packages are configured for
+tag-bound OIDC publishing from `open-feature/dart-sdk`; see
+[the client release guide](client-sdk-release.md) for the publication process.
 
 The repository layout is:
 
 ```text
-dart-server-sdk/
+dart-sdk/
 |-- doc/
 |-- packages/
 |   |-- openfeature_dart_server_sdk/
@@ -309,8 +308,8 @@ dart-server-sdk/
 `-- pubspec.yaml                # non-publishable repository tooling package
 ```
 
-Renaming the repository to `open-feature/dart-sdk` remains an optional later
-decision and is not part of this package-layout change.
+The completed repository rename and package relocation do not establish full
+v0.9 conformance or satisfy the remaining stable-client release gates.
 
 ## Provider Validation
 

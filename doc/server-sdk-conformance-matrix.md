@@ -1,7 +1,7 @@
 # Dart server SDK OpenFeature v0.9 conformance matrix
 
 Status: maintainer proposal
-Tracks: [#121](https://github.com/open-feature/dart-server-sdk/issues/121)
+Tracks: [#121](https://github.com/open-feature/dart-sdk/issues/121)
 Specification baseline: [OpenFeature v0.9.0](https://github.com/open-feature/spec/releases/tag/v0.9.0)
 Implementation baseline: lifecycle work proposed in #131
 
@@ -25,9 +25,9 @@ The conformance work must preserve:
 - invocation-scoped dynamic context;
 - public compatibility through adapters and deprecations where practical.
 
-Moving the server package under a future monorepo `packages/` directory and
-renaming this repository to `dart-sdk` remain later compatibility changes. They
-must not be bundled into the v0.9 behavioral implementation.
+The repository is now `open-feature/dart-sdk`, and both SDKs use the
+`packages/` layout. Those migration changes are complete and independent of
+the remaining v0.9 behavioral implementation.
 
 ## Legend
 
@@ -50,7 +50,7 @@ evaluation behavior before wider API cleanup.
 | Instance-aware provider binding | 1.1.2.1-1.1.2.3; 1.1.3; 1.1.8.1; 1.8.4 | Conformant for P0: the lifecycle manager tracks object identity independently from metadata name, reference-counts bindings, isolates same-name instances, and shuts a provider down only after its final binding is removed. Latest concurrent requests win, failed domain requests restore the prior pending binding, and domain-scoped providers reject a second domain. | Carry the focused replacement-race/concurrency evidence into the requirement-indexed P2 suite. | Passing same-name isolation, final-binding shutdown, concurrent default/domain replacement, failed-request rollback, legacy name-first activation, and domain-scoped rejection tests. | Provider names remain metadata; explicit provider IDs supply registry identity without removing legacy name-first binding yet. |
 | Dynamic client rebinding | 1.1.3; 1.1.6-1.1.8; 1.2.2; 5.1.2-5.1.3 | Partial: existing clients now resolve current default/domain provider and status dynamically, including later provider replacement. Client metadata still lacks the immutable v0.9 domain field and event registration is not yet normalized. | Add immutable domain metadata and finish typed, dynamically isolated client events. | Existing-client replacement tests pass; metadata immutability, fallback, concurrent replacement, and typed-event gates remain. | Keep current client factory signatures temporarily; add domain metadata with a compatibility alias for the legacy name. |
 | Evaluation defaults and failure contract | 1.3.1.1-1.3.4; 1.4.1.1-1.4.15.1; 2.2.1-2.2.10 | Partial: provider, before/after hook, and context-resolution failures are contained; `NOT_READY`/`FATAL` short-circuit without provider resolution; detailed errors preserve codes; absent flag metadata is now an immutable empty record. Evaluation methods still expose implicit false/empty defaults, and per-type error coverage is incomplete. | Require an application default on every simple and detailed evaluation, then complete per-type type-mismatch/parse/general failure evidence without reintroducing escaping exceptions. | Passing focused failure/default tests for boolean evaluation; required-signature and complete per-type gates remain. | Introduce required-default signatures through a staged API or new conformant methods, then deprecate implicit-default overloads. |
-| Evaluation context integrity | 3.1.1-3.1.4; 3.2.1.1; 3.2.3 | Implemented at SDK boundaries: `EvaluationContext.immutable` validates and deeply snapshots evaluation fields; the old API context is a canonical-context adapter. Global, transaction, client, invocation and before-hook snapshots retain complete parent fields and targeting precedence. | Review the staged legacy-constructor policy in #159; complete hook API/order (#161) and experimental propagator lifecycle/independent API isolation (#163). Legacy const construction is not immediately immutable and remains explicitly outside that claim. | `context_regression_test.dart` reproduces three prior failures; `context_contract_test.dart` covers field types/access, deep copies, all five levels, hook-await mutation, late global replacement and overlapping transactions. | Keep the const constructor and positional-map adapter; add immutable construction and canonical global setters. See the package context migration guide before deprecation/removal. |
+| Evaluation context | 3.1.1-3.1.4; 3.2.1.1; 3.2.3 | Partial: explicit `EvaluationContext.immutable`, `.snapshot()` and `setEvaluationContext` capture nested fields, parents and rules. Legacy APIs retain their prior value/collection behavior; they do not enforce deep immutability. Both paths preserve complete parent fields and local targeting-key precedence. | Review a versioned migration before imposing strict validation or collection normalization on legacy APIs. Propagator lifecycle and complete hooks remain separate work. | `context_review_regression_test.dart` covers legacy value, provider and targeting compatibility; `context_contract_test.dart` covers opt-in snapshots and five context levels. | Keep the const constructor and positional-map adapter. See the package context migration guide for opt-in validation, collection normalization and legacy aliasing. |
 
 ## P1: complete the public contract
 
@@ -101,8 +101,8 @@ evaluation.
 4. Normalize hooks, events, tracking, shutdown, and independent API instances.
 5. Add the complete requirement-indexed suite and migration guide.
 6. Publish a server SDK prerelease for external provider validation.
-7. Treat monorepo relocation and repository renaming as later, independently
-   reversible changes.
+7. Preserve the completed package relocation and repository rename as the
+   baseline; they do not imply completion of the conformance work above.
 
 Each implementation PR should reference #121, identify the matrix rows it
 closes, and avoid mixing client-SDK or repository-migration changes into the
