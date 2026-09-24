@@ -8,6 +8,7 @@ import 'hooks.dart';
 import 'open_feature_event.dart';
 import 'transaction_context.dart';
 import 'src/context_snapshot.dart';
+import 'src/event_dispatcher.dart';
 
 /// Client metadata for identification
 class ClientMetadata {
@@ -65,8 +66,8 @@ class FeatureClient {
   final ProviderState Function(FeatureProvider)? _providerStatusResolver;
   final TransactionContextManager _transactionManager;
   final ClientMetrics _metrics = ClientMetrics();
-  final StreamController<OpenFeatureEvent> _eventController =
-      StreamController<OpenFeatureEvent>.broadcast();
+  late final EventScope _eventScope;
+  EventDispatcher? _ownedEventDispatcher;
   StreamSubscription<OpenFeatureEvent>? _eventSubscription;
 
   FeatureClient({
@@ -81,6 +82,7 @@ class FeatureClient {
     ProviderState Function(FeatureProvider)? providerStatusResolver,
     TransactionContextManager? transactionManager,
     Stream<OpenFeatureEvent>? eventStream,
+    EventScope? eventScope,
   }) : _hookManager = hookManager,
        _apiHooksResolver = apiHooksResolver,
        _defaultContext = defaultContext,
@@ -90,6 +92,33 @@ class FeatureClient {
        _providerResolver = providerResolver,
        _providerStatusResolver = providerStatusResolver,
        _transactionManager = transactionManager ?? TransactionContextManager() {
+    if (eventScope != null) {
+      _eventScope = eventScope;
+    } else {
+      final dispatcher = _ownedEventDispatcher = EventDispatcher();
+      _eventScope = dispatcher.scope(
+        provider: () => this.provider,
+        domain: metadata.domain,
+        legacyMetadataMatching: providerResolver == null,
+        current: (type) sync* {
+          final currentType = switch (providerStatus) {
+            ProviderState.READY => OpenFeatureEventType.PROVIDER_READY,
+            ProviderState.ERROR || ProviderState.FATAL =>
+              OpenFeatureEventType.PROVIDER_ERROR,
+            ProviderState.STALE => OpenFeatureEventType.PROVIDER_STALE,
+            ProviderState.SYNCHRONIZING => OpenFeatureEventType.PROVIDER_RECONCILING,
+            _ => null,
+          };
+          if (type == currentType) {
+            yield OpenFeatureEvent(type, 'Current provider state',
+                provider: this.provider,
+                providerMetadata: this.provider.metadata,
+                errorCode: providerStatus == ProviderState.FATAL
+                    ? ErrorCode.PROVIDER_FATAL : null);
+          }
+        },
+      );
+    }
     if (_providerResolver == null &&
         providerStatus == ProviderState.NOT_READY) {
       unawaited(
@@ -104,37 +133,29 @@ class FeatureClient {
     }
 
     if (eventStream != null) {
-      _eventSubscription = eventStream.listen(_forwardEvent);
+      _eventSubscription = eventStream.listen((event) {
+        _ownedEventDispatcher?.emit(event);
+      });
     }
   }
 
-  void _forwardEvent(OpenFeatureEvent event) {
-    final currentProvider = provider;
-    if (event.provider != null) {
-      if (identical(event.provider, currentProvider)) {
-        _eventController.add(event);
-      }
-      return;
-    }
+  Stream<OpenFeatureEvent> get events => _eventScope.events;
 
-    // Provider names are not unique. A dynamically bound client must not
-    // infer an event's source from metadata when no provider identity exists.
-    if (_providerResolver != null && event.providerMetadata != null) {
-      return;
-    }
+  void addEventHandler(OpenFeatureEventType type, EventHandler handler) =>
+      _eventScope.add(type, handler);
 
-    final eventProvider = event.providerMetadata?.name;
-    if (eventProvider == null ||
-        eventProvider == currentProvider.metadata.name) {
-      _eventController.add(event);
-    }
-  }
+  void removeEventHandler(OpenFeatureEventType type, EventHandler handler) =>
+      _eventScope.remove(type, handler);
 
-  Stream<OpenFeatureEvent> get events => _eventController.stream;
-
+  @Deprecated('Use addEventHandler(type, handler) for typed lifecycle events.')
   StreamSubscription<OpenFeatureEvent> addHandler(
     void Function(OpenFeatureEvent event) handler,
-  ) => events.listen(handler);
+  ) => events.listen((event) {
+    unawaited(Future<void>.sync(() => handler(event)).catchError(
+      (Object error, StackTrace stack) =>
+          _logger.warning('Event handler failed', error, stack),
+    ));
+  });
 
   Future<void> removeHandler(StreamSubscription<OpenFeatureEvent> handler) =>
       handler.cancel();
@@ -573,7 +594,8 @@ class FeatureClient {
 
   Future<void> dispose() async {
     await _eventSubscription?.cancel();
-    await _eventController.close();
+    await _eventScope.close();
+    await _ownedEventDispatcher?.close();
   }
 }
 

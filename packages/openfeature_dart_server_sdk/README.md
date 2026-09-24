@@ -1,4 +1,7 @@
 <!-- markdownlint-disable MD033 -->
+For typed provider event registration, late-handler behavior and compatibility
+with existing streams, see [the event migration guide](doc/events-migration.md).
+
 <!-- x-hide-in-docs-start -->
 <p align="center">
   <picture>
