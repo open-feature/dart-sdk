@@ -15,10 +15,10 @@ moving vendor transport into core.
 | Release input | Required evidence | Current decision |
 | --- | --- | --- |
 | SDK reference | All ten cases on VM and real Chrome | Harness validation only |
-| IntelliToggle | Canonical provider adapter, exact SDK/provider receipts, transport scenarios | Existing provider tests are input; shared-contract receipt pending |
+| IntelliToggle | Canonical provider adapter, exact SDK/provider receipts, transport scenarios | [Canonical MR62](https://gitlab.com/dartapps/apps/intellitoggle/openfeature-provider-intellitoggle/-/merge_requests/62) provides the first candidate; native review and hosted CI remain required |
 | Second independent provider | Same contract and independently maintained canonical implementation | Participation and receipt pending; Datadog is not confirmed |
 | Dart/Flutter/platform consumers | Exact SDK/provider/framework versions, resolved dependencies, web build/runtime and native device records | Distinguish each platform; no native mobile claim from Chrome |
-| Static-context requirements | Each applicable v0.9 MUST mapped and reviewed; SHOULD deviations explained | Existing matrix remains a review gate |
+| Static-context requirements | Each applicable v0.9 MUST mapped and reviewed; SHOULD deviations explained | [Executable inventory](client-conformance-evidence.md) exposes proposed mappings and explicit gaps; semantic review remains required |
 | Package/release safety | Both SDKs/tooling pass; archive, immutable tag and pub.dev identity verified | Independent routing retained; no stable publication authorized by a reference pass |
 
 For #167, maintainers must review the shared receipts and complete the
