@@ -5,6 +5,7 @@ import 'feature_provider.dart';
 import 'hooks.dart';
 import 'open_feature_event.dart';
 import 'transaction_context.dart';
+import 'src/context_snapshot.dart';
 
 /// Client metadata for identification
 class ClientMetadata {
@@ -219,6 +220,8 @@ class FeatureClient {
   ) {
     final errorCode = error is ProviderException
         ? error.code
+        : error is InvalidContextException
+        ? ErrorCode.INVALID_CONTEXT
         : ErrorCode.GENERAL;
     final errorMessage = error is ProviderException
         ? error.message

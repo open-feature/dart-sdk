@@ -9,6 +9,18 @@ contracts. It provides synchronous typed evaluation, event handlers, hooks,
 ordered context changes, and an in-memory provider. Later beta changes will
 complete the remaining conformance work before the first stable release.
 
+## Install
+
+The published beta requires Dart 3.12.2 or later within Dart 3.x. Flutter
+applications need a Flutter release that includes a compatible Dart SDK.
+
+```yaml
+dependencies:
+  openfeature_dart_client_sdk: ^0.0.1-beta.1
+```
+
+Run `dart pub get`, or `flutter pub get` in a Flutter application.
+
 ## Use the client
 
 ```dart
@@ -66,9 +78,10 @@ active API/domain binding. Use a separate provider instance for each static
 context. Providers that resolve entirely from the context passed to each
 resolver and do not reconcile cached state may be shared across domains.
 
-The package currently lives in the server SDK repository while the project
-validates the beta. Its package name and Dart import path are independent; a
-later repository move will be announced with migration guidance.
+The server and client packages share the
+[`open-feature/dart-sdk`](https://github.com/open-feature/dart-sdk) repository.
+The repository rename preserves this package name, Dart imports, and independent
+client releases.
 
 ## Scope
 
@@ -85,5 +98,5 @@ dart tool/stage_client_package.dart --dry-run
 ```
 
 See the
-[beta release procedure](https://github.com/open-feature/dart-server-sdk/blob/main/doc/client-sdk-release.md)
+[beta release procedure](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-release.md)
 for the first-publication bootstrap and later automated prereleases.

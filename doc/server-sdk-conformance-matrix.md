@@ -1,7 +1,7 @@
 # Dart server SDK OpenFeature v0.9 conformance matrix
 
 Status: maintainer proposal
-Tracks: [#121](https://github.com/open-feature/dart-server-sdk/issues/121)
+Tracks: [#121](https://github.com/open-feature/dart-sdk/issues/121)
 Specification baseline: [OpenFeature v0.9.0](https://github.com/open-feature/spec/releases/tag/v0.9.0)
 Implementation baseline: lifecycle work proposed in #131
 
@@ -25,10 +25,9 @@ The conformance work must preserve:
 - invocation-scoped dynamic context;
 - public compatibility through adapters and deprecations where practical.
 
-The repository consolidation is complete: the server and client packages live
-under `packages/` and are independently versioned. Package identity and import
-paths are unchanged. Repository renaming remains a separate compatibility
-decision and is not part of the v0.9 behavioral implementation.
+The repository is now `open-feature/dart-sdk`, and both SDKs use the
+`packages/` layout. Those migration changes are complete and independent of
+the remaining v0.9 behavioral implementation.
 
 ## Legend
 
@@ -51,7 +50,7 @@ evaluation behavior before wider API cleanup.
 | Instance-aware provider binding | 1.1.2.1-1.1.2.3; 1.1.3; 1.1.8.1; 1.8.4 | Conformant for P0: the lifecycle manager tracks object identity independently from metadata name, reference-counts bindings, isolates same-name instances, and shuts a provider down only after its final binding is removed. Latest concurrent requests win, failed domain requests restore the prior pending binding, and domain-scoped providers reject a second domain. | Carry the focused replacement-race/concurrency evidence into the requirement-indexed P2 suite. | Passing same-name isolation, final-binding shutdown, concurrent default/domain replacement, failed-request rollback, legacy name-first activation, and domain-scoped rejection tests. | Provider names remain metadata; explicit provider IDs supply registry identity without removing legacy name-first binding yet. |
 | Dynamic client rebinding | 1.1.3; 1.1.6-1.1.8; 1.2.2; 5.1.2-5.1.3 | Partial: existing clients resolve current default/domain providers and status dynamically. Immutable domain metadata now preserves the requested binding through fallback and replacement; metadata attributes are defensively copied. Typed event registration remains open. | Finish typed, dynamically isolated client events in #162 and the remaining client-creation contract. | `required_defaults_test.dart` covers requested domain across default fallback/replacement and explicit domain binding; `evaluation_foundations_test.dart` covers immutable attributes. Existing replacement/race tests remain passing. | Existing name-based factory remains; explicit domain takes precedence for metadata.domain while legacy metadata.name is retained. |
 | Evaluation defaults and failure contract | 1.3.1.1-1.3.4; 1.4.1.1-1.4.15.1; 2.2.1-2.2.10 | Partial: new `get*Value` / `get*EvaluationDetails` methods require application defaults for all five types. Provider-reported errors normalize to the application default; required-default methods contain provider lookup and evaluation failures. Legacy optional-default methods remain during migration. | Evaluation options remain #161; provider-surface and complete requirement-indexed gates remain #160/#165. This row is not a full v0.9 conformance claim. | `required_defaults_test.dart`: five types, value/details, general/type-mismatch/thrown errors, NOT_READY/FATAL, failed provider resolution and all-ten-method negative/legacy analyzer fixtures. `evaluation_foundations_test.dart`: previously failing remote-error fallback reproduction. | Additive methods; staged deprecation/removal requires separate maintainer review. See `packages/openfeature_dart_server_sdk/doc/evaluation-defaults-migration.md`. |
-| Evaluation context integrity | 3.1.1-3.1.4; 3.2.1.1; 3.2.3 | Partial: targeting keys now survive parent/context merging and legacy provider-map adaptation; merge precedence is global -> transaction -> client -> invocation -> before hook; existing clients observe later global context replacement; global attributes are defensively copied. Duplicate context types, allowed value validation, and deep immutability remain. | Establish one canonical immutable context/value model, validate allowed types, and add a compatibility path from the duplicate API context type. | Passing targeting-key, all-level precedence, late global context, and transaction-isolation tests; allowed-type and deep-immutability gates remain. | Adapt/deprecate the duplicate context type and preserve source-compatible constructors where possible. |
+| Evaluation context | 3.1.1-3.1.4; 3.2.1.1; 3.2.3 | Partial: explicit `EvaluationContext.immutable`, `.snapshot()` and `setEvaluationContext` capture nested fields, parents and rules. Legacy APIs retain their prior value/collection behavior; they do not enforce deep immutability. Both paths preserve complete parent fields and local targeting-key precedence. | Review a versioned migration before imposing strict validation or collection normalization on legacy APIs. Propagator lifecycle and complete hooks remain separate work. | `context_review_regression_test.dart` covers legacy value, provider and targeting compatibility; `context_contract_test.dart` covers opt-in snapshots and five context levels. | Keep the const constructor and positional-map adapter. See the package context migration guide for opt-in validation, collection normalization and legacy aliasing. |
 
 ## P1: complete the public contract
 
@@ -102,8 +101,8 @@ evaluation.
 4. Normalize hooks, events, tracking, shutdown, and independent API instances.
 5. Add the complete requirement-indexed suite and migration guide.
 6. Publish a server SDK prerelease for external provider validation.
-7. Preserve the completed monorepo layout and independent release paths;
-   consider any repository renaming separately.
+7. Preserve the completed package relocation and repository rename as the
+   baseline; they do not imply completion of the conformance work above.
 
 Each implementation PR should reference #121, identify the matrix rows it
 closes, and avoid mixing client-SDK or repository-migration changes into the

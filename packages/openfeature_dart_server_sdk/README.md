@@ -16,13 +16,14 @@ remain supported during migration. See the
 This is an incremental v0.9 improvement, not a full conformance claim.
 
 <!-- x-hide-in-docs-end -->
+
 <p align="center" class="github-badges">
   <a href="https://github.com/open-feature/spec/releases/tag/v0.8.0">
     <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.8.0&color=yellow&style=for-the-badge" />
   </a>
   <!-- x-release-please-start-version -->
-  <a href="https://github.com/open-feature/dart-server-sdk/releases/tag/v0.0.24">
-    <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.0.24&color=blue&style=for-the-badge" />
+  <a href="https://github.com/open-feature/dart-sdk/releases/tag/v0.0.25">
+    <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.0.25&color=blue&style=for-the-badge" />
   </a>
   <!-- x-release-please-end -->
   <a href="https://dart.dev/">
@@ -37,23 +38,28 @@ This is an incremental v0.9 improvement, not a full conformance claim.
   <a href="https://openfeature.dev/docs/reference/intro">
     <img alt="API Reference" src="https://img.shields.io/badge/API-reference-blue.svg?style=for-the-badge" />
   </a>
-  <a href="https://codecov.io/gh/open-feature/dart-server-sdk">
-    <img alt="Code Coverage" src="https://codecov.io/gh/open-feature/dart-server-sdk/branch/main/graph/badge.svg?token=FZ17BHNSU5" />
+  <a href="https://codecov.io/gh/open-feature/dart-sdk">
+    <img alt="Code Coverage" src="https://codecov.io/gh/open-feature/dart-sdk/branch/main/graph/badge.svg?token=FZ17BHNSU5" />
   </a>
-  <a href="https://github.com/open-feature/dart-server-sdk/actions/workflows/validation-workflow.yml">
-    <img alt="GitHub CI Status" src="https://github.com/open-feature/dart-server-sdk/actions/workflows/validation-workflow.yml/badge.svg?style=for-the-badge" />
+  <a href="https://github.com/open-feature/dart-sdk/actions/workflows/validation-workflow.yml">
+    <img alt="GitHub CI Status" src="https://github.com/open-feature/dart-sdk/actions/workflows/validation-workflow.yml/badge.svg?style=for-the-badge" />
   </a>
 </p>
 <!-- x-hide-in-docs-start -->
 
 Warning: this repository is still an in-progress implementation of the
-`dart-server-sdk`.
+`dart-sdk`.
 
 [OpenFeature](https://openfeature.dev) is an open specification that provides a
 vendor-agnostic, community-driven API for feature flagging that works with your
 favorite feature flag management tool.
 
 <!-- x-hide-in-docs-end -->
+
+Immutable evaluation contexts are available as an explicit opt-in. Legacy context
+APIs retain their existing value and collection behavior. See the
+[context migration guide](https://github.com/open-feature/dart-sdk/blob/main/packages/openfeature_dart_server_sdk/doc/evaluation-context-migration.md)
+for snapshot semantics and the remaining conformance scope.
 
 ## Repository source and client SDK beta
 
@@ -72,14 +78,14 @@ Dart VM, Dart web, and Flutter consumers. The two packages remain independently
 versioned and published.
 
 - See the
-  [client package](https://github.com/open-feature/dart-server-sdk/tree/main/packages/openfeature_dart_client_sdk).
+  [client package](https://github.com/open-feature/dart-sdk/tree/main/packages/openfeature_dart_client_sdk).
 - Read the
-  [client SDK architecture](https://github.com/open-feature/dart-server-sdk/blob/main/doc/client-sdk-architecture.md).
+  [client SDK architecture](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-architecture.md).
 - Review the
-  [client SDK conformance matrix](https://github.com/open-feature/dart-server-sdk/blob/main/doc/client-sdk-conformance-matrix.md).
+  [client SDK conformance matrix](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-conformance-matrix.md).
 - Read the
-  [client beta release procedure](https://github.com/open-feature/dart-server-sdk/blob/main/doc/client-sdk-release.md).
-- Follow [issue #117](https://github.com/open-feature/dart-server-sdk/issues/117)
+  [client beta release procedure](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-release.md).
+- Follow [issue #117](https://github.com/open-feature/dart-sdk/issues/117)
   for implementation progress.
 
 ## Quick start
@@ -98,7 +104,7 @@ Dart language version: [3.12.2](https://dart.dev/get-dart/archive)
 
 ```yaml
 dependencies:
-  openfeature_dart_server_sdk: ^0.0.24
+  openfeature_dart_server_sdk: ^0.0.25
 ```
 
 <!-- x-release-please-end -->
@@ -687,13 +693,13 @@ void main() {
 ## Contributing
 
 Interested in contributing? Take a look at the
-[CONTRIBUTING](https://github.com/open-feature/dart-server-sdk/blob/main/CONTRIBUTING.md)
+[CONTRIBUTING](https://github.com/open-feature/dart-sdk/blob/main/CONTRIBUTING.md)
 guide.
 
 ### Thanks to everyone that has already contributed
 
-<a href="https://github.com/open-feature/dart-server-sdk/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=open-feature/dart-server-sdk" alt="Pictures of the folks who have contributed to the project" />
+<a href="https://github.com/open-feature/dart-sdk/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=open-feature/dart-sdk" alt="Pictures of the folks who have contributed to the project" />
 </a>
 
 Made with [contrib.rocks](https://contrib.rocks).
