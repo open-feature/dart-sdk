@@ -1,8 +1,10 @@
 # Required evaluation defaults and client metadata
 
 This additive migration addresses issue #158 against OpenFeature v0.9.0.
-It does not claim complete server conformance: evaluation options and hook
-normalization remain tracked in #161, with final evidence in #165.
+It does not claim complete server conformance. Implemented evaluation options
+and hook normalization are documented in [the hooks guide](hooks-migration.md);
+[conformance evidence](../../../doc/server-conformance-evidence.md) tracks
+the remaining review and release gates in #165.
 
 ## New application code
 

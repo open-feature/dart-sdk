@@ -67,7 +67,8 @@ including the existing `InMemoryProvider`, still require a new provider object.
 API retains the legacy `TransactionContextManager()` singleton for compatibility;
 isolated APIs use independent managers and zone keys. Shutdown invalidates active
 async transaction scopes as well as the calling zone, without clearing another
-API's scopes. Expanded propagator registration/removal and tracking remain #164.
+API's scopes. Propagator registration/removal and tracking are documented in
+[tracking and transaction propagation](tracking-and-transactions.md).
 
 ## Existing cleanup APIs
 

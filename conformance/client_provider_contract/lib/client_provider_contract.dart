@@ -263,7 +263,13 @@ void runClientProviderContract({
           );
           await held.started;
           final replacement = await createFixture();
-          addTearDown(replacement.close);
+          addTearDown(() async {
+            try {
+              await api.shutdown();
+            } finally {
+              await replacement.close();
+            }
+          });
           replacement.setFlags('a', {'identity': 'replacement'});
           await api.setProviderAndWait(replacement.provider);
           held.release();

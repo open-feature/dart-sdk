@@ -962,7 +962,9 @@ class OpenFeatureAPI {
     OpenFeatureEventType type,
   ) sync* {
     if (_disposed || _resetting) return;
-    final stateType = switch (_lifecycleManager.statusOf(provider)) {
+    final status = _lifecycleManager.trackedStatusOf(provider);
+    if (status == null) return;
+    final stateType = switch (status) {
       ProviderState.READY => OpenFeatureEventType.PROVIDER_READY,
       ProviderState.ERROR ||
       ProviderState.FATAL => OpenFeatureEventType.PROVIDER_ERROR,
@@ -976,13 +978,10 @@ class OpenFeatureAPI {
         ? last!
         : OpenFeatureEvent(
             type,
-            'Provider ${provider.metadata.name} is ${_lifecycleManager.statusOf(provider).name}',
+            'Provider ${provider.metadata.name} is ${status.name}',
             provider: provider,
             providerMetadata: provider.metadata,
-            errorCode: _errorCodeFrom(
-              null,
-              state: _lifecycleManager.statusOf(provider),
-            ),
+            errorCode: _errorCodeFrom(null, state: status),
           );
   }
 

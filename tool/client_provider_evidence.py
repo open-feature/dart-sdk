@@ -5,6 +5,36 @@ import json
 import re
 import shutil
 import subprocess
+from urllib.parse import urljoin, urlparse, unquote
+
+
+def verify_package_paths(config_path, root):
+    """Verify the SDK and harness actually loaded by the provider's tests."""
+    config = json.loads(config_path.read_text(encoding='utf-8'))
+
+    def resolves_to(name, expected):
+        package = next((p for p in config['packages'] if p['name'] == name), None)
+        if package is None:
+            return False
+        uri = urlparse(urljoin(config_path.as_uri(), package['rootUri']))
+        if uri.scheme != 'file' or uri.netloc not in ('', 'localhost'):
+            return False
+        path_text = unquote(uri.path)
+        if re.match(r'^/[A-Za-z]:/', path_text):
+            path_text = path_text[1:]
+        return Path(path_text).resolve() == expected.resolve()
+
+    return {
+        'sdk_path_verified': resolves_to('openfeature_dart_client_sdk',
+            root/'packages/openfeature_dart_client_sdk'),
+        'contract_path_verified': resolves_to('openfeature_client_provider_contract',
+            root/'conformance/client_provider_contract'),
+    }
+
+
+def receipt_passes(receipt, platform):
+    return (receipt['all_scenarios_passed'] and receipt['sdk_path_verified']
+        and receipt['contract_path_verified'] and receipt['platforms'] == [platform])
 
 
 def summarize(output):
@@ -59,7 +89,7 @@ def run():
         'dart':subprocess.check_output([dart,'--version'],encoding='utf-8').strip(),
         'command':command[1:], 'process_exit_code':result.returncode, **summary,
         'native_mobile_runtime_tested':False, 'independent_provider_gate_satisfied':False,
-        'remaining_review':'Verify the dependency override resolves this SDK checkout, canonical provider provenance, independent ownership, vendor transport/token scenarios, declared platform evidence and maintainer acceptance. A reference receipt never counts as an independent provider.'}
+        'remaining_review':'Verify canonical provider provenance, independent ownership, vendor transport/token scenarios, declared platform evidence and maintainer acceptance. SDK and harness package paths are checked below. A reference receipt never counts as an independent provider.'}
     deps = subprocess.run([dart,'pub','deps','--json'], cwd=options.working_directory, encoding='utf-8',stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     if deps.returncode:
         raise RuntimeError(deps.stderr)
@@ -70,20 +100,11 @@ def run():
     config_path = next((path for path in configs if path.exists()), None)
     if config_path is None:
         raise RuntimeError('Cannot verify package resolution')
-    from urllib.parse import urljoin, urlparse, unquote
-    config = json.loads(config_path.read_text())
-    sdk = next(package for package in config['packages'] if package['name'] == 'openfeature_dart_client_sdk')
-    uri = urlparse(urljoin(config_path.as_uri(), sdk['rootUri']))
-    path_text = unquote(uri.path)
-    if re.match(r'^/[A-Za-z]:/', path_text):
-        path_text = path_text[1:]
-    resolved_sdk = Path(path_text).resolve()
-    expected_sdk = (root/'packages/openfeature_dart_client_sdk').resolve()
-    receipt['sdk_path_verified'] = resolved_sdk == expected_sdk
+    receipt.update(verify_package_paths(config_path, root))
     receipt['all_scenarios_passed'] = receipt['all_scenarios_passed'] and result.returncode == 0
     (out/'receipt.json').write_text(json.dumps(receipt, indent=2)+'\n', encoding='utf-8')
-    print(json.dumps({key:receipt[key] for key in ('classification','all_scenarios_passed','platforms','sdk_path_verified','independent_provider_gate_satisfied')}))
-    return 0 if receipt['all_scenarios_passed'] and receipt['sdk_path_verified'] and receipt['platforms'] == [options.platform] else 1
+    print(json.dumps({key:receipt[key] for key in ('classification','all_scenarios_passed','platforms','sdk_path_verified','contract_path_verified','independent_provider_gate_satisfied')}))
+    return 0 if receipt_passes(receipt, options.platform) else 1
 
 
 if __name__ == '__main__':

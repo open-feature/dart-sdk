@@ -38,6 +38,10 @@ class ResolverProviderAdapter
           : ProviderState.READY;
 
   bool get requiresInitialization => delegate is ProviderInitialization;
+
+  /// A new manager record starts a distinct lifecycle, including providers
+  /// without initialization. Within that lifecycle shutdown stays idempotent.
+  void beginLifecycle() => _shutdownFuture = null;
   List<Hook> get providerHooks => delegate is ProviderHooks
       ? List<Hook>.unmodifiable((delegate as ProviderHooks).hooks)
       : const [];

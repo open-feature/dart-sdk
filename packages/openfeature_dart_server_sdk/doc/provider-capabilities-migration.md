@@ -3,8 +3,12 @@
 This additive migration implements the provider-surface work in
 [#160](https://github.com/open-feature/dart-server-sdk/issues/160), against
 [OpenFeature v0.9.0 section 2](https://github.com/open-feature/spec/blob/v0.9.0/specification/sections/02-providers.md).
-Full hook/options, event API, shutdown/independent-instance and tracking details
-work remains in #161-#164. This is not a full SDK conformance declaration.
+Implemented [hooks/options](hooks-migration.md), [typed events](events-migration.md),
+[shutdown/independent instances](shutdown-and-isolation.md) and
+[tracking](tracking-and-transactions.md) have separate migration guides.
+Implementation does not close the compatibility and semantic review gates in
+the [conformance evidence](../../../doc/server-conformance-evidence.md).
+This is not a full SDK conformance declaration.
 
 ## New providers
 
@@ -35,13 +39,13 @@ Import `provider_capabilities.dart` and implement only the interfaces you need:
 | Interface | Contract |
 | --- | --- |
 | `ProviderInitialization` | `initializeProvider(EvaluationContext context, {String? domain})` plus provider-owned `providerEvents`. |
-| `ProviderShutdown` | `shutdownProvider()` releases resources; the SDK bridge prevents duplicate shutdown calls until another initialization. |
+| `ProviderShutdown` | `shutdownProvider()` releases resources; calls share cleanup within a lifecycle and each subsequent supported lifecycle can shut down again. |
 | `ProviderHooks` | A `hooks` list is captured per evaluation and participates in the existing hook lifecycle. |
 | `ProviderTracking` | `trackEvent(name, evaluationContext: ..., trackingDetails: ...)` receives tracking calls; absent capability is a no-op. |
 
-Lifecycle methods retain asynchronous Dart signatures. Tracking currently keeps
-the existing asynchronous contract; its full nonblocking API/numeric/details
-normalization is explicitly #164.
+Lifecycle methods retain asynchronous Dart signatures. The
+[tracking guide](tracking-and-transactions.md) documents nonblocking `trackEvent`,
+the legacy asynchronous `track`, `num?` values and immutable tracking details.
 
 Without initialization, a provider starts ready and is not required to emit an
 initialization event (2.8.5). An event source may still emit later changes.
@@ -64,9 +68,9 @@ The legacy one-second grace does not apply to new capability providers.
 
 Provider before hooks follow application before hooks; provider after/error/
 finally hooks precede the corresponding application hooks. Returned context
-fields join the existing immutable context pipeline. Invocation options,
-supported-stage declarations, complete application registration ordering and
-immutable hints remain #161. Provider hooks do not run for tracking calls.
+fields join the existing immutable context pipeline. The [hooks guide](hooks-migration.md)
+documents invocation options, supported-stage declarations, application
+registration ordering and immutable hints. Provider hooks do not run for tracking calls.
 
 ## Existing providers
 

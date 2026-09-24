@@ -67,6 +67,7 @@ class ProviderLifecycleManager {
       throw StateError('ProviderLifecycleManager has been disposed.');
     }
     return _records.putIfAbsent(provider, () {
+      if (provider is ResolverProviderAdapter) provider.beginLifecycle();
       final record = _ProviderLifecycleRecord(
         status: _normalizeState(provider.state),
         usesLegacyLifecycle: provider is! ProviderEventSource,
@@ -84,6 +85,10 @@ class ProviderLifecycleManager {
 
   ProviderState statusOf(FeatureProvider provider) =>
       _disposed ? ProviderState.NOT_READY : _recordFor(provider).status;
+
+  /// Reads tracked state without reviving a retired provider or subscribing.
+  ProviderState? trackedStatusOf(FeatureProvider provider) =>
+      _disposed ? null : _records[provider]?.status;
 
   bool usesLegacyLifecycle(FeatureProvider provider) =>
       _recordFor(provider).usesLegacyLifecycle;
