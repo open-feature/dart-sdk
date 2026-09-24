@@ -9,3 +9,4 @@
 **/build/
 **/pubspec.lock
 **/coverage/
+**/__pycache__/

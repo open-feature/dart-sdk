@@ -159,6 +159,14 @@ Flutter dependency, persistent cache, server relocation, or repository rename.
 
 ## Completion Rule
 
+The [executable candidate inventory](client-conformance-evidence.md) records
+fresh VM/Chrome results and explicit gaps against all 145 pinned requirements.
+Every semantic mapping and applicability rationale remains pending review.
+
+The proposed [shared provider contract and receipt process](client-provider-validation.md)
+supplements the SDK suites. Reference VM/Chrome passes validate the harness only;
+the two-independent-provider gate remains pending canonical provider receipts.
+
 An item is complete only when its public API, normative behavior, abnormal
 behavior, race behavior, and platform constraints are covered by automated
 tests. Every applicable v0.9.0 MUST has a passing requirement-indexed test or an

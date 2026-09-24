@@ -1,0 +1,43 @@
+name: Client Conformance Evidence
+on:
+  push:
+    branches: [development, main]
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  merge_group:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  evidence:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [vm, chrome]
+        sdk: ['3.10.0', stable]
+    env:
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Install client dependencies
+        working-directory: packages/openfeature_dart_client_sdk
+        run: dart pub get
+      - name: Validate reporter accounting
+        run: python3 -m unittest discover -s tool -p test_client_conformance.py
+      - name: Run fresh requirement-indexed client evidence
+        run: python3 tool/client_conformance.py --platform ${{ matrix.platform }}
+      - name: Upload candidate report and raw test results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: client-conformance-${{ matrix.platform }}-${{ matrix.sdk }}
+          path: build/client-conformance/
+          if-no-files-found: error

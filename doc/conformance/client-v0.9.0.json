@@ -1,0 +1,2133 @@
+{
+  "schema": 1,
+  "spec_version": "v0.9.0",
+  "spec_commit": "d5b0a734d8cb9b42bf89be2a97c627f58208e811",
+  "source_sha256": {
+    "01-flag-evaluation": "d11b1c205bfd6c7a206091618772602189533d2d7c2b7cd6fc722bfd37feac9c",
+    "02-providers": "78f92a4bf679a7d89cd4edc22e88113e4d065579f4ccb60bfcb1aac4f1732762",
+    "03-evaluation-context": "39a58d0792e6ac95a74472de67683378c7737ad613e636862208733a4635bc8a",
+    "04-hooks": "f425d4aa144cc7cf59c5779fe8eb86edbb492f36d68c439390945fb08b98d6a1",
+    "05-events": "82800e8679f0af721369c3ff22d2c51c4c1e72742b9b84009b88b6efa7113eb2",
+    "06-tracking": "ffcbe03c2fcec1f3fa577c8ea1a38fbf8f6157f989fa942f5762d821cc86b3ed"
+  },
+  "claim": "Static-context candidate evidence and explicit gap inventory. Passing selected tests is not semantic conformance or stable certification.",
+  "requirements": [
+    {
+      "id": "1.1.1",
+      "level": "SHOULD",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "default singleton and isolated APIs"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.1.2.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "non-awaiting mutators preserve ordered static context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.1.2.2",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "non-awaiting mutators preserve ordered static context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.1.2.3",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "shuts a provider down after its final binding"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.1.2.4",
+      "level": "SHOULD",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "waits for provider-owned ready event"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.1.3",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "domain clients select a domain provider"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.1.4",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.1.5",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "non-awaiting mutators preserve ordered static context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.1.6",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "domain clients select a domain provider"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.1.7",
+      "level": "MUST NOT",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "shutdown clears API state and permits reuse"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.1.8.1",
+      "level": "MUST NOT",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "rejects a second domain"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.2.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.2.2",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "domain clients select a domain provider"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.3.1.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "1.3.2.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "resolves every Dart flag type and reports abnormal results"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.3.3.1",
+      "level": "SHOULD",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "resolves every Dart flag type and reports abnormal results"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.3.4",
+      "level": "SHOULD",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "resolves every Dart flag type and reports abnormal results"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.1.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "1.4.2.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "resolves every Dart flag type and reports abnormal results"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.3",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "no-op provider returns the application default"
+        },
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.4.1",
+      "level": "SHOULD",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.5",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "no-op provider returns the application default"
+        },
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.6",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.7",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.8",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "provider exceptions never escape|provider errors cannot replace"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.9",
+      "level": "SHOULD",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "provider exceptions never escape|provider errors cannot replace"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.10",
+      "level": "MUST NOT",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "provider exceptions never escape|provider errors cannot replace"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.11",
+      "level": "SHOULD NOT",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "evaluation does not print for provider errors"
+        }
+      ],
+      "scope": "Captures Dart print output for normal provider-error results; semantic review of logging pathways remains required."
+    },
+    {
+      "id": "1.4.12",
+      "level": "SHOULD",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "rationale",
+      "rationale": "Typed resolution is synchronous and non-blocking over provider-owned local state; network/bootstrap/reconciliation belongs to asynchronous provider lifecycle operations. Review this Dart/static-context SHOULD interpretation."
+    },
+    {
+      "id": "1.4.13",
+      "level": "MAY",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.14",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "flag metadata validates values|no-op provider returns"
+        },
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.4.15.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "flag metadata validates values|no-op provider returns"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.5.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.6.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "API shutdown remains unconditional"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.6.2",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "shutdown clears API state and permits reuse"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.7.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "domain and every status precede handlers"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.7.2.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "domain and every status precede handlers"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.7.3",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "delivers ready after binding and status update"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.7.4",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "late handlers receive the current lifecycle state"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.7.5",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "domain and every status precede handlers"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.7.6",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "race_safety_test.dart",
+          "name_pattern": "shutdown waits for reconciliation and blocks late restoration"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.8.1",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "default singleton and isolated APIs"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.8.2",
+      "level": "MUST",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "isolated APIs separate context hooks events and shutdown"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.8.3",
+      "level": "SHOULD",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "default singleton and isolated APIs"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "1.8.4",
+      "level": "SHOULD NOT",
+      "section": "01-flag-evaluation",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "promotion_readiness_test.dart",
+          "name_pattern": "one provider instance cannot be active in two APIs"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "2.1.1",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "non-awaiting mutators preserve ordered static context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.2.1",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "resolves every Dart flag type and reports abnormal results"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.2.2.1",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "resolves every Dart flag type and reports abnormal results"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.2.3",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "resolves every Dart flag type and reports abnormal results"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.2.4",
+      "level": "SHOULD",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.2.5",
+      "level": "SHOULD",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.2.6",
+      "level": "MUST NOT",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.2.7",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "resolves every Dart flag type and reports abnormal results"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.2.8.1",
+      "level": "SHOULD",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.2.9",
+      "level": "SHOULD",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.2.10",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "flag metadata validates values|no-op provider returns"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.3.1",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.3.2",
+      "level": "MUST NOT",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.3.3",
+      "level": "MAY",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "detailed resolution preserves provider fields"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.4.1",
+      "level": "MAY",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "non-awaiting mutators preserve ordered static context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.4.2.1",
+      "level": "SHOULD",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "promotion_readiness_test.dart",
+          "name_pattern": "a provider that throws before an event is shut down"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.4.3",
+      "level": "MAY",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "rejects a second domain"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.4.4",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "domain and every status precede handlers"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.5.1",
+      "level": "MAY",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "shuts a provider down after its final binding"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.5.2",
+      "level": "SHOULD",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "gap",
+      "rationale": "Provider-owned post-shutdown behavior needs canonical provider evidence; core ownership cleanup is insufficient.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.5.3",
+      "level": "SHOULD",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "gap",
+      "rationale": "Provider-owned idempotent cleanup needs canonical provider evidence, not just SDK suppression of duplicate cleanup.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.6.1",
+      "level": "MAY",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "race_safety_test.dart",
+          "name_pattern": "older context work cannot replace the latest active revision"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.7.1",
+      "level": "MAY",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "uses static context and immutable tracking details"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.8.1",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "gap",
+      "rationale": "No sufficiently focused existing test has been selected. Add or identify clause-level coverage and review it before stable promotion; absence of evidence is not a proven runtime defect.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.8.2",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "waits for provider-owned ready event"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.8.3",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "promotion_readiness_test.dart",
+          "name_pattern": "a provider that throws before an event is shut down"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.8.4",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "waits for provider-owned context changed event"
+        },
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "reconciliation errors preserve the previous active context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "2.8.5.1",
+      "level": "MUST",
+      "section": "02-providers",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "delivers ready after binding and status update"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
+      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+    },
+    {
+      "id": "3.1.1",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "evaluation context is deeply immutable"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "3.1.2",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "context supports every normative field kind"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "3.1.3",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "evaluation context is deeply immutable"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "3.1.4",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "evaluation context rejects a duplicate targeting key"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "3.2.1.1",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "3.2.2.1",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "non-awaiting mutators preserve ordered static context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "3.2.2.2",
+      "level": "MUST NOT",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "client evaluation methods do not accept evaluation context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "3.2.2.3",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "non-awaiting mutators preserve ordered static context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "3.2.2.4",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "non-awaiting mutators preserve ordered static context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "3.2.3",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "3.2.4.1",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "race_safety_test.dart",
+          "name_pattern": "different providers reconcile the global context concurrently"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "3.2.4.2",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "race_safety_test.dart",
+          "name_pattern": "unrelated domain mutations reconcile concurrently"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "3.3.1.1",
+      "level": "SHOULD",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "3.3.1.2.1",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "3.3.1.2.2",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "3.3.1.2.3",
+      "level": "MUST",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "3.3.2.1",
+      "level": "MUST NOT",
+      "section": "03-evaluation-context",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
+      "disposition": "api_shape",
+      "checks": [
+        "static_consumer",
+        "no_transaction_propagator"
+      ]
+    },
+    {
+      "id": "4.1.1",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook data isolation and immutable hints"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.1.2",
+      "level": "SHOULD",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook data isolation and immutable hints"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.1.3",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "structured defaults are immutable within hook context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.1.4.1",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "4.1.5",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook data isolation and immutable hints"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.2.1",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook data isolation and immutable hints"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.2.2.1",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook data isolation and immutable hints"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.2.2.2",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook metadata fields reject mutation"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.2.2.3",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook metadata fields reject mutation"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.3.1",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "gap",
+      "rationale": "HookAdapter permits an implementation with every stage inherited as a no-op. Maintainers must resolve the at-least-one-stage contract and beta migration policy; passing default-stage tests do not prove this MUST."
+    },
+    {
+      "id": "4.3.2",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook data isolation and immutable hints"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.3.2.1",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "4.3.3.1",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.3.4",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "4.3.5",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "4.3.6",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.3.7",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "contains before-hook failures and returns the default"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.3.8",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.3.9.1",
+      "level": "SHOULD",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook data isolation and immutable hints"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.4.1",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.4.2",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.4.3",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "after error preserves remaining cleanup"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.4.4",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "after error preserves remaining cleanup"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.4.5",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "contains before-hook failures and returns the default"
+        },
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "after error preserves remaining cleanup"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.4.6",
+      "level": "MUST NOT",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "contains before-hook failures and returns the default"
+        },
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "after error preserves remaining cleanup"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.4.7",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "contains before-hook failures and returns the default"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.5.1",
+      "level": "MAY",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.5.2",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "runs API, client, invocation, and provider hooks as a stack"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.5.3",
+      "level": "MUST NOT",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook data isolation and immutable hints"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "4.6.1",
+      "level": "MUST",
+      "section": "04-hooks",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "hook data isolation and immutable hints"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.1.1",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "replaceAll emits the union of old and new flag keys"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.1.2",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "keeps associated handlers across provider changes"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.1.3",
+      "level": "MUST NOT",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "keeps associated handlers across provider changes"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.1.4",
+      "level": "SHOULD",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "late handlers receive the current lifecycle state"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.1.5",
+      "level": "SHOULD",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "late handlers receive the current lifecycle state"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.2.1",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "delivers ready after binding and status update"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.2.2",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "delivers ready after binding and status update"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.2.3",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "delivers ready after binding and status update"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.2.4",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "delivers ready after binding and status update"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.2.5",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "contains handler failures and protects event details"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.2.6",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "keeps associated handlers across provider changes"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.2.7",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "removal is idempotent|keeps associated handlers"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.3.1",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "delivers ready after binding and status update"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.3.2",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "late handlers receive the current lifecycle state"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.3.3",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "late handlers receive the current lifecycle state"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.3.4.1",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "race_safety_test.dart",
+          "name_pattern": "context-changed handlers evaluate with the committed context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.3.4.2",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "waits for provider-owned context changed event"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.3.4.3",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "reconciliation errors preserve the previous active context"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "5.3.5",
+      "level": "MUST",
+      "section": "05-events",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/05-events.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "delivers ready after binding and status update"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "6.1.1.1",
+      "level": "MUST",
+      "section": "06-tracking",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/06-tracking.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "6.1.2.1",
+      "level": "MUST",
+      "section": "06-tracking",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/06-tracking.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "uses static context and immutable tracking details"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "6.1.3",
+      "level": "MUST",
+      "section": "06-tracking",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/06-tracking.md",
+      "disposition": "not_applicable",
+      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+    },
+    {
+      "id": "6.1.4",
+      "level": "MUST",
+      "section": "06-tracking",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/06-tracking.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "unsupported tracking is a no-op"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "6.2.1",
+      "level": "MUST",
+      "section": "06-tracking",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/06-tracking.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "uses static context and immutable tracking details"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    },
+    {
+      "id": "6.2.2",
+      "level": "MUST",
+      "section": "06-tracking",
+      "review": "pending",
+      "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/06-tracking.md",
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "uses static context and immutable tracking details"
+        }
+      ],
+      "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
+    }
+  ],
+  "release_gates": [
+    "Close applicable MUST evidence gaps and review every mapping, applicability rationale and SHOULD interpretation.",
+    "Resolve the empty HookAdapter stage contract and any beta compatibility implications.",
+    "Obtain maintainer acceptance of the shared contract from two independent canonical providers; IntelliToggle alone is insufficient.",
+    "Complete exact-version Flutter consumer and declared Android, iOS and desktop runtime evidence; browser tests do not establish native support.",
+    "Approve migration/provider compatibility notes and reviewed development-to-main stable promotion; verify immutable tag and pub.dev archive separately."
+  ]
+}
