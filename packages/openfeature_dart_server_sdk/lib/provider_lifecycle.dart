@@ -1,32 +1,22 @@
 import 'dart:async';
 
 import 'feature_provider.dart';
+import 'open_feature_event.dart';
 
 /// Lifecycle event types emitted by v0.9-capable providers.
-enum ProviderLifecycleEventType {
-  PROVIDER_READY,
-  PROVIDER_ERROR,
-  PROVIDER_CONFIGURATION_CHANGED,
-  PROVIDER_STALE,
-  PROVIDER_CONTEXT_CHANGED,
-  PROVIDER_RECONCILING,
-}
+typedef ProviderLifecycleEventType = OpenFeatureEventType;
 
 /// A lifecycle event emitted directly by a feature provider.
-class ProviderLifecycleEvent {
-  final ProviderLifecycleEventType type;
-  final String message;
-  final dynamic data;
-  final ErrorCode? errorCode;
-  final DateTime timestamp;
-
+class ProviderLifecycleEvent extends OpenFeatureEvent {
   ProviderLifecycleEvent(
-    this.type,
-    this.message, {
-    this.data,
-    this.errorCode,
-    DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+    super.type,
+    super.message, {
+    super.data,
+    super.errorCode,
+    super.flagsChanged,
+    super.eventMetadata,
+    super.timestamp,
+  });
 }
 
 /// Optional capability for providers that own their v0.9 lifecycle events.

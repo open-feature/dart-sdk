@@ -1,4 +1,9 @@
+import 'dart:async';
+
 import 'feature_provider.dart';
+
+/// A typed handler may finish synchronously or asynchronously.
+typedef EventHandler = FutureOr<void> Function(OpenFeatureEvent event);
 
 /// OpenFeature specification-compliant event types
 enum OpenFeatureEventType {
@@ -19,6 +24,12 @@ class OpenFeatureEvent {
   final FeatureProvider? provider;
   final String? domain;
   final ErrorCode? errorCode;
+  final List<String>? flagsChanged;
+  final Map<String, Object> eventMetadata;
+
+  String? get providerName => providerMetadata?.name ?? provider?.metadata.name;
+  String? get errorMessage =>
+      type == OpenFeatureEventType.PROVIDER_ERROR ? message : null;
 
   OpenFeatureEvent(
     this.type,
@@ -28,6 +39,20 @@ class OpenFeatureEvent {
     this.provider,
     this.domain,
     this.errorCode,
+    List<String>? flagsChanged,
+    Map<String, Object> eventMetadata = const {},
     DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+  }) : timestamp = timestamp ?? DateTime.now(),
+       flagsChanged = flagsChanged == null
+           ? null
+           : List.unmodifiable(flagsChanged),
+       eventMetadata = Map.unmodifiable(eventMetadata) {
+    for (final value in eventMetadata.values) {
+      if (value is! bool && value is! String && value is! num) {
+        throw ArgumentError(
+          'Event metadata values must be boolean, string or number.',
+        );
+      }
+    }
+  }
 }

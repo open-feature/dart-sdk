@@ -1,3 +1,11 @@
+/// Legacy application telemetry utilities, unrelated to provider lifecycle.
+///
+/// For SDK provider events use open_feature_event.dart and the API/client
+/// addEventHandler/removeEventHandler methods. These standalone utilities are
+/// retained for source compatibility only; they are not an SDK event source.
+@Deprecated('Use open_feature_event.dart and API/client event handlers.')
+library;
+
 import 'dart:async';
 import 'dart:collection';
 
