@@ -144,6 +144,8 @@ class EventScope {
     _closed = true;
     _handlers.clear();
     _dispatcher._scopes.remove(this);
-    await _stream.close();
+    // Paused subscribers receive done when they resume or cancel, but must not
+    // hold scope or dispatcher cleanup open.
+    unawaited(_stream.close());
   }
 }

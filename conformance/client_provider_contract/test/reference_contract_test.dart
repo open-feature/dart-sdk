@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'package:openfeature_client_provider_contract/client_provider_contract.dart';
 import 'package:openfeature_dart_client_sdk/openfeature_dart_client_sdk.dart';
+import 'package:test/test.dart';
 
 void main() => runClientProviderContract(
   providerName: 'SDK reference fixture (not external-provider evidence)',
@@ -108,10 +109,18 @@ class ReferenceFixture
 
   @override
   Future<void> close() async {
-    for (final response in held) {
-      response.release();
+    try {
+      expect(
+        shutdownCalls,
+        1,
+        reason: 'Provider shutdown must precede transport cleanup',
+      );
+    } finally {
+      for (final response in held) {
+        response.release();
+      }
+      await controller.close();
     }
-    await controller.close();
   }
 
   @override

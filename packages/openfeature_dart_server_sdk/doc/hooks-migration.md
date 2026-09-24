@@ -1,9 +1,11 @@
 # Hooks and evaluation options migration
 
 This change implements the server hook slice in issue #161 against OpenFeature
-**v0.9.0**. It is not a claim of complete SDK conformance. Typed events, API-wide
-shutdown, independent instances, tracking and the final requirement report remain
-in #162-#165. The server uses dynamic evaluation context; the static-context
+**v0.9.0**. It is not a claim of complete SDK conformance. Implemented
+[typed events](events-migration.md), [shutdown and isolated APIs](shutdown-and-isolation.md),
+and [tracking](tracking-and-transactions.md) have their own migration guides.
+The [conformance evidence](../../../doc/server-conformance-evidence.md) records
+remaining semantic, compatibility and release gates. The server uses dynamic evaluation context; the static-context
 condition 4.3.3.1 is not applicable.
 
 ## New usage

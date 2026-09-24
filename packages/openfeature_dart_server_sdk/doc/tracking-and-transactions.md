@@ -33,6 +33,15 @@ const construction work. Code assigning the property directly to `double?`
 must use `details.value?.toDouble()` or accept `num?`. This is a source-level
 widening for readers and requires release/version review before publication.
 
+### Required release note
+
+The next generated server release PR containing this change must identify
+`TrackingEventDetails.value: double?` to `num?` as a **breaking source change**
+and include the conversion above. It is not part of published 0.0.25.
+Release Please owns the versioned changelog: add this note to the applicable
+generated release entry, without changing historical entries or inserting a
+manual `Unreleased` section. Review the selected version before publishing.
+
 ## Transaction carriers
 
 Import `experimental/transaction_context.dart` to opt into the carrier contract.
