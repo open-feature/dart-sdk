@@ -10,14 +10,19 @@ import 'src/context_snapshot.dart';
 /// Client metadata for identification
 class ClientMetadata {
   final String name;
+
+  /// The requested binding domain, even when evaluation uses the default provider.
+  final String domain;
   final String version;
   final Map<String, String> attributes;
 
   ClientMetadata({
     required this.name,
+    String? domain,
     this.version = '1.0.0',
-    this.attributes = const {},
-  });
+    Map<String, String> attributes = const {},
+  }) : domain = domain ?? name,
+       attributes = Map.unmodifiable(Map.of(attributes));
 }
 
 /// Client metrics for monitoring
@@ -270,6 +275,21 @@ class FeatureClient {
 
       _ensureProviderCanEvaluate(evaluationProvider);
       finalResult = await evaluator(effectiveContext);
+      // A provider may return an error together with a cached or otherwise
+      // unusable value. Only the application chooses its fallback (1.4.10).
+      if (finalResult.errorCode != null) {
+        finalResult = FlagEvaluationResult<T>(
+          flagKey: flagKey,
+          value: defaultValue,
+          reason: 'ERROR',
+          errorCode: finalResult.errorCode,
+          errorMessage: finalResult.errorMessage,
+          flagMetadata: finalResult.flagMetadata,
+          details: finalResult.details,
+          evaluatedAt: finalResult.evaluatedAt,
+          evaluatorId: finalResult.evaluatorId,
+        );
+      }
       evaluationDetails = _createEvaluationDetails(finalResult);
 
       if (finalResult.errorCode == null) {
@@ -501,6 +521,158 @@ class FeatureClient {
   }
 }
 
+/// Evaluation methods for new consumers: application defaults are required.
+///
+/// The legacy get*Flag/get*Details methods remain source-compatible during
+/// migration. These methods provide the required-default contract of 1.3.1.1
+/// and 1.4.1.1; evaluation options are tracked separately in issue #161.
+extension RequiredDefaultEvaluation on FeatureClient {
+  /// Evaluates a boolean flag with an explicit application fallback.
+  Future<bool> getBooleanValue(
+    String flagKey, {
+    required bool defaultValue,
+    EvaluationContext? context,
+  }) async => (await getBooleanEvaluationDetails(
+    flagKey,
+    defaultValue: defaultValue,
+    context: context,
+  )).value;
+
+  /// Detailed boolean evaluation with an explicit application fallback.
+  Future<FlagEvaluationDetails<bool>> getBooleanEvaluationDetails(
+    String flagKey, {
+    required bool defaultValue,
+    EvaluationContext? context,
+  }) => _withApplicationDefault(
+    flagKey,
+    defaultValue,
+    () => getBooleanDetails(
+      flagKey,
+      defaultValue: defaultValue,
+      context: context,
+    ),
+  );
+
+  /// Evaluates a string flag with an explicit application fallback.
+  Future<String> getStringValue(
+    String flagKey, {
+    required String defaultValue,
+    EvaluationContext? context,
+  }) async => (await getStringEvaluationDetails(
+    flagKey,
+    defaultValue: defaultValue,
+    context: context,
+  )).value;
+
+  /// Detailed string evaluation with an explicit application fallback.
+  Future<FlagEvaluationDetails<String>> getStringEvaluationDetails(
+    String flagKey, {
+    required String defaultValue,
+    EvaluationContext? context,
+  }) => _withApplicationDefault(
+    flagKey,
+    defaultValue,
+    () =>
+        getStringDetails(flagKey, defaultValue: defaultValue, context: context),
+  );
+
+  /// Evaluates a integer flag with an explicit application fallback.
+  Future<int> getIntegerValue(
+    String flagKey, {
+    required int defaultValue,
+    EvaluationContext? context,
+  }) async => (await getIntegerEvaluationDetails(
+    flagKey,
+    defaultValue: defaultValue,
+    context: context,
+  )).value;
+
+  /// Detailed integer evaluation with an explicit application fallback.
+  Future<FlagEvaluationDetails<int>> getIntegerEvaluationDetails(
+    String flagKey, {
+    required int defaultValue,
+    EvaluationContext? context,
+  }) => _withApplicationDefault(
+    flagKey,
+    defaultValue,
+    () => getIntegerDetails(
+      flagKey,
+      defaultValue: defaultValue,
+      context: context,
+    ),
+  );
+
+  /// Evaluates a double flag with an explicit application fallback.
+  Future<double> getDoubleValue(
+    String flagKey, {
+    required double defaultValue,
+    EvaluationContext? context,
+  }) async => (await getDoubleEvaluationDetails(
+    flagKey,
+    defaultValue: defaultValue,
+    context: context,
+  )).value;
+
+  /// Detailed double evaluation with an explicit application fallback.
+  Future<FlagEvaluationDetails<double>> getDoubleEvaluationDetails(
+    String flagKey, {
+    required double defaultValue,
+    EvaluationContext? context,
+  }) => _withApplicationDefault(
+    flagKey,
+    defaultValue,
+    () =>
+        getDoubleDetails(flagKey, defaultValue: defaultValue, context: context),
+  );
+
+  /// Evaluates a object flag with an explicit application fallback.
+  Future<Map<String, dynamic>> getObjectValue(
+    String flagKey, {
+    required Map<String, dynamic> defaultValue,
+    EvaluationContext? context,
+  }) async => (await getObjectEvaluationDetails(
+    flagKey,
+    defaultValue: defaultValue,
+    context: context,
+  )).value;
+
+  /// Detailed object evaluation with an explicit application fallback.
+  Future<FlagEvaluationDetails<Map<String, dynamic>>>
+  getObjectEvaluationDetails(
+    String flagKey, {
+    required Map<String, dynamic> defaultValue,
+    EvaluationContext? context,
+  }) => _withApplicationDefault(
+    flagKey,
+    defaultValue,
+    () =>
+        getObjectDetails(flagKey, defaultValue: defaultValue, context: context),
+  );
+}
+
+Future<FlagEvaluationDetails<T>> _withApplicationDefault<T>(
+  String flagKey,
+  T defaultValue,
+  Future<FlagEvaluationDetails<T>> Function() evaluate,
+) async {
+  // Include provider resolution and all hook stages in the failure boundary.
+  try {
+    return await evaluate();
+  } catch (error) {
+    return FlagEvaluationDetails<T>(
+      flagKey: flagKey,
+      value: defaultValue,
+      reason: 'ERROR',
+      errorCode: error is ProviderException ? error.code : ErrorCode.GENERAL,
+      errorMessage: error.toString(),
+    );
+  }
+}
+
+/// Legacy detailed evaluation methods; prefer get*EvaluationDetails for
+/// compile-time enforcement of application-selected defaults.
+///
+/// Retained without analyzer deprecations until the documented migration stage.
 /// Extension to add evaluation details methods
 extension ClientEvaluationDetails on FeatureClient {
   /// Get boolean flag with full evaluation details

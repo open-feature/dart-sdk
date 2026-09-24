@@ -9,6 +9,12 @@
 
 <h2 align="center">OpenFeature Dart Server SDK</h2>
 
+New application code should use the required-default `get*Value` and
+`get*EvaluationDetails` methods. Existing `get*Flag` and `get*Details` calls
+remain supported during migration. See the
+[evaluation defaults migration guide](doc/evaluation-defaults-migration.md).
+This is an incremental v0.9 improvement, not a full conformance claim.
+
 <!-- x-hide-in-docs-end -->
 
 <p align="center" class="github-badges">
