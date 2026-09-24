@@ -109,6 +109,7 @@ jobs:
             ["./pubspec.yaml"]="3.12.2"
             ["./packages/openfeature_dart_server_sdk/pubspec.yaml"]="3.12.2"
             ["./packages/openfeature_dart_client_sdk/pubspec.yaml"]="3.10.0"
+            ["./conformance/client_provider_contract/pubspec.yaml"]="3.10.0"
           )
           ALL_VALID="true"
 
