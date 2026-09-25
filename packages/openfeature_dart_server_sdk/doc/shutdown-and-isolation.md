@@ -13,6 +13,13 @@ as a `ProviderException` with `ErrorCode.GENERAL`; the lifecycle record is retir
 and cleanup of other providers continues. This also bounds provider cleanup on
 `dispose()` and `OpenFeatureAPI.resetInstance()`.
 
+These five-second deadlines are fixed in the supported public API today.
+Neither `OpenFeatureAPI()` nor `createIsolatedOpenFeatureAPI()` exposes the
+internal manager's `shutdownTimeout` parameter. Do not import internal classes
+to configure it. [#196](https://github.com/open-feature/dart-sdk/issues/196) tracks
+a reviewed public configuration surface; until then, providers with longer
+flush requirements must schedule their own flush before API shutdown.
+
 A Dart timeout stops waiting; it does not cancel the provider's underlying work.
 A provider whose cleanup times out cannot start another lifecycle in any API
 until that work settles, even if the old API has reset. Use a fresh provider
@@ -46,6 +53,9 @@ work (v0.9 requirement 2.5.2). The SDK cancels the old binding and ignores its l
 events/results. It cannot stop arbitrary I/O inside an uncooperative provider.
 That provider object stays reserved until its old initialization settles, so a
 different API cannot race its late work by reusing the same object.
+Initialization ownership and timeout quarantine follow the same rule: a provider
+object cannot join another API until all pending initialization, shutdown and
+subscription-cancellation work has settled.
 
 ## Isolated instances (experimental)
 
