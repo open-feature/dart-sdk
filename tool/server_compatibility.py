@@ -1,4 +1,4 @@
-"""Run one unchanged legacy consumer against published 0.0.25 and this checkout."""
+"""Run one unchanged legacy consumer against published 0.0.25, 0.0.26 and this checkout."""
 from pathlib import Path
 import argparse
 import json
@@ -17,10 +17,10 @@ def run():
     dart = shutil.which('dart')
     fixture = (root/'test/fixtures/server_legacy_consumer.dart.txt').read_text(encoding='utf-8')
     records = []
-    for name in ('published-0.0.25', 'candidate'):
+    for name in ('published-0.0.25', 'published-0.0.26', 'candidate'):
         with tempfile.TemporaryDirectory(prefix='openfeature-legacy-') as directory:
             cwd = Path(directory)
-            dependency = "  openfeature_dart_server_sdk: 0.0.25\n" if name.startswith('published') else (
+            dependency = f"  openfeature_dart_server_sdk: {name.removeprefix('published-')}\n" if name.startswith('published-') else (
                 "  openfeature_dart_server_sdk:\n    path: " + (root/'packages/openfeature_dart_server_sdk').as_posix() + '\n')
             (cwd/'pubspec.yaml').write_text('name: legacy_consumer_fixture\npublish_to: none\nenvironment:\n  sdk: ^3.12.2\ndependencies:\n'+dependency)
             (cwd/'consumer.dart').write_text(fixture)
@@ -40,7 +40,7 @@ def run():
                 raise RuntimeError(f'Unexpected Flutter dependencies: {forbidden}')
             (out/f'compat-{name}-dependencies.json').write_text(json.dumps(deps, indent=2))
     (out/'compatibility.json').write_text(json.dumps(records, indent=2))
-    print('Published 0.0.25 and candidate: identical fixture analysis/runtime pass; no Flutter dependencies.')
+    print('Published 0.0.25, 0.0.26 and candidate: identical fixture analysis/runtime pass; no Flutter dependencies.')
     return 0
 
 

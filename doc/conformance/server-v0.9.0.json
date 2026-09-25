@@ -396,7 +396,7 @@
       "section": "01-flag-evaluation",
       "review": "pending",
       "disposition": "deviation",
-      "rationale": "Legacy client error logging is retained for compatibility. SHOULD deviation requires maintainer review; consumers can disable that logger. No full conformance claim follows from this report."
+      "rationale": "Legacy FeatureClient evaluation errors log WARNING records by default; Singleton API construction sets Logger.root.level to Level.ALL and prints root records. To disable this logger, import package:logging/logging.dart, set hierarchicalLoggingEnabled = true, then Logger('FeatureClient').level = Level.OFF. This is process-wide logger configuration and also silences FeatureClient tracking warnings; it does not disable other SDK loggers. See doc/server-conformance-evidence.md. SHOULD NOT deviation remains pending maintainer acceptance."
     },
     {
       "id": "1.4.12",
@@ -955,8 +955,8 @@
       "level": "MAY",
       "section": "02-providers",
       "review": "pending",
-      "disposition": "not_applicable",
-      "rationale": "The dynamic SDK does not implement provider on-context-changed reconciliation; canonical invocation context is passed to each evaluation.",
+      "disposition": "rationale",
+      "rationale": "Optional MAY capability is not implemented: the dynamic-context SDK passes the evaluation context on every call, so it does not require an on-context-changed reconciliation callback.",
       "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates."
     },
     {
@@ -1025,7 +1025,7 @@
       "section": "02-providers",
       "review": "pending",
       "disposition": "not_applicable",
-      "rationale": "The dynamic SDK does not implement provider on-context-changed reconciliation; canonical invocation context is passed to each evaluation.",
+      "rationale": "Conditional requirement does not apply because the optional on-context-changed callback in 2.6.1 is not implemented or called. This is not an exemption for providers that implement that callback.",
       "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates."
     },
     {

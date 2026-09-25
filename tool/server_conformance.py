@@ -3,6 +3,7 @@
 This reports evidence, not certification. Pending reviews and external-provider
 gates remain explicit even when all mapped tests pass.
 """
+from collections import Counter
 from pathlib import Path
 import argparse
 import hashlib
@@ -51,7 +52,7 @@ def evidence_rows(manifest, tests):
     for requirement in manifest['requirements']:
         row = dict(requirement)
         if row['disposition'] != 'evidence':
-            row['evidence_status'] = 'rationale_pending_review'
+            row['evidence_status'] = ('rationale_approved' if row.get('review') == 'approved' else 'rationale_pending_review')
         else:
             matched = []
             missing = []
@@ -116,7 +117,7 @@ def run(args=None):
         'tests_completed_successfully': completed and result.returncode == 0,
         'executed_test_count': len(tests), 'broken_evidence': broken,
         'unreviewed_requirements': unreviewed, 'release_gates': manifest['release_gates'],
-        'release_ready': ready, 'requirements': rows}
+        'release_ready': ready, 'disposition_counts': dict(sorted(Counter(row['disposition'] for row in rows).items())), 'requirements': rows}
     (out/'report.json').write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
     lines = ['# Server v0.9 candidate evidence', '', manifest['claim'], '',
         f"SDK `{sha}`; tree `{tree}`; dirty worktree: `{dirty}`.",
@@ -124,6 +125,10 @@ def run(args=None):
         f"Dart: {version}. Tests: {len(tests)}; completed successfully: {report['tests_completed_successfully']}.",
         f"Release ready: **{ready}**. Unreviewed mappings/rationales: {len(unreviewed)}.", '',
         '| Requirement | Level | Evidence | Review |', '| --- | --- | --- | --- |']
+    lines[lines.index('| Requirement | Level | Evidence | Review |'):lines.index('| Requirement | Level | Evidence | Review |')] = [
+        '| Disposition | Count |', '| --- | --- |',
+        *[f"| {key} | {count} |" for key, count in report['disposition_counts'].items()], '',
+    ]
     lines.extend(f"| {row['id']} | {row['level']} | {row['evidence_status']} | {row['review']} |" for row in rows)
     lines.extend(['', '## Remaining release gates', ''] + [f'- {gate}' for gate in manifest['release_gates']])
     lines.extend(['', 'Passing evidence means the selected tests ran successfully; semantic completeness is a separate maintainer review. Exact test names/results, source paths, compatibility boundaries and rationale are in report.json.', ''])
