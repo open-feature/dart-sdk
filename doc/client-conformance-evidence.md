@@ -34,8 +34,8 @@ It does not waive stable-promotion gates.
 
 | Requirement | Remaining work |
 | --- | --- |
-| 2.5.2, 2.5.3 | Obtain canonical provider post-shutdown/idempotency evidence; SDK cleanup is not proof of each provider's behavior. |
-| 2.8.1 | Review every provider-owned status transition, including spontaneous transport events, against canonical provider receipts. |
+| 2.5.2, 2.5.3 (SHOULD) | Obtain canonical provider receipts for shared contract v2 C12/C11. These call the provider directly; SDK cleanup is insufficient. |
+| 2.8.1 (MUST) | Obtain v2 C13 receipts for controlled provider transitions. Review spontaneous transport transitions with additional provider-owned evidence. |
 | 4.3.1 | Resolve the at-least-one-stage contract: `HookAdapter` currently permits an entirely empty hook. Existing no-op-stage tests do not establish this MUST. Any change needs beta migration review. |
 
 Other entries retain proposed mappings rather than a semantic-completeness

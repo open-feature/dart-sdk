@@ -1,6 +1,6 @@
-# Shared client provider contract v1 (proposal)
+# Shared client provider contract v2 (proposal)
 
-This unpublished development-only package registers the same ten assertions for
+This unpublished development-only package registers the same thirteen assertions for
 each participating provider. It does not add dependencies to either published
 SDK. The reference fixture tests the harness itself and **never counts as an
 independently maintained provider**. Issue #166 requires two independent provider
@@ -57,7 +57,10 @@ the receipt command; they are not optional passes.
 | C07 | Rapid context requests end at the latest identity | Hold/release a reconciliation response |
 | C08 | Pending old refresh cannot overwrite final new-identity state | Hold refresh while requesting a new identity |
 | C09 | Replaced provider work cannot overwrite replacement flags | Delayed refresh and provider replacement |
-| C10 | Shutdown clears state and ignores old work | Delayed refresh and cleanup counter |
+| C10 | SDK shutdown clears client state and ignores old work | Delayed refresh and cleanup counter |
+| C11 | Direct repeated provider shutdown has no observable effect (2.5.3) | Provider events and direct resolutions |
+| C12 | Direct shutdown restores uninitialized resolutions (2.5.2) | All five types; declared reinitialization support |
+| C13 | Provider emits initialization, failure, recovery, and context events (2.8.1) | Direct event subscription and controlled refresh failure |
 
 The controls must capture a response at request time, not look up the newest
 subject after release. Release must be idempotent. `close()` must release any
@@ -68,7 +71,26 @@ flags. C08 accepts serialized or concurrent provider transports; provider-owned
 tests must additionally show how truly out-of-order responses are quarantined
 when that transport allows them.
 
-## Evidence beyond these ten tests
+## Migration from v1
+
+Implement `supportsReinitialization` in each fixture. Return true only when the
+same provider instance supports initialization after shutdown. C12 always checks
+uninitialized evaluation state; it also checks reinitialization when declared.
+
+C11–C13 call the provider directly. SDK status and default handling cannot mask
+retained provider state or missing events. Providers must implement
+`InitializableProvider`, `ShutdownProvider`, `ContextReconciliationProvider`, and
+`ProviderEventSource` for this contract. C11 compares resolutions after both
+shutdown calls and requires no event from the second call. C13 requires exactly
+one terminal event for each controlled transition. Intermediate reconciling or
+stale events and configuration-change events are allowed.
+
+These checks do not prove that every spontaneous transport transition emits an
+event or that all resources were released. Provider-specific transport and
+resource tests remain required. Update old fixtures and rerun them; a v1 receipt
+cannot satisfy v2. The receipt tool requires exactly C01–C13 and records version 2.
+
+## Evidence beyond these thirteen tests
 
 Provider maintainers must attach their own results for token expiration/renewal,
 token acquisition failure, HTTP failure/timeout/offline recovery, request
@@ -83,6 +105,6 @@ transport tests and the declared platform matrix before accepting two providers.
 Two runs/platforms or two provider classes from one maintained implementation do
 not meet the two-provider gate. Datadog participation remains unconfirmed.
 
-The v1 tests supplement existing SDK lifecycle/race tests; they do not replace
+The v2 tests supplement existing SDK lifecycle/race tests; they do not replace
 the full requirement-indexed static-context review. The experimental API import
 is used only to isolate the API owned by each test.

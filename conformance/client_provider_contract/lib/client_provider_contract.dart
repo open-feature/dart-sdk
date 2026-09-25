@@ -1,11 +1,11 @@
-/// Shared validation contract v1. This development-only package is unpublished.
+/// Shared validation contract v2. This development-only package is unpublished.
 library;
 
 import 'dart:async';
 import 'package:openfeature_dart_client_sdk/openfeature_dart_client_sdk_experimental.dart';
 import 'package:test/test.dart';
 
-const clientProviderContractVersion = '1';
+const clientProviderContractVersion = '2';
 
 /// A provider-owned control boundary. Implement this in the canonical provider
 /// repository using its real provider and controlled transport/backend.
@@ -13,6 +13,10 @@ const clientProviderContractVersion = '1';
 abstract interface class ClientProviderFixture {
   FeatureProvider get provider;
   int get shutdownCalls;
+
+  /// Whether the same provider instance supports initialize after shutdown.
+  /// Declare this explicitly; C12 always checks post-shutdown evaluation state.
+  bool get supportsReinitialization;
 
   /// Configure responses for a subject. Null denotes signed-out/anonymous.
   void setFlags(String? subject, Map<String, Object> flags);
@@ -26,7 +30,7 @@ abstract interface class ClientProviderFixture {
   /// Hold the next transport response; the handle completes only on release.
   HeldProviderResponse holdNextResponse();
 
-  /// Close provider-owned test transport resources after SDK shutdown.
+  /// Close test transport resources after SDK or direct provider shutdown.
   Future<void> close();
 }
 
@@ -295,6 +299,184 @@ void runClientProviderContract({
         expect(client.getStringValue('identity', 'fallback'), 'fallback');
         expect(fixture.shutdownCalls, 1);
       });
+
+      test('C11 direct provider shutdown is idempotent', () async {
+        final provider = fixture.provider;
+        expect(provider, isA<InitializableProvider>());
+        expect(provider, isA<ShutdownProvider>());
+        expect(provider, isA<ProviderEventSource>());
+        final events = <ProviderEvent>[];
+        final subscription = (provider as ProviderEventSource).events.listen(
+          events.add,
+        );
+        addTearDown(subscription.cancel);
+        addTearDown((provider as ShutdownProvider).shutdown);
+        await _initializeDirect(provider);
+        await (provider as ShutdownProvider).shutdown();
+        await Future<void>.delayed(Duration.zero);
+        final afterFirst = _directEvaluations(provider);
+        events.clear();
+        await (provider as ShutdownProvider).shutdown();
+        await Future<void>.delayed(Duration.zero);
+        expect(_directEvaluations(provider), afterFirst);
+        expect(
+          events,
+          isEmpty,
+          reason: 'Repeated shutdown must not emit a new transition',
+        );
+      });
+
+      test('C12 direct shutdown restores uninitialized evaluations', () async {
+        final provider = fixture.provider;
+        expect(provider, isA<InitializableProvider>());
+        expect(provider, isA<ShutdownProvider>());
+        addTearDown((provider as ShutdownProvider).shutdown);
+        final beforeInitialization = _directEvaluations(provider);
+        await _initializeDirect(provider);
+        expect(
+          provider
+              .resolveStringValue('identity', 'fallback', _directContext)
+              .value,
+          'a',
+        );
+        await (provider as ShutdownProvider).shutdown();
+        expect(_directEvaluations(provider), beforeInitialization);
+        if (fixture.supportsReinitialization) {
+          await _initializeDirect(provider);
+          expect(
+            provider
+                .resolveStringValue('identity', 'fallback', _directContext)
+                .value,
+            'a',
+          );
+          await (provider as ShutdownProvider).shutdown();
+        }
+      });
+
+      test('C13 provider events expose controlled status transitions', () async {
+        final provider = fixture.provider;
+        expect(provider, isA<InitializableProvider>());
+        expect(provider, isA<ContextReconciliationProvider>());
+        expect(provider, isA<ShutdownProvider>());
+        expect(provider, isA<ProviderEventSource>());
+        final events = <ProviderEvent>[];
+        final subscription = (provider as ProviderEventSource).events.listen(
+          events.add,
+        );
+        addTearDown(subscription.cancel);
+        addTearDown((provider as ShutdownProvider).shutdown);
+
+        Future<void> transition(
+          ProviderEventType expected,
+          Future<void> Function() action,
+        ) async {
+          events.clear();
+          await action();
+          await Future<void>.delayed(Duration.zero);
+          expect(
+            events
+                .where(
+                  (event) => const {
+                    ProviderEventType.ready,
+                    ProviderEventType.error,
+                    ProviderEventType.contextChanged,
+                  }.contains(event.type),
+                )
+                .map((event) => event.type),
+            [expected],
+            reason:
+                'The provider itself must emit exactly one terminal event for this transition',
+          );
+        }
+
+        await transition(
+          ProviderEventType.ready,
+          () => _initializeDirect(provider),
+        );
+        fixture.failNextRequest();
+        await transition(ProviderEventType.error, () async {
+          try {
+            await fixture.refresh();
+          } on Object {
+            // Providers may report a refresh failure through both mechanisms.
+          }
+        });
+        await transition(ProviderEventType.ready, fixture.refresh);
+        await transition(
+          ProviderEventType.contextChanged,
+          () => (provider as ContextReconciliationProvider).onContextChanged(
+            _directContext,
+            EvaluationContext(targetingKey: 'b'),
+          ),
+        );
+        expect(
+          provider
+              .resolveStringValue(
+                'identity',
+                'fallback',
+                EvaluationContext(targetingKey: 'b'),
+              )
+              .value,
+          'b',
+        );
+      });
     },
   );
+}
+
+final _directContext = EvaluationContext(targetingKey: 'a');
+
+// Observe initialization directly, including an event delivered after callback return.
+Future<void> _initializeDirect(FeatureProvider provider) async {
+  expect(provider, isA<InitializableProvider>());
+  expect(provider, isA<ProviderEventSource>());
+  final terminal = Completer<ProviderEventType>();
+  final subscription = (provider as ProviderEventSource).events.listen((event) {
+    if (!terminal.isCompleted &&
+        (event.type == ProviderEventType.ready ||
+            event.type == ProviderEventType.error)) {
+      terminal.complete(event.type);
+    }
+  });
+  try {
+    await (provider as InitializableProvider)
+        .initialize(_directContext)
+        .timeout(const Duration(seconds: 3));
+    expect(
+      await terminal.future.timeout(const Duration(seconds: 3)),
+      ProviderEventType.ready,
+    );
+  } finally {
+    await subscription.cancel();
+  }
+}
+
+// Call the provider directly so SDK defaults cannot hide retained assignments.
+// A provider may return error details or throw before it is initialized.
+List<Object?> _directEvaluations(FeatureProvider provider) {
+  final resolutions = <ResolutionDetails<Object> Function()>[
+    () => provider.resolveBooleanValue('boolean', false, _directContext),
+    () => provider.resolveIntegerValue('integer', 0, _directContext),
+    () => provider.resolveDoubleValue('double', 0, _directContext),
+    () => provider.resolveStringValue('identity', 'fallback', _directContext),
+    () => provider.resolveStructureValue('structure', {}, _directContext),
+  ];
+  return resolutions.map((resolve) {
+    try {
+      final result = resolve();
+      return [
+        result.value,
+        result.errorCode,
+        result.reason,
+        result.variant,
+        result.flagMetadata,
+      ];
+    } on Object catch (error) {
+      return [
+        'thrown',
+        error.runtimeType,
+        if (error is OpenFeatureException) error.errorCode,
+      ];
+    }
+  }).toList();
 }

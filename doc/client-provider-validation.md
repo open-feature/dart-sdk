@@ -1,7 +1,7 @@
 # Client provider validation and stable-release evidence
 
 Issue #166 now has a [versioned shared harness](../conformance/client_provider_contract/README.md)
-with ten scenarios and a reproducible receipt command. Its SDK reference passes
+with thirteen scenarios and a reproducible receipt command. Its SDK reference passes
 on Dart VM and Chrome, which validates the harness. No second independent
 provider commitment or external contract pass is asserted.
 
@@ -10,11 +10,13 @@ resolution/static context; `event_handlers_test.dart` covers routing/state
 ordering; `race_safety_test.dart` covers serialized replacement/reconciliation;
 `promotion_readiness_test.dart` covers lifecycle timeouts, quarantine, ownership
 and rollback. The shared contract makes provider results comparable without
-moving vendor transport into core.
+moving vendor transport into core. Contract v2 adds direct repeated shutdown,
+uninitialized evaluation state, optional reinitialization, and direct provider
+event assertions (C11–C13). V1 receipts must be rerun against v2.
 
 | Release input | Required evidence | Current decision |
 | --- | --- | --- |
-| SDK reference | All ten cases on VM and real Chrome | Harness validation only |
+| SDK reference | All thirteen cases on VM and real Chrome | Harness validation only |
 | IntelliToggle | Canonical provider adapter, exact SDK/provider receipts, transport scenarios | [Canonical MR62](https://gitlab.com/dartapps/apps/intellitoggle/openfeature-provider-intellitoggle/-/merge_requests/62) provides the first candidate; native review and hosted CI remain required |
 | Second independent provider | Same contract and independently maintained canonical implementation | Participation and receipt pending; Datadog is not confirmed |
 | Dart/Flutter/platform consumers | Exact SDK/provider/framework versions, resolved dependencies, web build/runtime and native device records | Distinguish each platform; no native mobile claim from Chrome |
