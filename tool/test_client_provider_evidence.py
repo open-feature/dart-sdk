@@ -2,11 +2,11 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from client_provider_evidence import summarize, verify_package_paths, receipt_passes
+from client_provider_evidence import summarize, verify_package_paths, receipt_passes, CONTRACT_VERSION
 
 
 class EvidenceTests(unittest.TestCase):
-    def output(self, skip=None, count=10, success=True):
+    def output(self, skip=None, count=13, success=True):
         events = [{'type':'suite','suite':{'platform':'vm'}}]
         for number in range(1,count+1):
             events += [
@@ -15,11 +15,22 @@ class EvidenceTests(unittest.TestCase):
             ]
         events.append({'type':'done','success':success})
         return '\n'.join(json.dumps(event) for event in events)
-    def test_complete_ten_scenario_run(self):
+    def test_complete_thirteen_scenario_run(self):
         self.assertTrue(summarize(self.output())['all_scenarios_passed'])
     def test_skips_and_incomplete_or_failed_runs_do_not_qualify(self):
-        for output in (self.output(skip=6), self.output(count=9), self.output(success=False)):
+        for output in (self.output(skip=6), self.output(skip=11), self.output(skip=12), self.output(skip=13), self.output(count=10), self.output(count=12), self.output(count=14), self.output(success=False)):
             self.assertFalse(summarize(output)['all_scenarios_passed'])
+
+    def test_receipt_version_matches_the_registered_contract(self):
+        source = (Path(__file__).resolve().parents[1] /
+            'conformance/client_provider_contract/lib/client_provider_contract.dart').read_text()
+        self.assertIn(f"clientProviderContractVersion = '{CONTRACT_VERSION}'", source)
+
+    def test_duplicate_or_failed_scenario_does_not_qualify(self):
+        duplicate = self.output().replace('contract C13 case', 'contract C12 case')
+        failed = self.output().replace('"result": "success"', '"result": "error"', 1)
+        self.assertFalse(summarize(duplicate)['all_scenarios_passed'])
+        self.assertFalse(summarize(failed)['all_scenarios_passed'])
 
     def test_package_resolution_and_exit_gate(self):
         with TemporaryDirectory(prefix='contract path ') as folder:
