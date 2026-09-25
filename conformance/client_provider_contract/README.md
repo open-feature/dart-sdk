@@ -110,7 +110,11 @@ Receipts deliberately keep `independent_provider_gate_satisfied: false`.
 Maintainers must verify canonical provenance, independent ownership, SDK pin,
 transport tests and the declared platform matrix before accepting two providers.
 Two runs/platforms or two provider classes from one maintained implementation do
-not meet the two-provider gate. Datadog participation remains unconfirmed.
+not meet the two-provider gate. Datadog is participating; its canonical repository
+and v2 receipt remain pending. PR #193 reports a controlled-transport VM/Chrome
+run against provider commit `9be107eacdbd24e856d834af0fdfbe5a2ac8eb49` in a temporary
+consumer. This is compatibility evidence, not a reviewed canonical receipt or
+live-backend validation.
 
 The v2 tests supplement existing SDK lifecycle/race tests; they do not replace
 the full requirement-indexed static-context review. The experimental API import
