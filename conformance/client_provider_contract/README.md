@@ -85,6 +85,13 @@ shutdown calls and requires no event from the second call. C13 requires exactly
 one terminal event for each controlled transition. Intermediate reconciling or
 stale events and configuration-change events are allowed.
 
+C11 and C13 subscribe before each action. C13 waits for a terminal event; both
+checks then observe 100 ms without any further events after the action completes.
+Each event restarts that quiet interval. A three-second deadline bounds the whole
+action/event observation, including missing events and continuously noisy streams.
+This is bounded observation, not proof that a provider can never emit a later
+event. Provider-owned transport/resource tests must still cover longer delays.
+
 These checks do not prove that every spontaneous transport transition emits an
 event or that all resources were released. Provider-specific transport and
 resource tests remain required. Update old fixtures and rerun them; a v1 receipt

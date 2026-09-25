@@ -5,6 +5,8 @@ import 'dart:async';
 import 'package:openfeature_dart_client_sdk/openfeature_dart_client_sdk_experimental.dart';
 import 'package:test/test.dart';
 
+import 'src/provider_event_observer.dart';
+
 const clientProviderContractVersion = '2';
 
 /// A provider-owned control boundary. Implement this in the canonical provider
@@ -305,25 +307,19 @@ void runClientProviderContract({
         expect(provider, isA<InitializableProvider>());
         expect(provider, isA<ShutdownProvider>());
         expect(provider, isA<ProviderEventSource>());
-        final events = <ProviderEvent>[];
-        final subscription = (provider as ProviderEventSource).events.listen(
-          events.add,
-        );
-        addTearDown(subscription.cancel);
         addTearDown((provider as ShutdownProvider).shutdown);
         await _initializeDirect(provider);
-        await (provider as ShutdownProvider).shutdown();
-        await Future<void>.delayed(Duration.zero);
-        final afterFirst = _directEvaluations(provider);
-        events.clear();
-        await (provider as ShutdownProvider).shutdown();
-        await Future<void>.delayed(Duration.zero);
-        expect(_directEvaluations(provider), afterFirst);
-        expect(
-          events,
-          isEmpty,
-          reason: 'Repeated shutdown must not emit a new transition',
+        // Drain the first shutdown before measuring effects of the second.
+        await observeProviderEvents(
+          (provider as ProviderEventSource).events,
+          (provider as ShutdownProvider).shutdown,
         );
+        final afterFirst = _directEvaluations(provider);
+        await expectNoProviderEvents(
+          (provider as ProviderEventSource).events,
+          (provider as ShutdownProvider).shutdown,
+        );
+        expect(_directEvaluations(provider), afterFirst);
       });
 
       test('C12 direct shutdown restores uninitialized evaluations', () async {
@@ -353,73 +349,58 @@ void runClientProviderContract({
         }
       });
 
-      test('C13 provider events expose controlled status transitions', () async {
-        final provider = fixture.provider;
-        expect(provider, isA<InitializableProvider>());
-        expect(provider, isA<ContextReconciliationProvider>());
-        expect(provider, isA<ShutdownProvider>());
-        expect(provider, isA<ProviderEventSource>());
-        final events = <ProviderEvent>[];
-        final subscription = (provider as ProviderEventSource).events.listen(
-          events.add,
-        );
-        addTearDown(subscription.cancel);
-        addTearDown((provider as ShutdownProvider).shutdown);
+      test(
+        'C13 provider events expose controlled status transitions',
+        () async {
+          final provider = fixture.provider;
+          expect(provider, isA<InitializableProvider>());
+          expect(provider, isA<ContextReconciliationProvider>());
+          expect(provider, isA<ShutdownProvider>());
+          expect(provider, isA<ProviderEventSource>());
+          addTearDown((provider as ShutdownProvider).shutdown);
 
-        Future<void> transition(
-          ProviderEventType expected,
-          Future<void> Function() action,
-        ) async {
-          events.clear();
-          await action();
-          await Future<void>.delayed(Duration.zero);
-          expect(
-            events
-                .where(
-                  (event) => const {
-                    ProviderEventType.ready,
-                    ProviderEventType.error,
-                    ProviderEventType.contextChanged,
-                  }.contains(event.type),
-                )
-                .map((event) => event.type),
-            [expected],
-            reason:
-                'The provider itself must emit exactly one terminal event for this transition',
+          Future<void> transition(
+            ProviderEventType expected,
+            Future<void> Function() action,
+          ) => expectProviderTransition(
+            (provider as ProviderEventSource).events,
+            action,
+            expected,
           );
-        }
 
-        await transition(
-          ProviderEventType.ready,
-          () => _initializeDirect(provider),
-        );
-        fixture.failNextRequest();
-        await transition(ProviderEventType.error, () async {
-          try {
-            await fixture.refresh();
-          } on Object {
-            // Providers may report a refresh failure through both mechanisms.
-          }
-        });
-        await transition(ProviderEventType.ready, fixture.refresh);
-        await transition(
-          ProviderEventType.contextChanged,
-          () => (provider as ContextReconciliationProvider).onContextChanged(
-            _directContext,
-            EvaluationContext(targetingKey: 'b'),
-          ),
-        );
-        expect(
-          provider
-              .resolveStringValue(
-                'identity',
-                'fallback',
-                EvaluationContext(targetingKey: 'b'),
-              )
-              .value,
-          'b',
-        );
-      });
+          await transition(
+            ProviderEventType.ready,
+            () =>
+                (provider as InitializableProvider).initialize(_directContext),
+          );
+          fixture.failNextRequest();
+          await transition(ProviderEventType.error, () async {
+            try {
+              await fixture.refresh();
+            } on Object {
+              // Providers may report a refresh failure through both mechanisms.
+            }
+          });
+          await transition(ProviderEventType.ready, fixture.refresh);
+          await transition(
+            ProviderEventType.contextChanged,
+            () => (provider as ContextReconciliationProvider).onContextChanged(
+              _directContext,
+              EvaluationContext(targetingKey: 'b'),
+            ),
+          );
+          expect(
+            provider
+                .resolveStringValue(
+                  'identity',
+                  'fallback',
+                  EvaluationContext(targetingKey: 'b'),
+                )
+                .value,
+            'b',
+          );
+        },
+      );
     },
   );
 }
