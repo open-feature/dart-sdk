@@ -7,6 +7,9 @@ import shutil
 import subprocess
 from urllib.parse import urljoin, urlparse, unquote
 
+CONTRACT_VERSION = '2'
+SCENARIOS = {f'C{i:02}' for i in range(1, 14)}
+
 
 def verify_package_paths(config_path, root):
     """Verify the SDK and harness actually loaded by the provider's tests."""
@@ -44,7 +47,7 @@ def summarize(output):
         if event['type'] == 'suite':
             platforms.add(event['suite']['platform'])
         elif event['type'] == 'testStart':
-            match = re.search(r'\b(C(?:0[1-9]|10))\b', event['test']['name'])
+            match = re.search(r'\b(C\d{2})\b', event['test']['name'])
             if match:
                 tests[event['test']['id']] = {'scenario':match[1], 'name':event['test']['name'], 'result':'unfinished'}
         elif event['type'] == 'testDone' and event['testID'] in tests:
@@ -52,8 +55,7 @@ def summarize(output):
         elif event['type'] == 'done':
             successful = event['success']
     scenarios = list(tests.values())
-    expected = {f'C{i:02}' for i in range(1,11)}
-    passed = (successful and len(scenarios) == 10 and {t['scenario'] for t in scenarios} == expected and all(t['result'] == 'success' for t in scenarios))
+    passed = (successful and len(scenarios) == len(SCENARIOS) and {t['scenario'] for t in scenarios} == SCENARIOS and all(t['result'] == 'success' for t in scenarios))
     return {'scenarios':scenarios, 'platforms':sorted(platforms), 'all_scenarios_passed':passed}
 
 
@@ -83,7 +85,7 @@ def run():
     (out/'tests.jsonl').write_text(result.stdout, encoding='utf-8')
     (out/'stderr.log').write_text(result.stderr, encoding='utf-8')
     summary = summarize(result.stdout)
-    receipt = {'contract_version':'1', 'contract_checkout':identity(root),
+    receipt = {'contract_version':CONTRACT_VERSION, 'contract_checkout':identity(root),
         'sdk_checkout':identity(root), 'provider_checkout':identity(options.provider_repo),
         'classification':options.classification, 'canonical_repository':options.canonical_repository,
         'dart':subprocess.check_output([dart,'--version'],encoding='utf-8').strip(),

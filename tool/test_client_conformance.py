@@ -3,6 +3,20 @@ from client_conformance import evidence_rows, requirement_ids, test_results
 
 
 class ReportTests(unittest.TestCase):
+    def test_rationale_acceptance_does_not_approve_other_rows_or_runtime_evidence(self):
+        from server_conformance import evidence_rows as server_rows
+        manifest = {'requirements': [
+            {'id': 'accepted', 'disposition': 'rationale', 'review': 'approved'},
+            {'id': 'pending', 'disposition': 'rationale', 'review': 'pending'},
+            {'id': 'missing', 'disposition': 'evidence', 'review': 'approved',
+             'tests': [{'file': 'missing.dart', 'name_pattern': 'missing'}]},
+        ]}
+        for reporter in (evidence_rows, server_rows):
+            with self.subTest(reporter=reporter.__module__):
+                rows = reporter(manifest, [])
+                self.assertEqual([row['evidence_status'] for row in rows],
+                                 ['rationale_approved', 'rationale_pending_review', 'missing'])
+
     def test_unknown_disposition_is_rejected(self):
         with self.assertRaises(ValueError):
             evidence_rows({'requirements':[{'id':'1','disposition':'typo'}]}, [])

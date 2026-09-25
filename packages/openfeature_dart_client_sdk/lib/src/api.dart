@@ -668,6 +668,7 @@ final class OpenFeatureAPI {
       }
       return _ReconciliationResult(record, terminalEvent);
     } on Object catch (error, stackTrace) {
+      record.pendingReconciliationEvents = null;
       if (timedOut) {
         await _quarantineProvider(provider, record);
         Error.throwWithStackTrace(error, stackTrace);
@@ -691,7 +692,20 @@ final class OpenFeatureAPI {
     final operation = record.lifecycleOperation;
     if (event.type == ProviderEventType.contextChanged &&
         operation?.successEventType == ProviderEventType.contextChanged) {
+      (record.pendingReconciliationEvents ??= []).add(event);
       operation!.observe(event, ProviderStatus.ready);
+      return;
+    }
+    if (event.type == ProviderEventType.error &&
+        operation?.successEventType == ProviderEventType.contextChanged) {
+      // A terminal failure rejects the context and its buffered success events.
+      record.pendingReconciliationEvents = null;
+    }
+    final pending = record.pendingReconciliationEvents;
+    if (pending != null) {
+      // Keep later state changes behind contextChanged until the API commits
+      // the context, including while other global providers are still pending.
+      pending.add(event);
       return;
     }
     _applyEventState(record, event);
@@ -742,11 +756,21 @@ final class OpenFeatureAPI {
     if (record.quarantined || !identical(_providerRecords[provider], record)) {
       return;
     }
-    _applyEventState(record, reconciliation.event);
-    if (record.bindingCount == 0) {
-      record.pendingBindingEvents.add(reconciliation.event);
-    } else {
-      _dispatchEvent(provider, record, reconciliation.event);
+    final pending =
+        record.pendingReconciliationEvents ?? [reconciliation.event];
+    try {
+      // Handlers can emit more provider events. Drain those in receive order too.
+      for (var index = 0; index < pending.length; index++) {
+        final event = pending[index];
+        _applyEventState(record, event);
+        if (record.bindingCount == 0) {
+          record.pendingBindingEvents.add(event);
+        } else {
+          _dispatchEvent(provider, record, event);
+        }
+      }
+    } finally {
+      record.pendingReconciliationEvents = null;
     }
   }
 
@@ -950,6 +974,7 @@ final class OpenFeatureAPI {
     } finally {
       record.eventSubscription = null;
       record.lifecycleOperation = null;
+      record.pendingReconciliationEvents = null;
       record.pendingBindingEvents.clear();
       record.bindingCount = 0;
       record.status = ProviderStatus.notReady;
@@ -1290,6 +1315,7 @@ final class _ProviderRecord {
   _LifecycleOperation? lifecycleOperation;
   bool quarantined = false;
   ProviderEvent? latestStateEvent;
+  List<ProviderEvent>? pendingReconciliationEvents;
   final List<ProviderEvent> pendingBindingEvents = <ProviderEvent>[];
 }
 

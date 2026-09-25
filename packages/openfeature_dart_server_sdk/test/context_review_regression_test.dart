@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:test/test.dart';
 import 'package:openfeature_dart_server_sdk/client.dart';
 import 'package:openfeature_dart_server_sdk/evaluation_context.dart';
@@ -173,6 +174,31 @@ void main() {
       ]) {
         expect(identical(provider.evaluated![level], values), isTrue);
       }
+    },
+  );
+
+  test(
+    'legacy targeting-key collision preserves attributes and resolves explicit key',
+    () {
+      final fields = <String, dynamic>{'targetingKey': 'alias', 'x': 1};
+      final direct = EvaluationContext(
+        targetingKey: 'explicit',
+        attributes: fields,
+      );
+      final adapter = OpenFeatureEvaluationContext(
+        fields,
+        targetingKey: 'explicit',
+      );
+      for (final context in [direct, adapter.toEvaluationContext()]) {
+        expect(context.attributes['targetingKey'], 'alias');
+        expect(context.getAttribute('targetingKey'), 'explicit');
+        expect(context.toProviderContext(), {
+          'targetingKey': 'explicit',
+          'x': 1,
+        });
+      }
+      expect(adapter.attributes['targetingKey'], 'alias');
+      expect(fields['targetingKey'], 'alias');
     },
   );
 

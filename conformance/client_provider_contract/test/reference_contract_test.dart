@@ -35,9 +35,12 @@ class ReferenceFixture
   HeldResponse? next;
   bool fail = false;
   int generation = 0;
+  bool stopped = false;
   EvaluationContext context = EvaluationContext.empty;
   @override
   int shutdownCalls = 0;
+  @override
+  bool get supportsReinitialization => true;
   @override
   FeatureProvider get provider => this;
   @override
@@ -84,8 +87,11 @@ class ReferenceFixture
   }
 
   @override
-  Future<void> initialize(EvaluationContext context, {String? domain}) =>
-      load(context, ProviderEventType.ready);
+  Future<void> initialize(EvaluationContext context, {String? domain}) {
+    stopped = false;
+    return load(context, ProviderEventType.ready);
+  }
+
   @override
   Future<void> onContextChanged(
     EvaluationContext previousContext,
@@ -103,8 +109,12 @@ class ReferenceFixture
 
   @override
   Future<void> shutdown() async {
-    generation++;
     shutdownCalls++;
+    if (stopped) return;
+    stopped = true;
+    generation++;
+    context = EvaluationContext.empty;
+    delegate.replaceAll({});
   }
 
   @override
@@ -112,7 +122,7 @@ class ReferenceFixture
     try {
       expect(
         shutdownCalls,
-        1,
+        greaterThanOrEqualTo(1),
         reason: 'Provider shutdown must precede transport cleanup',
       );
     } finally {

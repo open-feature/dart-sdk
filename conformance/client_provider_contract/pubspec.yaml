@@ -9,6 +9,7 @@ dependencies:
     path: ../../packages/openfeature_dart_client_sdk
   test: ^1.26.3
 dev_dependencies:
+  fake_async: ^1.3.3
   analyzer: ^8.1.1
   frontend_server_client: ^4.0.0
   shelf_web_socket: ^2.0.1

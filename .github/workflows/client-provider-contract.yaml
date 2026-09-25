@@ -33,6 +33,9 @@ jobs:
         run: |
           dart analyze
           dart format --output=none --set-exit-if-changed lib test
+      - name: Test event observation regressions
+        working-directory: conformance/client_provider_contract
+        run: dart test --platform ${{ matrix.platform }} test/provider_event_observer_test.dart
       - name: Test receipt accounting
         run: python3 -m unittest discover -s tool -p test_client_provider_evidence.py
       - name: Run reference contract (not independent provider evidence)

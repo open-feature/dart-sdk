@@ -91,6 +91,15 @@ alias at the same level. `toProviderContext()` includes inherited fields and
 the effective key. Null custom fields in immutable contexts shadow parent
 values. The legacy adapter continues to expose its original attributes.
 
+Legacy constructors allow an attributes entry named `targetingKey` even when
+an explicit targeting key is supplied. The original attributes map keeps that
+entry; `getAttribute('targetingKey')` and `toProviderContext()` prefer the explicit
+key and emit one effective map key. This legacy-only alias distinction is
+recorded for the [#165 semantic review](https://github.com/open-feature/dart-sdk/issues/165),
+not silently normalized into the immutable API. The regression
+`legacy targeting-key collision preserves attributes and resolves explicit key`
+in `context_review_regression_test.dart` covers both legacy constructors.
+
 For the helper `merge`, the right explicit targeting key wins, followed by
 the left explicit key, then local map aliases (right before left). Inherited
 keys are used only if neither context has a local key. Immutable construction
@@ -116,10 +125,14 @@ Unrelated provider errors retain their existing classification. Tracking
 continues its existing non-throwing contract and logs failures.
 
 There is no analyzer deprecation or removal date in this additive stage.
-Enforcing strict values or deep immutability on legacy APIs requires a
-separately reviewed migration. Legacy aliasing, full hook semantics (#161)
-and propagator lifecycle/independent API isolation (#163) remain open scope.
-The conformance matrix distinguishes opt-in guarantees from those gaps.
+Brian accepted the additive context scope in
+[#159](https://github.com/open-feature/dart-sdk/issues/159#issuecomment-5831385040).
+The spec does not require deep immutability or rejection of every unsupported
+legacy value. [#195](https://github.com/open-feature/dart-sdk/issues/195) tracks
+warnings and migration examples before any separately approved breaking change
+to legacy constructors. No deprecation/removal version is selected here.
+Hook and isolation implementations are integrated; their review and the broader
+semantic conformance gates remain distinct from these opt-in guarantees.
 
 ## Verification
 

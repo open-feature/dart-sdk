@@ -992,7 +992,11 @@
       "review": "pending",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
       "disposition": "gap",
-      "rationale": "Provider-owned post-shutdown behavior needs canonical provider evidence; core ownership cleanup is insufficient.",
+      "rationale": "Provider-owned post-shutdown behavior is checked directly by shared contract v2 C12, including reinitialization when supported. Canonical provider receipts and maintainer review remain required.",
+      "provider_contract": {
+        "version": "2",
+        "scenario": "C12"
+      },
       "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
     },
     {
@@ -1002,7 +1006,11 @@
       "review": "pending",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
       "disposition": "gap",
-      "rationale": "Provider-owned idempotent cleanup needs canonical provider evidence, not just SDK suppression of duplicate cleanup.",
+      "rationale": "Provider-owned shutdown idempotency is checked directly by shared contract v2 C11. Canonical provider receipts and resource-cleanup evidence remain required; SDK cleanup suppression is insufficient.",
+      "provider_contract": {
+        "version": "2",
+        "scenario": "C11"
+      },
       "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
     },
     {
@@ -1044,7 +1052,11 @@
       "review": "pending",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
       "disposition": "gap",
-      "rationale": "No sufficiently focused existing test has been selected. Add or identify clause-level coverage and review it before stable promotion; absence of evidence is not a proven runtime defect.",
+      "rationale": "The provider must emit its own status-transition events. Shared contract v2 C13 checks controlled initialization, refresh failure, recovery, and context-change transitions. Canonical receipts and review of spontaneous transport transitions remain required.",
+      "provider_contract": {
+        "version": "2",
+        "scenario": "C13"
+      },
       "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
     },
     {
@@ -1464,10 +1476,11 @@
       "id": "4.3.1",
       "level": "MUST",
       "section": "04-hooks",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
-      "disposition": "gap",
-      "rationale": "HookAdapter permits an implementation with every stage inherited as a no-op. Maintainers must resolve the at-least-one-stage contract and beta migration policy; passing default-stage tests do not prove this MUST."
+      "disposition": "rationale",
+      "rationale": "Maintainer-accepted Dart language rationale: HookAdapter supplies optional no-op stages. Dart cannot require overriding at least one stage without reflection or an explicit declaration flag. Keep the current runtime and beta API unchanged; this acceptance applies only to this language rationale, not the other requirement mappings.",
+      "review_reference": "https://github.com/open-feature/dart-sdk/issues/117#issuecomment-5819052385"
     },
     {
       "id": "4.3.2",
@@ -2125,7 +2138,6 @@
   ],
   "release_gates": [
     "Close applicable MUST evidence gaps and review every mapping, applicability rationale and SHOULD interpretation.",
-    "Resolve the empty HookAdapter stage contract and any beta compatibility implications.",
     "Obtain maintainer acceptance of the shared contract from two independent canonical providers; IntelliToggle alone is insufficient.",
     "Complete exact-version Flutter consumer and declared Android, iOS and desktop runtime evidence; browser tests do not establish native support.",
     "Approve migration/provider compatibility notes and reviewed development-to-main stable promotion; verify immutable tag and pub.dev archive separately."

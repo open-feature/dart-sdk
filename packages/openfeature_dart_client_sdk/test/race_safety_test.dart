@@ -226,6 +226,161 @@ void main() {
     },
   );
 
+  for (final scope in ['global', 'domain', 'clear']) {
+    test('preserves cached reconciliation events for $scope context', () async {
+      final provider = _GatedContextProvider(
+        followingEvents: [ProviderEventType.stale],
+      );
+      final domain = scope == 'global' ? null : 'checkout';
+      if (domain != null) {
+        await api.setEvaluationContextForDomainAndWait(
+          domain,
+          EvaluationContext(targetingKey: 'old-user'),
+        );
+        await api.setProviderForDomainAndWait(domain, provider);
+      } else {
+        await api.setProviderAndWait(provider);
+      }
+      final client = api.getClient(domain);
+      final observed = <(ProviderEventType, ProviderStatus, String?)>[];
+      for (final type in [
+        ProviderEventType.contextChanged,
+        ProviderEventType.stale,
+      ]) {
+        client.addHandler(type, (_) {
+          client.getBooleanValue('flag', false);
+          observed.add((
+            type,
+            client.providerStatus,
+            provider.lastEvaluationContext?.targetingKey,
+          ));
+        });
+      }
+      final next = EvaluationContext(targetingKey: 'next-user');
+      final change = switch (scope) {
+        'global' => api.setEvaluationContextAndWait(next),
+        'domain' => api.setEvaluationContextForDomainAndWait(domain!, next),
+        _ => api.clearEvaluationContextForDomainAndWait(domain!),
+      };
+      await provider.waitForChange(1);
+      provider.allowChange(0);
+      await change;
+
+      final key = scope == 'clear' ? null : 'next-user';
+      expect(observed, [
+        (ProviderEventType.contextChanged, ProviderStatus.ready, key),
+        (ProviderEventType.stale, ProviderStatus.stale, key),
+      ]);
+      expect(client.providerStatus, ProviderStatus.stale);
+      final late = <ProviderEventDetails>[];
+      client.addHandler(ProviderEventType.stale, late.add);
+      expect(late, hasLength(1));
+    });
+  }
+
+  test('retains events while another global provider is pending', () async {
+    final fast = _GatedContextProvider();
+    final slow = _GatedContextProvider();
+    await api.setProviderAndWait(fast);
+    await api.setProviderForDomainAndWait('slow', slow);
+    final observed = <ProviderEventType>[];
+    for (final type in [
+      ProviderEventType.contextChanged,
+      ProviderEventType.stale,
+    ]) {
+      api.getClient().addHandler(type, (_) => observed.add(type));
+    }
+    final change = api.setEvaluationContextAndWait(
+      EvaluationContext(targetingKey: 'next'),
+    );
+    await Future.wait([fast.waitForChange(1), slow.waitForChange(1)]);
+    fast.allowChange(0);
+    await Future<void>.delayed(Duration.zero);
+    fast.emit(ProviderEventType.stale);
+    try {
+      expect(observed, isEmpty);
+    } finally {
+      slow.allowChange(0);
+    }
+    await change;
+    expect(observed, [
+      ProviderEventType.contextChanged,
+      ProviderEventType.stale,
+    ]);
+    expect(api.getClient().providerStatus, ProviderStatus.stale);
+  });
+
+  test(
+    'orders reentrant provider events after already received events',
+    () async {
+      final provider = _GatedContextProvider(
+        followingEvents: [ProviderEventType.stale],
+      );
+      await api.setProviderAndWait(provider);
+      final client = api.getClient();
+      final observed = <ProviderEventType>[];
+      client.addHandler(ProviderEventType.contextChanged, (_) {
+        observed.add(ProviderEventType.contextChanged);
+        provider.emit(ProviderEventType.ready);
+      });
+      client.addHandler(
+        ProviderEventType.stale,
+        (_) => observed.add(ProviderEventType.stale),
+      );
+      client.addHandler(
+        ProviderEventType.ready,
+        (_) => observed.add(ProviderEventType.ready),
+      );
+      observed.clear(); // Registration replays the initial ready state.
+      final change = api.setEvaluationContextAndWait(
+        EvaluationContext(targetingKey: 'next'),
+      );
+      await provider.waitForChange(1);
+      provider.allowChange(0);
+      await change;
+      expect(observed, [
+        ProviderEventType.contextChanged,
+        ProviderEventType.stale,
+        ProviderEventType.ready,
+      ]);
+      expect(client.providerStatus, ProviderStatus.ready);
+    },
+  );
+
+  for (final throwsAfterEvent in [false, true]) {
+    test(
+      'discards buffered success when reconciliation fails ($throwsAfterEvent)',
+      () async {
+        final provider = _GatedContextProvider(
+          followingEvents: [
+            ProviderEventType.stale,
+            if (!throwsAfterEvent) ProviderEventType.error,
+          ],
+          throwsAfterEvent: throwsAfterEvent,
+        );
+        await api.setProviderAndWait(provider);
+        final observed = <ProviderEventType>[];
+        for (final type in [
+          ProviderEventType.contextChanged,
+          ProviderEventType.stale,
+        ]) {
+          api.getClient().addHandler(type, (_) => observed.add(type));
+        }
+        final change = api.setEvaluationContextAndWait(
+          EvaluationContext(targetingKey: 'rejected'),
+        );
+        final failed = expectLater(change, throwsA(anything));
+        await provider.waitForChange(1);
+        provider.allowChange(0);
+        await failed;
+        expect(observed, isEmpty);
+        provider.emit(ProviderEventType.ready);
+        provider.emit(ProviderEventType.stale);
+        expect(observed, [ProviderEventType.stale]);
+      },
+    );
+  }
+
   test(
     'an unbound domain uses global context until it has a provider',
     () async {
@@ -254,10 +409,15 @@ final class _GatedContextProvider
         ContextReconciliationProvider,
         ProviderEventSource,
         ShutdownProvider {
-  _GatedContextProvider({this.name = 'gated-provider'})
-    : _delegate = InMemoryProvider({'flag': true});
+  _GatedContextProvider({
+    this.name = 'gated-provider',
+    this.followingEvents = const [],
+    this.throwsAfterEvent = false,
+  }) : _delegate = InMemoryProvider({'flag': true});
 
   final String name;
+  final List<ProviderEventType> followingEvents;
+  final bool throwsAfterEvent;
   final InMemoryProvider _delegate;
   final StreamController<ProviderEvent> _events =
       StreamController<ProviderEvent>.broadcast(sync: true);
@@ -302,6 +462,10 @@ final class _GatedContextProvider
     await gate.future;
     activeContext = newContext;
     _events.add(ProviderEvent(type: ProviderEventType.contextChanged));
+    for (final type in followingEvents) {
+      emit(type);
+    }
+    if (throwsAfterEvent) throw StateError('reconciliation failed');
   }
 
   @override
