@@ -177,24 +177,30 @@ void main() {
     },
   );
 
-  test('legacy targeting-key collision preserves attributes and resolves explicit key', () {
-    final fields = <String, dynamic>{'targetingKey': 'alias', 'x': 1};
-    final direct = EvaluationContext(
-      targetingKey: 'explicit',
-      attributes: fields,
-    );
-    final adapter = OpenFeatureEvaluationContext(
-      fields,
-      targetingKey: 'explicit',
-    );
-    for (final context in [direct, adapter.toEvaluationContext()]) {
-      expect(context.attributes['targetingKey'], 'alias');
-      expect(context.getAttribute('targetingKey'), 'explicit');
-      expect(context.toProviderContext(), {'targetingKey': 'explicit', 'x': 1});
-    }
-    expect(adapter.attributes['targetingKey'], 'alias');
-    expect(fields['targetingKey'], 'alias');
-  });
+  test(
+    'legacy targeting-key collision preserves attributes and resolves explicit key',
+    () {
+      final fields = <String, dynamic>{'targetingKey': 'alias', 'x': 1};
+      final direct = EvaluationContext(
+        targetingKey: 'explicit',
+        attributes: fields,
+      );
+      final adapter = OpenFeatureEvaluationContext(
+        fields,
+        targetingKey: 'explicit',
+      );
+      for (final context in [direct, adapter.toEvaluationContext()]) {
+        expect(context.attributes['targetingKey'], 'alias');
+        expect(context.getAttribute('targetingKey'), 'explicit');
+        expect(context.toProviderContext(), {
+          'targetingKey': 'explicit',
+          'x': 1,
+        });
+      }
+      expect(adapter.attributes['targetingKey'], 'alias');
+      expect(fields['targetingKey'], 'alias');
+    },
+  );
 
   test('local targeting key wins over the other inherited targeting key', () {
     final left = EvaluationContext(targetingKey: 'mine', attributes: {});
@@ -273,8 +279,9 @@ void main() {
       subRules: children,
     );
     final fields = {'role': 'admin'};
-    final child = EvaluationContext.immutable(attributes: {})
-        .createChild(fields, childRules: [rule]);
+    final child = EvaluationContext.immutable(
+      attributes: {},
+    ).createChild(fields, childRules: [rule]);
     fields['role'] = 'user';
     values.clear();
     metadata['nested']!['source'] = 'after';
