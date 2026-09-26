@@ -31,16 +31,20 @@ const constructor retains caller-owned attributes without new validation.
 integer values without conversion to double. Existing double arguments and
 const construction work. Code assigning the property directly to `double?`
 must use `details.value?.toDouble()` or accept `num?`. This is a source-level
-widening for readers and requires release/version review before publication.
+widening for readers that first shipped in **server 0.0.26**, not 0.0.25.
+Brian accepted `num?` as spec-aligned in
+[#164](https://github.com/open-feature/dart-sdk/issues/164#issuecomment-5831397075).
 
-### Required release note
+### Release-note correction
 
-The next generated server release PR containing this change must identify
-`TrackingEventDetails.value: double?` to `num?` as a **breaking source change**
-and include the conversion above. It is not part of published 0.0.25.
-Release Please owns the versioned changelog: add this note to the applicable
-generated release entry, without changing historical entries or inserting a
-manual `Unreleased` section. Review the selected version before publishing.
+The [0.0.26 GitHub release](https://github.com/open-feature/dart-sdk/releases/tag/v0.0.26)
+now identifies `double?` to `num?` as a **breaking source change** and includes
+`details.value?.toDouble()`. The repository's generated 0.0.26 changelog entry
+carries a one-time correction reviewed through the normal pull-request process.
+The already-published pub.dev archive and immutable tag remain unchanged, so
+that archive's original changelog does not contain the correction. Release Please
+continues to own future entries; this does not request a new version, rewrite a
+tag, or apply a repository-wide breaking-change footer to the client package.
 
 ## Transaction carriers
 
@@ -84,6 +88,14 @@ buffering provider owns its queue, error policy and drain deadline. Implement
 that policy. API shutdown invokes provider cleanup and awaits its returned
 future; new calls resolve the reset API's no-op provider. Do not interpret
 completion as vendor acknowledgment unless the provider explicitly promises it.
+
+Providers should flush within the SDK's fixed five-second shutdown deadline or
+flush on their own schedule before shutdown. The separate cancellation deadline
+is not an additional tracking-flush budget. A timeout stops waiting without
+cancelling provider I/O; exiting the process at that point can lose queued events.
+See [shutdown and isolation](shutdown-and-isolation.md),
+[#163](https://github.com/open-feature/dart-sdk/issues/163) and the public deadline
+configuration follow-up [#196](https://github.com/open-feature/dart-sdk/issues/196).
 
 `tracking_transaction_contract_test.dart` covers the implemented 2.7, 3.3 and
 section 6 behavior, including a provider-owned pending transport drain. These

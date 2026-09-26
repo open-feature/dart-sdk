@@ -34,6 +34,19 @@ test evidence fails CI. Review and provider gates remain visible when CI passes;
 
 ## What must still be reviewed
 
+Counts from `conformance/server-v0.9.0.json` (also emitted by the reporter):
+
+| Disposition | Count | IDs when not test evidence |
+| --- | --- | --- |
+| evidence | 127 | Mapped tests; semantic review pending |
+| not_applicable | 16 | 1.3.2.1, 1.4.2.1, 1.7.2.1, 2.8.4, 3.2.2.1–3.2.2.4, 3.2.4.1–3.2.4.2, 3.3.2.1, 4.3.3.1, 5.3.4.1–5.3.4.3, 6.1.2.1 |
+| rationale | 1 | 2.6.1: optional MAY capability omitted because context is passed on every evaluation |
+| deviation | 1 | 1.4.11: default evaluation-error logging, pending acceptance |
+
+All 145 semantic mappings remain pending review. Requirement 2.8.4 is conditional
+on the optional callback in 2.6.1; that callback is neither implemented nor
+called by this dynamic-context SDK. It is not a blanket provider exemption.
+
 The mappings in `conformance/server-v0.9.0.json` are proposals. A passing selected
 test establishes that behavior in that fixture; it does not prove semantic
 completeness for every requirement. Maintainers must inspect each mapping,
@@ -47,16 +60,60 @@ against the exact candidate, including lifecycle, event/hook and tracking
 integration. Local dependency overrides or a passing consumer build alone do
 not establish deployed or live service acceptance.
 
-Compatibility decisions requiring release review include legacy provider event
-grace, legacy hook mutability/stage behavior, provider cleanup failures now
-reported by dispose/resetInstance, and the tracking numeric-property widening.
-The report deliberately keeps these gates unresolved. After that review, use
-the normal development-to-main and immutable package publication process.
+IntelliToggle is the named external server-provider candidate in its
+[canonical repository](https://gitlab.com/dartapps/apps/intellitoggle/openfeature-provider-intellitoggle).
+Existing green provider CI is not yet the requirement-level receipt: identify
+the exact server job, resolved SDK version/commit and lifecycle, events, hooks
+and tracking coverage before accepting this gate. The client v2 receipts do not
+substitute for server integration coverage.
+
+Context scope (#159), shutdown ownership/deadline documentation (#163) and the
+shipped `0.0.26` numeric widening/migration notes (#164) have been accepted and
+closed. The latest merged documentation baseline is `4fd0ecf9d6cdf29e330a344b1cd1aea48bc35bf3`;
+its server evidence run contains 407 passing tests. These implementation slices
+do not resolve the remaining semantic, provider or future conformance-release
+gates. The reporter records the exact candidate under review.
+
+### Default logging and opt-out (1.4.11)
+
+Evaluation errors log `WARNING` through `Logger('FeatureClient')` by default.
+Singleton API construction sets `Logger.root.level = Level.ALL` and subscribes a printer
+to root records. Isolated API construction does not install that printer, but
+clients still emit logger records. Applications can use the existing `package:logging` API:
+
+```dart
+import 'package:logging/logging.dart';
+import 'package:openfeature_dart_server_sdk/open_feature_api.dart';
+
+final api = OpenFeatureAPI();
+hierarchicalLoggingEnabled = true;
+Logger('FeatureClient').level = Level.OFF;
+```
+
+Declare `logging` as a direct application dependency when importing it.
+This process-wide configuration silences that named logger, including its
+tracking warnings, and preserves other loggers. It is not an SDK-wide opt-out.
+`logging_opt_out_test.dart` checks both default evaluation-error output and the
+named logger's suppression while an unrelated warning still prints. Keeping
+default logging is a **SHOULD NOT deviation awaiting maintainer acceptance**.
+
+### Legacy API decisions proposed for review
+
+| Legacy surface | Proposed 0.0.x decision | Later change gate |
+| --- | --- | --- |
+| Positional context constructors and legacy reserved-key behavior | Keep; canonical named form remains additive | #195: review warnings/migration before a breaking removal; no removal version chosen |
+| `Hook` / `BaseHook` mutability and stages | Keep; use opt-in `EvaluationHook` for the new contract | Review migration and a breaking version before removal |
+| Legacy provider event streams and grace behavior | Keep alongside typed events | Review event migration before any breaking removal |
+| Legacy provider members | Keep; optional capability interfaces remain additive | Review migration before any breaking removal |
+
+These are proposals for maintainers to mark, not independent approvals. The
+supported public timeout configuration request remains a separate #196 follow-up.
 
 ## Migration and consumer evidence
 
-The identical legacy consumer fixture runs against published server `0.0.25` and
-the candidate. It analyzes and executes old package imports, provider setup,
+The identical legacy consumer fixture runs against published server `0.0.25`,
+published `0.0.26` (the latest release baseline), and the candidate. Retaining
+`0.0.25` also checks the pre-numeric-widening API. It analyzes and executes old package imports, provider setup,
 positional contexts, asynchronous evaluation/details, legacy transactions and
 tracking, and checks the resolved dependency graph for Flutter dependencies.
 This is a scoped compatibility fixture, not proof that every old program builds.
