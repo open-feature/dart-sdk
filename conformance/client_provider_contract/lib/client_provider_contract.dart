@@ -411,25 +411,11 @@ final _directContext = EvaluationContext(targetingKey: 'a');
 Future<void> _initializeDirect(FeatureProvider provider) async {
   expect(provider, isA<InitializableProvider>());
   expect(provider, isA<ProviderEventSource>());
-  final terminal = Completer<ProviderEventType>();
-  final subscription = (provider as ProviderEventSource).events.listen((event) {
-    if (!terminal.isCompleted &&
-        (event.type == ProviderEventType.ready ||
-            event.type == ProviderEventType.error)) {
-      terminal.complete(event.type);
-    }
-  });
-  try {
-    await (provider as InitializableProvider)
-        .initialize(_directContext)
-        .timeout(const Duration(seconds: 3));
-    expect(
-      await terminal.future.timeout(const Duration(seconds: 3)),
-      ProviderEventType.ready,
-    );
-  } finally {
-    await subscription.cancel();
-  }
+  await expectProviderTransition(
+    (provider as ProviderEventSource).events,
+    () => (provider as InitializableProvider).initialize(_directContext),
+    ProviderEventType.ready,
+  );
 }
 
 // Call the provider directly so SDK defaults cannot hide retained assignments.

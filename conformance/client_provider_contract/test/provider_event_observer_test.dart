@@ -23,6 +23,59 @@ class Outcome {
 }
 
 void main() {
+  test('direct initialization shares the action and event deadline', () {
+    fakeAsync((clock) {
+      final events = StreamController<ProviderEvent>(
+        sync: true,
+        onCancel: () async {},
+      );
+      final result = Outcome(
+        expectProviderTransition(events.stream, () async {
+          await Future<void>.delayed(const Duration(milliseconds: 2800));
+          Timer(const Duration(milliseconds: 300), () {
+            events.add(ProviderEvent(type: ProviderEventType.ready));
+          });
+        }, ProviderEventType.ready),
+      );
+      clock.elapse(const Duration(milliseconds: 2999));
+      expect(result.done, isFalse);
+      clock.elapse(const Duration(milliseconds: 1));
+      expect(result.error, isA<TimeoutException>());
+      expect(events.hasListener, isFalse);
+      clock.elapse(const Duration(milliseconds: 100));
+      expect(result.error, isA<TimeoutException>());
+      expect(clock.pendingTimers, isEmpty);
+      unawaited(events.close());
+    });
+  });
+
+  for (final unexpected in [
+    ProviderEventType.error,
+    ProviderEventType.contextChanged,
+  ]) {
+    test('initialization rejects ready followed by $unexpected', () {
+      fakeAsync((clock) {
+        final events = StreamController<ProviderEvent>(
+          sync: true,
+          onCancel: () async {},
+        );
+        final result = Outcome(
+          expectProviderTransition(events.stream, () async {
+            events.add(ProviderEvent(type: ProviderEventType.ready));
+            Timer(const Duration(milliseconds: 30), () {
+              events.add(ProviderEvent(type: unexpected));
+            });
+          }, ProviderEventType.ready),
+        );
+        clock.elapse(const Duration(milliseconds: 200));
+        expect(result.error, isA<TestFailure>());
+        expect(events.hasListener, isFalse);
+        expect(clock.pendingTimers, isEmpty);
+        unawaited(events.close());
+      });
+    });
+  }
+
   for (final delay in [Duration.zero, const Duration(milliseconds: 30)]) {
     test('C13 accepts exactly one error after $delay', () {
       fakeAsync((clock) {

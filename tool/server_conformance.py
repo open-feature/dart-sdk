@@ -51,9 +51,11 @@ def evidence_rows(manifest, tests):
     rows = []
     for requirement in manifest['requirements']:
         row = dict(requirement)
-        if row['disposition'] != 'evidence':
+        if row['disposition'] in ('not_applicable', 'rationale'):
             row['evidence_status'] = ('rationale_approved' if row.get('review') == 'approved' else 'rationale_pending_review')
-        else:
+        elif row['disposition'] == 'deviation':
+            row['evidence_status'] = 'evidence_gap'
+        elif row['disposition'] == 'evidence':
             matched = []
             missing = []
             for selector in row['tests']:
@@ -65,6 +67,8 @@ def evidence_rows(manifest, tests):
             row['missing_selectors'] = missing
             row['evidence_status'] = ('missing' if missing or not matched else
                 'passing' if all(test['result'] == 'success' for test in matched) else 'not_passing')
+        else:
+            raise ValueError(f"Unknown requirement disposition: {row['disposition']}")
         rows.append(row)
     return rows
 
@@ -109,14 +113,15 @@ def run(args=None):
     rows = evidence_rows(manifest, tests)
     broken = [row['id'] for row in rows if row['evidence_status'] in ('missing','not_passing')]
     unreviewed = [row['id'] for row in rows if row.get('review') != 'approved']
-    ready = not (broken or unreviewed or dirty or manifest['release_gates'] or result.returncode or not completed)
+    deviations = [row['id'] for row in rows if row['evidence_status'] == 'evidence_gap']
+    ready = not (broken or unreviewed or deviations or dirty or manifest['release_gates'] or result.returncode or not completed)
     report = {'schema': 1, 'sdk_commit': sha, 'sdk_tree': tree, 'dirty_worktree': dirty,
         'pr_head': os.environ.get('PR_HEAD_SHA'), 'ci_run': os.environ.get('GITHUB_RUN_ID'),
         'dart': version, 'spec_version': manifest['spec_version'], 'spec_commit': manifest['spec_commit'],
         'spec_source_sha256': manifest['source_sha256'], 'claim': manifest['claim'],
         'tests_completed_successfully': completed and result.returncode == 0,
         'executed_test_count': len(tests), 'broken_evidence': broken,
-        'unreviewed_requirements': unreviewed, 'release_gates': manifest['release_gates'],
+        'unreviewed_requirements': unreviewed, 'unresolved_deviations': deviations, 'release_gates': manifest['release_gates'],
         'release_ready': ready, 'disposition_counts': dict(sorted(Counter(row['disposition'] for row in rows).items())), 'requirements': rows}
     (out/'report.json').write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
     lines = ['# Server v0.9 candidate evidence', '', manifest['claim'], '',
