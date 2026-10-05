@@ -10,7 +10,9 @@
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "include-component-in-tag": false,
-      "extra-files": ["README.md"],
+      "extra-files": [
+        "README.md"
+      ],
       "changelog-sections": [
         {
           "type": "fix",
@@ -64,17 +66,26 @@
           "hidden": true,
           "section": "🧪 Tests"
         }
-      ]
+      ],
+      "release-as": "0.1.0",
+      "draft-pull-request": true
     },
     "packages/openfeature_dart_client_sdk": {
       "release-type": "simple",
       "component": "openfeature_dart_client_sdk",
       "package-name": "openfeature_dart_client_sdk",
       "version-file": ".release-please-version",
-      "extra-files": [{"type": "generic", "path": "pubspec.yaml"}],
-      "prerelease": true,
-      "prerelease-type": "beta",
-      "versioning": "prerelease",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "pubspec.yaml"
+        },
+        {
+          "type": "generic",
+          "path": "README.md"
+        }
+      ],
+      "prerelease": false,
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
       "include-component-in-tag": true,
@@ -114,7 +125,9 @@
           "hidden": true,
           "section": "✅ Tests"
         }
-      ]
+      ],
+      "release-as": "0.0.1",
+      "draft-pull-request": true
     }
   }
 }

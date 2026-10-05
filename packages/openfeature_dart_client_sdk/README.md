@@ -4,22 +4,25 @@ This package is the vendor-neutral OpenFeature SDK for Dart client
 applications. It uses the static-context paradigm. It has no Flutter or
 `dart:io` dependency.
 
-This source checkout supports Dart 3.10 or later. The published beta below
-requires Dart 3.12.2 until a release containing the lower SDK floor is published.
+This package supports Dart 3.10 or later within Dart 3.x. Provider packages
+can require a higher Dart version; check the chosen provider separately.
 
-The package is in beta. The first beta defines the public client and provider
-contracts. It provides synchronous typed evaluation, event handlers, hooks,
-ordered context changes, and an in-memory provider. Later beta changes will
-complete the remaining conformance work before the first stable release.
+Current package version: `0.0.1-beta.2`. <!-- x-release-please-version -->
+
+The intended first non-beta release is `0.0.1`, subject to maintainer acceptance
+of the conformance, provider and platform gates. It provides synchronous typed
+evaluation, event handlers, hooks, ordered context changes and an in-memory
+provider. Pre-1.0 versions do not establish a 1.0 API compatibility commitment.
+Consult the conformance matrix and release notes for accepted support scope.
 
 ## Install
 
-The published beta requires Dart 3.12.2 or later within Dart 3.x. Flutter
+The client SDK requires Dart 3.10 or later within Dart 3.x. Flutter
 applications need a Flutter release that includes a compatible Dart SDK.
 
 ```yaml
 dependencies:
-  openfeature_dart_client_sdk: ^0.0.1-beta.1
+  openfeature_dart_client_sdk: ^0.0.1-beta.2 # x-release-please-version
 ```
 
 Run `dart pub get`, or `flutter pub get` in a Flutter application.
@@ -101,5 +104,5 @@ dart tool/stage_client_package.dart --dry-run
 ```
 
 See the
-[beta release procedure](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-release.md)
-for the first-publication bootstrap and later automated prereleases.
+[client release procedure](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-release.md)
+for non-beta release review and historical first-publication instructions.
