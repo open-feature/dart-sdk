@@ -9,8 +9,7 @@ can require a higher Dart version; check the chosen provider separately.
 
 Current package version: `0.0.1-beta.2`. <!-- x-release-please-version -->
 
-The intended first non-beta release is `0.0.1`, subject to maintainer acceptance
-of the conformance, provider and platform gates. It provides synchronous typed
+This pre-1.0 package provides synchronous typed
 evaluation, event handlers, hooks, ordered context changes and an in-memory
 provider. Pre-1.0 versions do not establish a 1.0 API compatibility commitment.
 Consult the conformance matrix and release notes for accepted support scope.

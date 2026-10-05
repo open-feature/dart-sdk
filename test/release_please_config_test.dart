@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -75,6 +76,17 @@ void main() {
     expect(testWorkflow, contains('needs: test'));
     expect(testWorkflow, contains('MATRIX_RESULT:'));
     expect(testWorkflow, contains('needs.test.result'));
+    expect(testWorkflow, contains('  merge_group:'));
+    final requiredJob = testWorkflow
+        .split('  stable-required:')
+        .last
+        .split('  minimum-dependencies:')
+        .first;
+    expect(
+      requiredJob,
+      contains('dart test test/release_please_config_test.dart'),
+      reason: 'Milestone validation must run inside the required queue check.',
+    );
   });
 
   test(
@@ -129,30 +141,47 @@ void main() {
     final clientVersion =
         manifest['packages/openfeature_dart_client_sdk']! as String;
 
+    expect(clientConfig['release-as'], anyOf(isNull, '0.0.1'));
     expect(
-      clientConfig['release-as'] == null ||
-          (clientVersion == '0.0.1-beta.2' &&
-              clientConfig['release-as'] == '0.0.1'),
+      _isPendingOverride(clientVersion, clientConfig['release-as']),
       isTrue,
       reason:
           'Remove the client milestone override in its generated '
-          '0.0.1 release PR before merging; later releases must not be pinned.',
+          '0.0.1 release PR before marking it ready; later releases must not be pinned.',
     );
     final serverConfig =
         packages['packages/openfeature_dart_server_sdk']!
             as Map<String, Object?>;
     final serverVersion =
         manifest['packages/openfeature_dart_server_sdk']! as String;
+    expect(serverConfig['release-as'], anyOf(isNull, '0.1.0'));
     expect(
-      serverConfig['release-as'] == null ||
-          (serverVersion == '0.0.27' && serverConfig['release-as'] == '0.1.0'),
+      _isPendingOverride(serverVersion, serverConfig['release-as']),
       isTrue,
       reason:
           'Remove the server milestone override in its generated '
-          '0.1.0 release PR before merging; later releases must not be pinned.',
+          '0.1.0 release PR before marking it ready; later releases must not be pinned.',
     );
     expect(serverConfig['draft-pull-request'], isTrue);
   });
+
+  for (final (current, override, valid) in <(String, String?, bool)>[
+    ('0.0.27', '0.1.0', true),
+    ('0.0.28', '0.1.0', true),
+    ('0.1.0-rc.1', '0.1.0', true),
+    ('0.1.0', '0.1.0', false),
+    ('0.1.1', '0.1.0', false),
+    ('0.0.1-beta.2', '0.0.1', true),
+    ('0.0.1-beta.3', '0.0.1', true),
+    ('0.0.1', '0.0.1', false),
+    ('0.0.2', '0.0.1', false),
+    ('0.1.0', null, true),
+    ('0.0.1', null, true),
+  ]) {
+    test('pending override $override at $current is valid=$valid', () {
+      expect(_isPendingOverride(current, override), valid);
+    });
+  }
 
   test('release changelogs have a single Release Please owner', () {
     final manifest =
@@ -191,3 +220,7 @@ void main() {
     );
   });
 }
+
+bool _isPendingOverride(String current, Object? override) =>
+    override == null ||
+    (override is String && Version.parse(current) < Version.parse(override));

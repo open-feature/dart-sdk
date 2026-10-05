@@ -16,20 +16,36 @@ commitment. The current published baselines are server `0.0.27` and client
 
 The client configuration disables prerelease generation while retaining the
 suffix-safe `simple` strategy, component-prefixed tag, version file and generic
-pubspec/README updates. Temporary per-package `release-as` values make the two
-milestones explicit even when the promotion is squash-merged. Release Please
-opens separate draft component PRs; these are not publication approvals.
+pubspec/README updates. Temporary per-package `release-as` values pin the two
+versions; they do not cause a release PR to open when release notes are empty.
+The main squash message must contain a client-visible conventional commit type
+or a `BEGIN_COMMIT_OVERRIDE` / `END_COMMIT_OVERRIDE` block with one conventional
+commit per paragraph. Client `chore` entries are hidden. Release Please opens
+separate draft component PRs only when the scoped notes qualify; these are not
+publication approvals.
 
 Before either component release:
 
 1. Integrate the reviewed development candidate, including PR204 and PR205,
    with fresh exact-head CI. Preserve the newest main release metadata.
+   Preserve any branch shared by preparation and promotion PRs through the
+   preparation merge; do not use GitHub's Delete branch action. After integration,
+   verify the promotion tree equals the actual accepted development tree.
+   Preview the actual promotion title/body and changed paths with the complete
+   Release Please configuration, including changelog sections. Include a negative
+   `chore`-only case; a synthetic `fix` commit alone does not prove this promotion
+   will open both release PRs. The offline preview procedure is below.
 2. Obtain applicable maintainer semantic/migration and provider/platform
-   acceptance. Client gates in issues117/166/167 and server conformance decisions
-   in issues121/165 remain separate from passing builds and version changes.
+   acceptance. Client gates in #117/#166/#167 and server conformance decisions
+   in #121/#165 remain separate from passing builds and version changes.
 3. Review the generated component PR's exact target and changelog. Remove ONLY
-   that component's temporary `release-as` override in the same release PR.
-   Repository tests reject the override once the manifest records its milestone.
+   that component's temporary `release-as` override in the same release PR
+   before marking it ready. Keep this removal as the final change immediately
+   before merge. Release Please normally rebuilds an open release PR when its
+   release body changes; reapply and revalidate the removal after a rebuild.
+   The required `test (ubuntu-latest, stable)` check runs the repository guard
+   on ready PRs and in the merge queue. It rejects retained overrides at or
+   beyond their milestone, while allowing intervening pre-milestone hotfixes.
    Retain the other component's pending target until its own review is complete.
 4. Validate the staged package/dry-run, documented minimum/current Dart and
    Flutter/platform scope, exact hosted provider/consumer versions, migration
@@ -47,6 +63,25 @@ IntelliToggle's current server provider dependency `^0.0.26` excludes SDK
 client provider, demo and downloads must also use verified non-beta runtime
 packages before the public non-beta announcement. Do not use overrides to hide
 an incompatible dependency or replace missing runtime acceptance.
+
+### Offline promotion preview
+
+Use Release Please 17.6.0 installed in an existing tooling directory; the preview
+does not install packages, access credentials or publish. Export the actual
+promotion PR JSON with `gh api repos/open-feature/dart-sdk/pulls/<number>` to a
+UTF-8 file, then run from the clean candidate checkout:
+
+```text
+node tool/preview_release_promotion.cjs --release-please-dir <installed-package-directory> --pr-json <actual-pr.json> --output <receipt.json>
+```
+
+The tool reads all release configuration through Release Please's manifest
+parser, derives the actual changed paths against the PR's base SHA, and previews
+its title/body as the squash message. It requires both configured milestones to
+produce draft PRs, verifies their version/README updates, and proves a hidden
+`chore`-only client promotion is skipped. Re-export and rerun after any candidate,
+PR title/body or release metadata change. This validates release generation;
+maintainer acceptance and hosted release/publication evidence remain separate.
 
 The sections below preserve the historical bootstrap and prerelease process.
 They do not instruct the next non-beta release to reuse the beta override.
