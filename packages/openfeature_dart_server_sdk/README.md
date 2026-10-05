@@ -1,4 +1,8 @@
 <!-- markdownlint-disable MD033 -->
+**Release status:** The server SDK has regular, non-beta releases on
+[pub.dev](https://pub.dev/packages/openfeature_dart_server_sdk). It remains
+pre-1.0; these releases do not establish a 1.0 API compatibility commitment.
+
 For typed provider event registration, late-handler behavior and compatibility
 with existing streams, see [the event migration guide](doc/events-migration.md).
 For reusable cleanup and experimental isolated API instances, see
@@ -79,7 +83,7 @@ APIs retain their existing value and collection behavior. See the
 [context migration guide](https://github.com/open-feature/dart-sdk/blob/main/packages/openfeature_dart_server_sdk/doc/evaluation-context-migration.md)
 for snapshot semantics and the remaining conformance scope.
 
-## Repository source and client SDK beta
+## Repository source and client SDK
 
 This server package now lives at
 `packages/openfeature_dart_server_sdk` in the source repository. Pub.dev
@@ -91,7 +95,7 @@ repository root must add:
 path: packages/openfeature_dart_server_sdk
 ```
 
-The same repository also contains a separate pure-Dart client SDK beta for
+The same repository also contains a separate pure-Dart client SDK for
 Dart VM, Dart web, and Flutter consumers. The two packages remain independently
 versioned and published.
 
@@ -102,7 +106,7 @@ versioned and published.
 - Review the
   [client SDK conformance matrix](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-conformance-matrix.md).
 - Read the
-  [client beta release procedure](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-release.md).
+  [client release procedure](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-release.md).
 - Follow [issue #117](https://github.com/open-feature/dart-sdk/issues/117)
   for implementation progress.
 

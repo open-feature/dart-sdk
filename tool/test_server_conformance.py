@@ -3,6 +3,39 @@ from server_conformance import evidence_rows, requirement_ids, test_results
 
 
 class ReportTests(unittest.TestCase):
+    def test_only_rationale_and_not_applicable_use_rationale_statuses(self):
+        for disposition in ('rationale', 'not_applicable'):
+            for review, expected in (('pending', 'rationale_pending_review'),
+                                     ('approved', 'rationale_approved')):
+                with self.subTest(disposition=disposition, review=review):
+                    row = evidence_rows({'requirements': [{'id': '1',
+                        'disposition': disposition, 'review': review}]}, [])[0]
+                    self.assertEqual(row['evidence_status'], expected)
+
+    def test_deviation_remains_a_gap_even_when_review_is_approved(self):
+        for review in ('pending', 'approved'):
+            with self.subTest(review=review):
+                row = evidence_rows({'requirements': [{'id': '1',
+                    'disposition': 'deviation', 'review': review}]}, [])[0]
+                self.assertEqual(row['evidence_status'], 'evidence_gap')
+
+    def test_unknown_dispositions_are_rejected_even_when_approved(self):
+        for disposition in ('typo', 'gap', 'api_shape'):
+            with self.subTest(disposition=disposition):
+                with self.assertRaisesRegex(ValueError, 'Unknown requirement disposition'):
+                    evidence_rows({'requirements': [{'id': '1',
+                        'disposition': disposition, 'review': 'approved'}]}, [])
+
+    def test_successful_evidence_matching_is_unchanged(self):
+        manifest = {'requirements': [{'id': '1', 'disposition': 'evidence',
+            'tests': [{'file': 'contract.dart', 'name_pattern': '^passes$'}]}]}
+        rows = evidence_rows(manifest, [
+            {'file': '/test/contract.dart', 'name': 'passes', 'result': 'success'},
+            {'file': '/test/other.dart', 'name': 'passes', 'result': 'failure'},
+        ])
+        self.assertEqual(rows[0]['evidence_status'], 'passing')
+        self.assertEqual(len(rows[0]['executed_tests']), 1)
+
     def test_inventory_includes_normative_tracking_condition(self):
         text = '#### Requirement 1.1.1\n> **SHOULD** test\n#### Condition 2.7.1\n> **MAY** track\n#### Condition 3.2.2\n> static\n'
         self.assertEqual(requirement_ids(text), {'1.1.1', '2.7.1'})

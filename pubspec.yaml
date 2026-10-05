@@ -7,6 +7,7 @@ environment:
 
 dev_dependencies:
   git_hooks: ^1.0.2
+  pub_semver: ^2.2.0
   test: ^1.26.3
 
 git_hooks:

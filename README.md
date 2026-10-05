@@ -27,11 +27,11 @@ for Dart server and client applications.
 
 | Package | Source | Status |
 | --- | --- | --- |
-| [`openfeature_dart_server_sdk`](https://pub.dev/packages/openfeature_dart_server_sdk) | [`packages/openfeature_dart_server_sdk`](packages/openfeature_dart_server_sdk) | Existing pre-1.0 dynamic-context server SDK |
-| `openfeature_dart_client_sdk` | [`packages/openfeature_dart_client_sdk`](packages/openfeature_dart_client_sdk) | Static-context beta for Dart VM, Dart web, and Flutter consumers |
+| [`openfeature_dart_server_sdk`](https://pub.dev/packages/openfeature_dart_server_sdk) | [`packages/openfeature_dart_server_sdk`](packages/openfeature_dart_server_sdk) | Released, non-beta dynamic-context server SDK (pre-1.0); see package release notes for current version and support |
+| [`openfeature_dart_client_sdk`](https://pub.dev/packages/openfeature_dart_client_sdk) | [`packages/openfeature_dart_client_sdk`](packages/openfeature_dart_client_sdk) | Pre-1.0 static-context client SDK; see package release notes for current version and support |
 
 Each package owns its pubspec, changelog, documentation, source, tests, release
-history, and publication path. Server releases retain the `v0.0.x` tag format.
+history, and publication path. Server releases retain the `v<version>` tag format.
 Client releases use `openfeature_dart_client_sdk-v<version>`.
 
 ## Repository layout migration
@@ -56,17 +56,19 @@ adjustment. See the
 [repository layout migration guide](doc/repository-layout-migration.md) for
 compatibility details.
 
-## Client SDK beta
+## Client SDK release readiness
 
 The framework-neutral client SDK has no Flutter dependency, but Flutter
-applications can consume it as a normal Dart package. The beta is intended for
-provider integration and real-world feedback before the first stable client
-release.
+applications can consume it as a normal Dart package. Consult the package guide
+and published release notes for current versions and accepted support.
+Release targets require maintainer acceptance and verified publication. They do
+not establish a 1.0 API compatibility commitment. Review the requirement-indexed
+evidence and platform/provider acceptance before treating a target as released.
 
 - Read the [client package guide](packages/openfeature_dart_client_sdk/README.md).
 - Review the [client SDK architecture](doc/client-sdk-architecture.md).
 - Review the [client SDK conformance matrix](doc/client-sdk-conformance-matrix.md).
-- Follow the [client beta release procedure](doc/client-sdk-release.md).
+- Follow the [client release procedure](doc/client-sdk-release.md).
 
 ## Development
 

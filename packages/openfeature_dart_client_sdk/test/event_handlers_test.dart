@@ -82,6 +82,98 @@ void main() {
     expect(fallbackSubscription.isActive, isFalse);
   });
 
+  for (final domain in [null, 'checkout']) {
+    for (final sync in [true, false]) {
+      test(
+        'replays initialization statuses for $domain with sync=$sync',
+        () async {
+          final client = api.getClient(domain);
+          final provider = _InitializingEventProvider(sync: sync);
+          final apiStates = <(ProviderEventType, ProviderStatus)>[];
+          final clientStates = <(ProviderEventType, ProviderStatus)>[];
+          for (final type in [
+            ProviderEventType.ready,
+            ProviderEventType.configurationChanged,
+            ProviderEventType.stale,
+          ]) {
+            api.addHandler(
+              type,
+              (_) => apiStates.add((type, client.providerStatus)),
+            );
+            client.addHandler(
+              type,
+              (_) => clientStates.add((type, client.providerStatus)),
+            );
+          }
+
+          if (domain == null) {
+            await api.setProviderAndWait(provider);
+          } else {
+            await api.setProviderForDomainAndWait(domain, provider);
+          }
+
+          final expected = [
+            (ProviderEventType.configurationChanged, ProviderStatus.notReady),
+            (ProviderEventType.ready, ProviderStatus.ready),
+            (ProviderEventType.configurationChanged, ProviderStatus.ready),
+            (ProviderEventType.stale, ProviderStatus.stale),
+          ];
+          expect(apiStates, expected);
+          expect(clientStates, expected);
+          expect(client.providerStatus, ProviderStatus.stale);
+          final lateStates = <ProviderStatus>[];
+          client.addHandler(
+            ProviderEventType.stale,
+            (_) => lateStates.add(client.providerStatus),
+          );
+          expect(lateStates, [ProviderStatus.stale]);
+        },
+      );
+    }
+
+    test(
+      'queues handler events behind initialization events for $domain',
+      () async {
+        final client = api.getClient(domain);
+        final provider = _InitializingEventProvider();
+        final apiStates = <(ProviderEventType, ProviderStatus)>[];
+        final clientStates = <(ProviderEventType, ProviderStatus)>[];
+        api.addHandler(ProviderEventType.ready, (_) {
+          provider.emit(ProviderEventType.error, errorCode: ErrorCode.general);
+        });
+        for (final type in [
+          ProviderEventType.ready,
+          ProviderEventType.stale,
+          ProviderEventType.error,
+        ]) {
+          api.addHandler(
+            type,
+            (_) => apiStates.add((type, client.providerStatus)),
+          );
+          client.addHandler(
+            type,
+            (_) => clientStates.add((type, client.providerStatus)),
+          );
+        }
+
+        if (domain == null) {
+          await api.setProviderAndWait(provider);
+        } else {
+          await api.setProviderForDomainAndWait(domain, provider);
+        }
+
+        final expected = [
+          (ProviderEventType.ready, ProviderStatus.ready),
+          (ProviderEventType.stale, ProviderStatus.stale),
+          (ProviderEventType.error, ProviderStatus.error),
+        ];
+        expect(apiStates, expected);
+        expect(clientStates, expected);
+        expect(client.providerStatus, ProviderStatus.error);
+      },
+    );
+  }
+
   test('contains handler failures and protects event details', () async {
     final provider = _EventProvider();
     final delivered = <ProviderEventDetails>[];
@@ -158,13 +250,13 @@ void main() {
 }
 
 final class _EventProvider implements FeatureProvider, ProviderEventSource {
-  _EventProvider({this.name = 'event-provider'})
-    : _delegate = InMemoryProvider({'flag': true});
+  _EventProvider({this.name = 'event-provider', bool sync = true})
+    : _delegate = InMemoryProvider({'flag': true}),
+      _events = StreamController<ProviderEvent>.broadcast(sync: sync);
 
   final String name;
   final InMemoryProvider _delegate;
-  final StreamController<ProviderEvent> _events =
-      StreamController<ProviderEvent>.broadcast(sync: true);
+  final StreamController<ProviderEvent> _events;
 
   @override
   Stream<ProviderEvent> get events => _events.stream;
@@ -224,4 +316,24 @@ final class _EventProvider implements FeatureProvider, ProviderEventSource {
     Map<String, Object?> defaultValue,
     EvaluationContext context,
   ) => _delegate.resolveStructureValue(flagKey, defaultValue, context);
+}
+
+final class _InitializingEventProvider extends _EventProvider
+    implements InitializableProvider, ShutdownProvider {
+  _InitializingEventProvider({super.sync});
+
+  @override
+  Future<void> initialize(EvaluationContext context, {String? domain}) async {
+    final delivered = events.firstWhere(
+      (event) => event.type == ProviderEventType.stale,
+    );
+    emit(ProviderEventType.configurationChanged);
+    emit(ProviderEventType.ready);
+    emit(ProviderEventType.configurationChanged);
+    emit(ProviderEventType.stale);
+    await delivered;
+  }
+
+  @override
+  Future<void> shutdown() => _events.close();
 }
