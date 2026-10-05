@@ -27,7 +27,7 @@ for Dart server and client applications.
 
 | Package | Source | Status |
 | --- | --- | --- |
-| [`openfeature_dart_server_sdk`](https://pub.dev/packages/openfeature_dart_server_sdk) | [`packages/openfeature_dart_server_sdk`](packages/openfeature_dart_server_sdk) | Pre-1.0 dynamic-context server SDK; see package release notes for current version and support |
+| [`openfeature_dart_server_sdk`](https://pub.dev/packages/openfeature_dart_server_sdk) | [`packages/openfeature_dart_server_sdk`](packages/openfeature_dart_server_sdk) | Released, non-beta dynamic-context server SDK (pre-1.0); see package release notes for current version and support |
 | [`openfeature_dart_client_sdk`](https://pub.dev/packages/openfeature_dart_client_sdk) | [`packages/openfeature_dart_client_sdk`](packages/openfeature_dart_client_sdk) | Pre-1.0 static-context client SDK; see package release notes for current version and support |
 
 Each package owns its pubspec, changelog, documentation, source, tests, release

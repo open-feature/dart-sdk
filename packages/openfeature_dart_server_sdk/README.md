@@ -1,4 +1,8 @@
 <!-- markdownlint-disable MD033 -->
+**Release status:** The server SDK has regular, non-beta releases on
+[pub.dev](https://pub.dev/packages/openfeature_dart_server_sdk). It remains
+pre-1.0; these releases do not establish a 1.0 API compatibility commitment.
+
 For typed provider event registration, late-handler behavior and compatibility
 with existing streams, see [the event migration guide](doc/events-migration.md).
 For reusable cleanup and experimental isolated API instances, see
