@@ -124,7 +124,6 @@
           "section": "✅ Tests"
         }
       ],
-      "release-as": "0.0.1",
       "draft-pull-request": true
     }
   }
