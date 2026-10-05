@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.1](https://github.com/open-feature/dart-sdk/compare/openfeature_dart_client_sdk-v0.0.1-beta.2...openfeature_dart_client_sdk-v0.0.1) (2026-10-05)
+
+
+### 🐛 Bug Fixes
+
+* **client:** preserve initialization event status and queue handler events ([#205](https://github.com/open-feature/dart-sdk/issues/205)) ([a6bdc60](https://github.com/open-feature/dart-sdk/commit/a6bdc60f2332b324bb60f7ff376339557b2184da))
+* **client:** require one initialization ready event within a shared 3-second action/event deadline and reject extra terminal events during bounded observation ([#204](https://github.com/open-feature/dart-sdk/issues/204)) ([a6bdc60](https://github.com/open-feature/dart-sdk/commit/a6bdc60f2332b324bb60f7ff376339557b2184da))
+* **server:** distinguish deviations from accepted conformance evidence ([#204](https://github.com/open-feature/dart-sdk/issues/204)) ([a6bdc60](https://github.com/open-feature/dart-sdk/commit/a6bdc60f2332b324bb60f7ff376339557b2184da))
+
 ## [0.0.1-beta.2](https://github.com/open-feature/dart-sdk/compare/openfeature_dart_client_sdk-v0.0.1-beta.1...openfeature_dart_client_sdk-v0.0.1-beta.2) (2026-09-26)
 
 
