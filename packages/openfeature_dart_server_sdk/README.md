@@ -1,4 +1,8 @@
 <!-- markdownlint-disable MD033 -->
+**Release status:** The server SDK has regular, non-beta releases on
+[pub.dev](https://pub.dev/packages/openfeature_dart_server_sdk). It remains
+pre-1.0; these releases do not establish a 1.0 API compatibility commitment.
+
 For typed provider event registration, late-handler behavior and compatibility
 with existing streams, see [the event migration guide](doc/events-migration.md).
 For reusable cleanup and experimental isolated API instances, see
@@ -40,8 +44,8 @@ registration order and the compatibility decision for legacy priorities.
     <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.8.0&color=yellow&style=for-the-badge" />
   </a>
   <!-- x-release-please-start-version -->
-  <a href="https://github.com/open-feature/dart-sdk/releases/tag/v0.0.26">
-    <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.0.26&color=blue&style=for-the-badge" />
+  <a href="https://github.com/open-feature/dart-sdk/releases/tag/v0.0.27">
+    <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.0.27&color=blue&style=for-the-badge" />
   </a>
   <!-- x-release-please-end -->
   <a href="https://dart.dev/">
@@ -79,7 +83,7 @@ APIs retain their existing value and collection behavior. See the
 [context migration guide](https://github.com/open-feature/dart-sdk/blob/main/packages/openfeature_dart_server_sdk/doc/evaluation-context-migration.md)
 for snapshot semantics and the remaining conformance scope.
 
-## Repository source and client SDK beta
+## Repository source and client SDK
 
 This server package now lives at
 `packages/openfeature_dart_server_sdk` in the source repository. Pub.dev
@@ -91,7 +95,7 @@ repository root must add:
 path: packages/openfeature_dart_server_sdk
 ```
 
-The same repository also contains a separate pure-Dart client SDK beta for
+The same repository also contains a separate pure-Dart client SDK for
 Dart VM, Dart web, and Flutter consumers. The two packages remain independently
 versioned and published.
 
@@ -102,7 +106,7 @@ versioned and published.
 - Review the
   [client SDK conformance matrix](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-conformance-matrix.md).
 - Read the
-  [client beta release procedure](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-release.md).
+  [client release procedure](https://github.com/open-feature/dart-sdk/blob/main/doc/client-sdk-release.md).
 - Follow [issue #117](https://github.com/open-feature/dart-sdk/issues/117)
   for implementation progress.
 
@@ -122,7 +126,7 @@ Dart language version: [3.12.2](https://dart.dev/get-dart/archive)
 
 ```yaml
 dependencies:
-  openfeature_dart_server_sdk: ^0.0.26
+  openfeature_dart_server_sdk: ^0.0.27
 ```
 
 <!-- x-release-please-end -->

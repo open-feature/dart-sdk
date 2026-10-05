@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.27](https://github.com/open-feature/dart-sdk/compare/v0.0.26...v0.0.27) (2026-09-26)
+
+
+### 🐛 Bug Fixes
+
+* **client:** promote reconciliation fix and beta release evidence ([#199](https://github.com/open-feature/dart-sdk/issues/199)) ([94345b5](https://github.com/open-feature/dart-sdk/commit/94345b54ce1cf577b5bc068c708cae568f19e25e))
+
 ## [0.0.26](https://github.com/open-feature/dart-sdk/compare/v0.0.25...v0.0.26) (2026-09-24)
 
 ### Breaking source change: server tracking value
