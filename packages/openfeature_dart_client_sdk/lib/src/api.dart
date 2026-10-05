@@ -444,10 +444,27 @@ final class OpenFeatureAPI {
       _domainProviders[domain] = provider;
     }
     record.bindingCount++;
-    for (final event in record.pendingBindingEvents) {
-      _dispatchEvent(provider, record, event);
+    if (record.pendingBindingEvents.isNotEmpty) {
+      record.dispatchingBindingEvents = true;
+      // Reconstruct initialization state in receive order, including events
+      // that do not change status and events emitted by handlers during replay.
+      record.status = ProviderStatus.notReady;
+      record.latestStateEvent = null;
+      try {
+        for (
+          var index = 0;
+          index < record.pendingBindingEvents.length;
+          index++
+        ) {
+          final event = record.pendingBindingEvents[index];
+          _applyEventState(record, event);
+          _dispatchEvent(provider, record, event);
+        }
+      } finally {
+        record.pendingBindingEvents.clear();
+        record.dispatchingBindingEvents = false;
+      }
     }
-    record.pendingBindingEvents.clear();
 
     if (!identical(current, _noOpProvider)) {
       await _releaseProvider(current);
@@ -687,6 +704,10 @@ final class OpenFeatureAPI {
     ProviderEvent event,
   ) {
     if (record.quarantined || !identical(_providerRecords[provider], record)) {
+      return;
+    }
+    if (record.dispatchingBindingEvents) {
+      record.pendingBindingEvents.add(event);
       return;
     }
     final operation = record.lifecycleOperation;
@@ -1316,6 +1337,7 @@ final class _ProviderRecord {
   bool quarantined = false;
   ProviderEvent? latestStateEvent;
   List<ProviderEvent>? pendingReconciliationEvents;
+  bool dispatchingBindingEvents = false;
   final List<ProviderEvent> pendingBindingEvents = <ProviderEvent>[];
 }
 
