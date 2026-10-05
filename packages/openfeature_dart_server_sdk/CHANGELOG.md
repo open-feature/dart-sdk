@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.0](https://github.com/open-feature/dart-sdk/compare/v0.0.27...v0.1.0) (2026-10-05)
+
+Regular, non-beta server 0.1.0 milestone. The package remains pre-1.0 and does
+not claim complete OpenFeature v0.9 conformance.
+
+Compatibility: Dart pub constraints such as `^0.0.26` and `^0.0.27` exclude
+`0.1.0`. Applications and providers must review their SDK constraints before
+upgrading; an IntelliToggle provider update is required to admit this version.
+
+### 🐛 Bug Fixes
+
+* **server:** distinguish deviations from accepted conformance evidence ([#204](https://github.com/open-feature/dart-sdk/issues/204)) ([a6bdc60](https://github.com/open-feature/dart-sdk/commit/a6bdc60f2332b324bb60f7ff376339557b2184da))
+
 ## [0.0.27](https://github.com/open-feature/dart-sdk/compare/v0.0.26...v0.0.27) (2026-09-26)
 
 

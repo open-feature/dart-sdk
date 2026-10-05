@@ -65,7 +65,6 @@
           "section": "🧪 Tests"
         }
       ],
-      "release-as": "0.1.0",
       "draft-pull-request": true
     },
     "packages/openfeature_dart_client_sdk": {
