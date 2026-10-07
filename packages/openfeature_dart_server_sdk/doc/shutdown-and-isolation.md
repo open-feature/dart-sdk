@@ -13,12 +13,10 @@ as a `ProviderException` with `ErrorCode.GENERAL`; the lifecycle record is retir
 and cleanup of other providers continues. This also bounds provider cleanup on
 `dispose()` and `OpenFeatureAPI.resetInstance()`.
 
-These five-second deadlines are fixed in the supported public API today.
-Neither `OpenFeatureAPI()` nor `createIsolatedOpenFeatureAPI()` exposes the
-internal manager's `shutdownTimeout` parameter. Do not import internal classes
-to configure it. [#196](https://github.com/open-feature/dart-sdk/issues/196) tracks
-a reviewed public configuration surface; until then, providers with longer
-flush requirements must schedule their own flush before API shutdown.
+Set `api.providerShutdownTimeout` on the singleton or isolated API to configure
+both phases. Values must be positive and apply only to subsequent cleanups;
+in-flight cleanup retains its captured value. Do not import internal classes.
+Providers with longer flush requirements may still flush before API shutdown.
 
 A Dart timeout stops waiting; it does not cancel the provider's underlying work.
 A provider whose cleanup times out cannot start another lifecycle in any API
@@ -109,3 +107,23 @@ API's scopes. Propagator registration/removal and tracking are documented in
 Tests in `api_shutdown_isolation_test.dart` index requirements 1.6, 1.8 and 2.5,
 alongside the retained provider lifecycle races. This slice does not claim full
 server v0.9 conformance or change either package's release version.
+
+## Public provider cleanup deadline (#196)
+
+```dart
+final api = OpenFeatureAPI();
+api.providerShutdownTimeout = const Duration(seconds: 2);
+// The same property exists on createIsolatedOpenFeatureAPI().
+```
+
+The default remains five seconds; values must be strictly positive. Each cleanup
+captures the value when it starts and uses it for both provider shutdown and
+subscription cancellation, so the maximum sequential wait is twice that value
+per provider. The timeout stops waiting; it does not cancel arbitrary I/O.
+Timed-out providers remain quarantined until all outstanding work settles.
+
+Changes affect later cleanups, including provider replacement; they do not reset
+an in-flight shutdown/cancellation deadline. This timing-only property may be
+updated during shutdown, survives shutdown/reuse, and cannot be set after
+permanent disposal. Provider registration/other mutation still follows the
+existing shutdown guards. No internal lib/src import is required.

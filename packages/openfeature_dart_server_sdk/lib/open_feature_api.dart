@@ -186,6 +186,7 @@ class OpenFeatureAPI {
   final Map<String, int> _domainBindingGenerations = {};
   DomainManager _domainManager = DomainManager();
   late ProviderLifecycleManager _lifecycleManager;
+  Duration _providerShutdownTimeout = const Duration(seconds: 5);
   late final TransactionContextManager _transactionManager;
   final List<OpenFeatureHook> _hooks = [];
   final List<Hook> _evaluationHooks = [];
@@ -245,6 +246,26 @@ class OpenFeatureAPI {
   @internal
   factory OpenFeatureAPI.isolated() => OpenFeatureAPI._internal(isolated: true);
 
+  /// Maximum wait for each provider cleanup phase: shutdown and event cancellation.
+  /// Defaults to five seconds per phase (at most twice this value per provider).
+  /// A positive new value applies to cleanups started afterwards, including
+  /// provider replacements. In-flight cleanups retain their original deadline.
+  /// This setting survives shutdown/reuse; it is unavailable after disposal.
+  Duration get providerShutdownTimeout => _providerShutdownTimeout;
+
+  set providerShutdownTimeout(Duration value) {
+    if (_disposed) throw StateError('API has been disposed.');
+    if (value <= Duration.zero) {
+      throw ArgumentError.value(
+        value,
+        'providerShutdownTimeout',
+        'Must be positive',
+      );
+    }
+    _providerShutdownTimeout = value;
+    _lifecycleManager.shutdownTimeout = value;
+  }
+
   /// The transaction manager associated with this API.
   /// The ordinary singleton retains the legacy singleton manager.
   TransactionContextManager get transactionContextManager =>
@@ -282,6 +303,7 @@ class OpenFeatureAPI {
       (provider, event) {
         if (epoch == _epoch) _handleProviderLifecycleEvent(provider, event);
       },
+      shutdownTimeout: _providerShutdownTimeout,
       onRetired: (provider) {
         if (epoch != _epoch ||
             identical(_provider, provider) ||
