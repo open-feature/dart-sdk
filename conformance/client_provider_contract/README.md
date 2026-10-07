@@ -82,8 +82,8 @@ retained provider state or missing events. Providers must implement
 `InitializableProvider`, `ShutdownProvider`, `ContextReconciliationProvider`, and
 `ProviderEventSource` for this contract. C11 compares resolutions after both
 shutdown calls and requires no event from the second call. C13 requires exactly
-one terminal event for each controlled transition. Intermediate reconciling or
-stale events and configuration-change events are allowed.
+one terminal event for each controlled transition. Intermediate reconciling and configuration-change events are allowed. STALE
+is terminal and needs its own provider-owned transition receipt.
 
 C11 and C13 subscribe before each action. C13 waits for a terminal event; both
 checks then observe 100 ms without any further events after the action completes.
@@ -94,7 +94,7 @@ event. Provider-owned transport/resource tests must still cover longer delays.
 
 These checks do not prove that every spontaneous transport transition emits an
 event or that all resources were released. Provider-specific transport and
-resource tests remain required. Update old fixtures and rerun them; a v1 receipt
+resource tests remain required. Update old fixtures and rerun them; a v1 or v2 receipt
 cannot satisfy v3. The receipt tool requires exactly C01–C13 and records version 3.
 
 ## Evidence beyond these thirteen tests
