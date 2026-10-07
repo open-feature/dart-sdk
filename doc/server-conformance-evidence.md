@@ -38,13 +38,13 @@ Counts from `conformance/server-v0.9.0.json` (also emitted by the reporter):
 
 | Disposition | Count | IDs when not test evidence |
 | --- | --- | --- |
-| evidence | 127 | Mapped tests; semantic review pending |
+| evidence | 126 | Mapped tests; semantic review pending |
 | not_applicable | 16 | 1.3.2.1, 1.4.2.1, 1.7.2.1, 2.8.4, 3.2.2.1–3.2.2.4, 3.2.4.1–3.2.4.2, 3.3.2.1, 4.3.3.1, 5.3.4.1–5.3.4.3, 6.1.2.1 |
 | rationale | 1 | 2.6.1: optional MAY capability omitted because context is passed on every evaluation |
-| deviation | 1 | 1.4.11: default evaluation-error logging, pending acceptance |
+| deviation | 2 | 1.4.11: separate quiet-logging PR; 2.5.2: legacy shutdown state, pending disposition |
 
-All 145 semantic mappings remain pending review. Requirement 2.8.4 is conditional
-on the optional callback in 2.6.1; that callback is neither implemented nor
+Brian accepted 17 non-test dispositions on October 7; their decision links are recorded in the inventory. Remaining test mappings and deviations still require review. Requirement 2.8.4 applies only when a provider defines
+the optional callback in 2.6.1; that callback is neither implemented nor
 called by this dynamic-context SDK. It is not a blanket provider exemption.
 
 The mappings in `conformance/server-v0.9.0.json` are proposals. A passing selected
@@ -97,16 +97,19 @@ tracking warnings, and preserves other loggers. It is not an SDK-wide opt-out.
 named logger's suppression while an unrelated warning still prints. Keeping
 default logging is a **SHOULD NOT deviation awaiting maintainer acceptance**.
 
-### Legacy API decisions proposed for review
+### Accepted legacy API decisions for 0.1.x
 
-| Legacy surface | Proposed 0.0.x decision | Later change gate |
+| Legacy surface | Accepted 0.1.x decision | Later change gate |
 | --- | --- | --- |
 | Positional context constructors and legacy reserved-key behavior | Keep; canonical named form remains additive | #195: review warnings/migration before a breaking removal; no removal version chosen |
 | `Hook` / `BaseHook` mutability and stages | Keep; use opt-in `EvaluationHook` for the new contract | Review migration and a breaking version before removal |
 | Legacy provider event streams and grace behavior | Keep alongside typed events | Review event migration before any breaking removal |
 | Legacy provider members | Keep; optional capability interfaces remain additive | Review migration before any breaking removal |
 
-These are proposals for maintainers to mark, not independent approvals. The
+Brian accepted all four keep rows in #165 on October 7. The legacy event-stream
+row also preserves synthesized READY/ERROR, the one-second grace and the SDK-only
+setGlobalContext CONTEXT_CHANGED notification as compatibility behavior outside
+the v0.9 provider-event claim; removing them requires the same reviewed migration gate. The
 supported public timeout configuration request remains a separate #196 follow-up.
 
 ## Migration and consumer evidence
@@ -135,3 +138,19 @@ the legacy `getClient(name, domain: ...)`. Creation remains safe after permanent
 disposal; such clients return application defaults. Evaluation details report
 the requested flag key even if the provider uses an internal alias. Those gaps
 are covered by `conformance_completion_test.dart`.
+
+## October 7 remaining provider evidence
+
+Canonical final-pair S01–S05 receipts must name published server SDK 0.1.0 and
+IntelliToggle server provider 0.0.15. Older 0.0.26/candidate receipts remain
+historical. Brian accepts controlled HTTP for this criterion; three skipped
+live-credential tests do not block it. Attach raw receipt JSON publicly after
+review rather than requiring reviewers to access private GitLab job artifacts.
+
+Server 2.5.2 is now an explicit pending SHOULD deviation: legacy InMemoryProvider
+remains SHUTDOWN/rejects reuse, instead of returning to NOT_READY. Adapter
+shutdown deduplication does not establish provider-owned idempotence. Direct
+capability cleanup, spontaneous READY/STALE/READY and pre-return error-handler
+regressions narrow the other mappings but do not certify all vendors.
+
+Maintainer decisions: https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258

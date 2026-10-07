@@ -13,9 +13,9 @@ resolution/static context; `event_handlers_test.dart` covers routing/state
 ordering; `race_safety_test.dart` covers serialized replacement/reconciliation;
 `promotion_readiness_test.dart` covers lifecycle timeouts, quarantine, ownership
 and rollback. The shared contract makes provider results comparable without
-moving vendor transport into core. Contract v2 adds direct repeated shutdown,
+moving vendor transport into core. Contract v2 added direct repeated shutdown,
 uninitialized evaluation state, optional reinitialization, and direct provider
-event assertions (C11–C13). V1 receipts must be rerun against v2.
+event assertions (C11–C13). Contract v3 hardens C11–C13 with concurrent/never-initialized shutdown, a non-vacuous C12 guard and failure code/message assertions. Older receipts must be rerun against v3.
 
 | Release input | Required evidence | Current decision |
 | --- | --- | --- |
@@ -29,10 +29,26 @@ event assertions (C11–C13). V1 receipts must be rerun against v2.
 For #167, maintainers must review the shared receipts and complete the
 [client conformance matrix](client-sdk-conformance-matrix.md) before approving
 stable promotion. Preserve the beta migration history, name the supported
-provider versions, reconcile unpublished client changes since `0.0.1-beta.1`,
-and promote through development to main using the normal review/check gates.
+provider versions, record final canonical receipts against published SDK `0.0.1` and IntelliToggle
+client provider `0.0.1-beta.4`. SDK publication and main promotion are complete;
+remaining semantic/provider/platform acceptance stays open.
 The server's release identity remains independent.
 
 No checkbox for two providers or stable readiness should be completed from
 this harness PR alone. Run the adapter in each canonical provider repository,
 retain raw JSON/logs, and link provider-specific failures to focused issues.
+
+## Current published-pair rerun
+
+SDK 0.0.1 and IntelliToggle client provider 0.0.1-beta.4 are published and both
+support Dart 3.10+. Historical table receipts above retain their original source
+identities. Brian reported a local final-pair v2 VM/Chrome pass on October 7;
+the canonical release owner must still attach raw v3 receipts after the hardening
+lands. Use `tool/client_provider_evidence.py --hosted-sdk-version 0.0.1` when the
+consumer resolves pub.dev: the collector compares every official archive file
+and rejects extra runtime files. The harness still resolves from its exact
+reviewed checkout. Preserve the dependency graph/lockfile in each receipt.
+
+Provider-owned transport-loss/recovery tests are linked from each canonical
+receipt rather than imposed as a generic transport scenario. Lifecycle contracts
+require the corresponding interfaces; stateless providers need separate review.

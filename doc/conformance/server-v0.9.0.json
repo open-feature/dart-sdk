@@ -224,9 +224,10 @@
       "id": "1.3.2.1",
       "level": "MUST",
       "section": "01-flag-evaluation",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "1.3.3.1",
@@ -274,9 +275,10 @@
       "id": "1.4.2.1",
       "level": "MUST",
       "section": "01-flag-evaluation",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "1.4.3",
@@ -519,9 +521,10 @@
       "id": "1.7.2.1",
       "level": "MUST",
       "section": "01-flag-evaluation",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "1.7.3",
@@ -703,9 +706,9 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "feature_provider_test.dart",
-          "name_pattern": "FlagEvaluationResult creates|flag evaluation when ready",
-          "note": ""
+          "file": "provider_review_regression_test.dart",
+          "name_pattern": "new Provider preserves typed success fields",
+          "note": "Compile-time typed results and actual variant/metadata/success error assertions; canonical provider receipt remains required."
         }
       ],
       "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates."
@@ -763,9 +766,9 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "feature_provider_test.dart",
-          "name_pattern": "FlagEvaluationResult creates|flag evaluation when ready",
-          "note": ""
+          "file": "provider_review_regression_test.dart",
+          "name_pattern": "new Provider preserves typed success fields",
+          "note": "Compile-time typed results and actual variant/metadata/success error assertions; canonical provider receipt remains required."
         }
       ],
       "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates."
@@ -778,9 +781,9 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "feature_provider_test.dart",
-          "name_pattern": "FlagEvaluationResult creates|flag evaluation when ready",
-          "note": ""
+          "file": "provider_review_regression_test.dart",
+          "name_pattern": "new Provider preserves typed success fields",
+          "note": "Compile-time typed results and actual variant/metadata/success error assertions; canonical provider receipt remains required."
         }
       ],
       "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates."
@@ -823,9 +826,9 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "feature_provider_test.dart",
-          "name_pattern": "FlagEvaluationResult creates|flag evaluation when ready",
-          "note": ""
+          "file": "provider_review_regression_test.dart",
+          "name_pattern": "new Provider preserves typed success fields",
+          "note": "Compile-time typed results and actual variant/metadata/success error assertions; canonical provider receipt remains required."
         }
       ],
       "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates."
@@ -854,7 +857,7 @@
       "tests": [
         {
           "file": "provider_capabilities_test.dart",
-          "name_pattern": "2\\.4\\.1|2\\.8\\.2: ready event",
+          "name_pattern": "2\\.4\\.1: (initialization receives|initialize once|concurrent bindings)",
           "note": ""
         }
       ],
@@ -925,15 +928,9 @@
       "level": "SHOULD",
       "section": "02-providers",
       "review": "pending",
-      "disposition": "evidence",
-      "tests": [
-        {
-          "file": "api_shutdown_isolation_test.dart",
-          "name_pattern": "late default initialization|late domain initialization|resolver-only shutdown",
-          "note": ""
-        }
-      ],
-      "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates."
+      "disposition": "deviation",
+      "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates.",
+      "rationale": "The legacy stock InMemoryProvider remains SHUTDOWN after cleanup and rejects reinitialization, rather than restoring NOT_READY. Do not substitute SDK adapter deduplication or a probe that forces NOT_READY for this SHOULD obligation. This legacy behavior is explicitly pending maintainer disposition; independent provider post-shutdown/reinitialization needs its own receipt."
     },
     {
       "id": "2.5.3",
@@ -943,9 +940,9 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "provider_capabilities_test.dart",
-          "name_pattern": "2\\.5: shared provider",
-          "note": ""
+          "file": "provider_review_regression_test.dart",
+          "name_pattern": "2\\.5\\.3 direct capability",
+          "note": "Direct concurrent/repeated capability calls; scoped fixture, not certification of every external provider."
         }
       ],
       "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates."
@@ -954,10 +951,11 @@
       "id": "2.6.1",
       "level": "MAY",
       "section": "02-providers",
-      "review": "pending",
+      "review": "approved",
       "disposition": "rationale",
-      "rationale": "Optional MAY capability is not implemented: the dynamic-context SDK passes the evaluation context on every call, so it does not require an on-context-changed reconciliation callback.",
-      "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates."
+      "rationale": "Optional MAY capability is not implemented: the dynamic-context SDK passes the evaluation context on every call, so it does not require an on-context-changed reconciliation callback. There is no provider on-context-changed callback. The SDK-only setGlobalContext PROVIDER_CONTEXT_CHANGED is a legacy notification, not provider-owned callback evidence.",
+      "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "2.7.1",
@@ -967,8 +965,8 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "tracking_transaction_contract_test.dart",
-          "name_pattern": "6\\.|2\\.7\\.1",
+          "file": "provider_capabilities_test.dart",
+          "name_pattern": "2\\.7\\.1: tracking capability",
           "note": ""
         }
       ],
@@ -984,6 +982,11 @@
         {
           "file": "provider_capabilities_test.dart",
           "name_pattern": "2\\.8\\.2|2\\.8\\.3",
+          "note": ""
+        },
+        {
+          "file": "provider_review_regression_test.dart",
+          "name_pattern": "2\\.8\\.1 / 5\\.3\\.1 provider-emitted",
           "note": ""
         }
       ],
@@ -1012,8 +1015,8 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "provider_capabilities_test.dart",
-          "name_pattern": "2\\.8\\.2|2\\.8\\.3",
+          "file": "provider_review_regression_test.dart",
+          "name_pattern": "2\\.8\\.3 provider error handler",
           "note": ""
         }
       ],
@@ -1023,10 +1026,11 @@
       "id": "2.8.4",
       "level": "MUST",
       "section": "02-providers",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Conditional requirement does not apply because the optional on-context-changed callback in 2.6.1 is not implemented or called. This is not an exemption for providers that implement that callback.",
-      "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates."
+      "rationale": "Does not apply because the optional provider on-context-changed callback is neither implemented nor called. The SDK-synthesized setGlobalContext notification does not satisfy 2.8.4 or 5.3.4.x, and does not exempt providers implementing that callback.",
+      "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "2.8.5.1",
@@ -1117,33 +1121,37 @@
       "id": "3.2.2.1",
       "level": "MUST",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "3.2.2.2",
       "level": "MUST NOT",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "3.2.2.3",
       "level": "MUST",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "3.2.2.4",
       "level": "MUST",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "3.2.3",
@@ -1163,17 +1171,19 @@
       "id": "3.2.4.1",
       "level": "MUST",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "3.2.4.2",
       "level": "MUST",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "3.3.1.1",
@@ -1235,9 +1245,10 @@
       "id": "3.3.2.1",
       "level": "MUST NOT",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "4.1.1",
@@ -1414,9 +1425,10 @@
       "id": "4.3.3.1",
       "level": "MUST",
       "section": "04-hooks",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "4.3.4",
@@ -1665,8 +1677,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.1\\.1:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1679,8 +1691,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.1\\.2-3:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1693,8 +1705,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.1\\.2-3:|5\\.1\\.3:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1707,8 +1719,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.2\\.1-4:|event detail collections",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1721,8 +1733,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.2\\.1-4:|event detail collections",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1735,8 +1747,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.2\\.1-4:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1749,8 +1761,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.2\\.1-4:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1763,8 +1775,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.2\\.1-4:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1777,8 +1789,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.2\\.1-4:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1791,8 +1803,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.2\\.5:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1805,8 +1817,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.2\\.6",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1819,8 +1831,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.2\\.7:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1833,7 +1845,12 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
+          "name_pattern": "5\\.3\\.1:",
+          "note": "Selected relevant assertions; semantic review remains pending."
+        },
+        {
+          "file": "provider_review_regression_test.dart",
+          "name_pattern": "2\\.8\\.1 / 5\\.3\\.1 provider-emitted",
           "note": ""
         }
       ]
@@ -1847,8 +1864,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.3\\.2:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1861,8 +1878,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.3\\.3:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1870,25 +1887,28 @@
       "id": "5.3.4.1",
       "level": "MUST",
       "section": "05-events",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "5.3.4.2",
       "level": "MUST",
       "section": "05-events",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "5.3.4.3",
       "level": "MUST",
       "section": "05-events",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "5.3.5",
@@ -1899,8 +1919,8 @@
       "tests": [
         {
           "file": "typed_events_test.dart",
-          "name_pattern": "",
-          "note": ""
+          "name_pattern": "5\\.3\\.5:",
+          "note": "Selected relevant assertions; semantic review remains pending."
         }
       ]
     },
@@ -1922,9 +1942,10 @@
       "id": "6.1.2.1",
       "level": "MUST",
       "section": "06-tracking",
-      "review": "pending",
+      "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context."
+      "rationale": "Static-context-only requirement; this SDK uses dynamic invocation context.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
     {
       "id": "6.1.3",
