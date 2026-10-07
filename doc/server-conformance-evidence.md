@@ -34,14 +34,17 @@ test evidence fails CI. Review and provider gates remain visible when CI passes;
 
 ## What must still be reviewed
 
-Counts from `conformance/server-v0.9.0.json` (also emitted by the reporter):
+The exact disposition counts come from the checked-out
+`conformance/server-v0.9.0.json` and its generated report. Review corrections and
+quiet-logging changes may land independently; use the report for that exact
+commit rather than copying a fixed total between candidates.
 
-| Disposition | Count | IDs when not test evidence |
-| --- | --- | --- |
-| evidence | 128 | Mapped tests; semantic review pending |
-| not_applicable | 16 | 1.3.2.1, 1.4.2.1, 1.7.2.1, 2.8.4, 3.2.2.1–3.2.2.4, 3.2.4.1–3.2.4.2, 3.3.2.1, 4.3.3.1, 5.3.4.1–5.3.4.3, 6.1.2.1 |
-| rationale | 1 | 2.6.1: optional MAY capability omitted because context is passed on every evaluation |
-| deviation | 0 | Default logging corrected; 1.4.11 now has test evidence |
+| Disposition | Evidence boundary |
+| --- | --- |
+| evidence | Mapped tests; each semantic decision is recorded separately |
+| not_applicable | Paradigm/callback applicability decisions, with requirement IDs in the inventory |
+| rationale | Language/paradigm rationale, with explicit maintainer decision provenance |
+| deviation | Actual pending SHOULD interpretations/compatibility behavior; not passing fixture substitutes |
 
 All 145 semantic mappings remain pending review. Requirement 2.8.4 is conditional
 on the optional callback in 2.6.1; that callback is neither implemented nor
