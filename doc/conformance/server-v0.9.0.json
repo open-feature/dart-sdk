@@ -14,9 +14,8 @@
   "release_gates": [
     "Maintainers review each requirement mapping and proposed language/paradigm rationale.",
     "Resolve every missing or failed applicable MUST; approve SHOULD deviations.",
-    "Review remaining legacy provider/hook migration boundaries and the context deprecation plan in #195. The numeric value widening shipped in 0.0.26 and was accepted in #164; verify its release-note correction and migration documentation.",
     "Validate an external provider in its canonical repository against this exact SDK candidate, including runtime integration scenarios.",
-    "Review the future conformance release promotion and immutable package evidence separately; incremental non-conformance server 0.0.26 is already published."
+    "Review any future v0.9 conformance claim and its exact immutable package evidence separately; incremental non-conformance server 0.1.0 is already published. Legacy keep decisions and #164 migration are accepted; #195/#196 remain separate non-blocking follow-ups."
   ],
   "requirements": [
     {

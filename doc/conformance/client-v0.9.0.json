@@ -2196,6 +2196,6 @@
     "Close applicable MUST evidence gaps and review every mapping, applicability rationale and SHOULD interpretation.",
     "Obtain maintainer acceptance of the shared contract from two independent canonical providers; IntelliToggle alone is insufficient.",
     "Complete exact-version Flutter consumer and declared Android, iOS and desktop runtime evidence; browser tests do not establish native support.",
-    "Approve migration/provider compatibility notes and reviewed development-to-main stable promotion; verify immutable tag and pub.dev archive separately."
+    "Approve remaining migration/support and canonical provider compatibility evidence. SDK0.0.1 development-to-main promotion, OIDC tag publication and immutable archive are complete; do not republish or substitute them for remaining acceptance."
   ]
 }
