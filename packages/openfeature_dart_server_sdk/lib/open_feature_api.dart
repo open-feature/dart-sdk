@@ -191,7 +191,6 @@ class OpenFeatureAPI {
   final List<Hook> _evaluationHooks = [];
   OpenFeatureEvaluationContext? _globalContext;
   StreamSubscription<Domain>? _domainSubscription;
-  StreamSubscription<LogRecord>? _logSubscription;
   int _defaultBindingGeneration = 0;
   FeatureProvider? _requestedDefaultProvider;
   bool _disposed = false;
@@ -211,7 +210,6 @@ class OpenFeatureAPI {
     : _providerStreamController = StreamController<FeatureProvider>.broadcast(),
       _domainUpdatesController =
           StreamController<Map<String, String>>.broadcast() {
-    if (!isolated) _configureLogging();
     _transactionManager = isolated
         ? TransactionContextManager.isolated()
         : TransactionContextManager();
@@ -309,15 +307,6 @@ class OpenFeatureAPI {
           'providerName': domain.providerName,
         });
       }
-    });
-  }
-
-  void _configureLogging() {
-    Logger.root.level = Level.ALL;
-    _logSubscription = Logger.root.onRecord.listen((record) {
-      print(
-        '${record.time} [${record.level.name}] ${record.loggerName}: ${record.message}',
-      );
     });
   }
 
@@ -1125,9 +1114,6 @@ class OpenFeatureAPI {
     final domainSubscription = _domainSubscription;
     _domainSubscription = null;
     await attempt(() => domainSubscription?.cancel());
-    final logSubscription = _logSubscription;
-    _logSubscription = null;
-    await attempt(() => logSubscription?.cancel());
     await attempt(_lifecycleManager.dispose);
     await attempt(_domainManager.dispose);
     await attempt(_providerStreamController.close);

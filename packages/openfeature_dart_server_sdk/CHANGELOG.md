@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Preserve application root logging configuration for singleton and isolated APIs.
+  Evaluation and tracking errors no longer log per call; use an application-owned
+  `LoggingHook` for opt-in evaluation diagnostics.
+
 ## [0.0.27](https://github.com/open-feature/dart-sdk/compare/v0.0.26...v0.0.27) (2026-09-26)
 
 
