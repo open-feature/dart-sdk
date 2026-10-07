@@ -1,3 +1,5 @@
+// Compatibility regressions intentionally exercise the deprecated surface.
+// ignore_for_file: deprecated_member_use, deprecated_member_use_from_same_package
 import 'dart:async';
 
 import 'package:logging/logging.dart';
