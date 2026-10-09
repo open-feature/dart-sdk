@@ -395,8 +395,14 @@
       "level": "SHOULD NOT",
       "section": "01-flag-evaluation",
       "review": "pending",
-      "disposition": "deviation",
-      "rationale": "Legacy FeatureClient evaluation errors log WARNING records by default; Singleton API construction sets Logger.root.level to Level.ALL and prints root records. To disable this logger, import package:logging/logging.dart, set hierarchicalLoggingEnabled = true, then Logger('FeatureClient').level = Level.OFF. This is process-wide logger configuration and also silences FeatureClient tracking warnings; it does not disable other SDK loggers. See doc/server-conformance-evidence.md. SHOULD NOT deviation remains pending maintainer acceptance."
+      "disposition": "evidence",
+      "tests": [
+        {
+          "file": "quiet_logging_test.dart",
+          "name_pattern": "preserves application logging|1\\.4\\.11",
+          "note": "Singleton and isolated defaults preserve process logging and emit no evaluation/tracking logs; opt-in LoggingHook remains functional."
+        }
+      ]
     },
     {
       "id": "1.4.12",

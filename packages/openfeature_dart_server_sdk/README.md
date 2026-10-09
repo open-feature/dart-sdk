@@ -9,6 +9,8 @@ For reusable cleanup and experimental isolated API instances, see
 [shutdown and isolation](doc/shutdown-and-isolation.md).
 For experimental tracking and request context carriers, see
 [tracking and transactions](doc/tracking-and-transactions.md).
+For opt-in diagnostics that preserve application logger configuration, see
+[application-owned logging](doc/application-logging.md).
 Candidate requirement evidence and release gates are documented in the
 [conformance report guide](https://github.com/open-feature/dart-sdk/blob/development/doc/server-conformance-evidence.md).
 The candidate report does not declare full v0.9 conformance.
@@ -44,8 +46,8 @@ registration order and the compatibility decision for legacy priorities.
     <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.8.0&color=yellow&style=for-the-badge" />
   </a>
   <!-- x-release-please-start-version -->
-  <a href="https://github.com/open-feature/dart-sdk/releases/tag/v0.0.27">
-    <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.0.27&color=blue&style=for-the-badge" />
+  <a href="https://github.com/open-feature/dart-sdk/releases/tag/v0.1.0">
+    <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.1.0&color=blue&style=for-the-badge" />
   </a>
   <!-- x-release-please-end -->
   <a href="https://dart.dev/">
@@ -126,7 +128,7 @@ Dart language version: [3.12.2](https://dart.dev/get-dart/archive)
 
 ```yaml
 dependencies:
-  openfeature_dart_server_sdk: ^0.0.27
+  openfeature_dart_server_sdk: ^0.1.0
 ```
 
 <!-- x-release-please-end -->

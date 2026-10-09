@@ -1,4 +1,4 @@
 {
-  "packages/openfeature_dart_server_sdk": "0.0.27",
-  "packages/openfeature_dart_client_sdk": "0.0.1-beta.2"
+  "packages/openfeature_dart_server_sdk": "0.1.0",
+  "packages/openfeature_dart_client_sdk": "0.0.1"
 }

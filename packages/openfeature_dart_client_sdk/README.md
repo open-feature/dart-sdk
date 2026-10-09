@@ -7,9 +7,12 @@ applications. It uses the static-context paradigm. It has no Flutter or
 This package supports Dart 3.10 or later within Dart 3.x. Provider packages
 can require a higher Dart version; check the chosen provider separately.
 
-Current package version: `0.0.1-beta.2`. <!-- x-release-please-version -->
+Current package version: `0.0.1`. <!-- x-release-please-version -->
 
-This pre-1.0 package provides synchronous typed
+**Release status:** `0.0.1` is the first non-beta client release. The SDK
+remains pre-1.0.
+
+This package provides synchronous typed
 evaluation, event handlers, hooks, ordered context changes and an in-memory
 provider. Pre-1.0 versions do not establish a 1.0 API compatibility commitment.
 Consult the conformance matrix and release notes for accepted support scope.
@@ -21,7 +24,7 @@ applications need a Flutter release that includes a compatible Dart SDK.
 
 ```yaml
 dependencies:
-  openfeature_dart_client_sdk: ^0.0.1-beta.2 # x-release-please-version
+  openfeature_dart_client_sdk: ^0.0.1 # x-release-please-version
 ```
 
 Run `dart pub get`, or `flutter pub get` in a Flutter application.
