@@ -2,7 +2,7 @@
 
 `client.trackEvent(name, context: ..., trackingDetails: ...)` returns `void` and
 starts tracking without waiting for transport. Synchronous and asynchronous
-provider failures are logged and contained. The existing `Future<void> track`
+provider failures are contained without default logging. The existing `Future<void> track`
 remains available for callers that await transport completion. Neither method
 runs evaluation hooks. A resolver-only provider without `ProviderTracking` ignores
 tracking; legacy `FeatureProvider.track` implementations remain supported.
