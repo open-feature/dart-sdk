@@ -162,6 +162,11 @@ final current = api.evaluationContext;
 
 These are analyzer warnings only. The old calls retain their existing behavior,
 including the legacy event notification; there are no per-call log warnings.
+Both `setGlobalContext(...)` and `setEvaluationContext(...)` emit the legacy
+SDK-only `PROVIDER_CONTEXT_CHANGED` event. Migrating to `setEvaluationContext()`
+preserves this event behavior; it does not introduce a provider-owned
+reconciliation callback.
+
 `const EvaluationContext(...)` stays available without deprecation, preserving
 its const/default-value use cases and permissive compatibility. Revisit its
 shape in the 1.0 API review rather than rejecting extra value types now.
