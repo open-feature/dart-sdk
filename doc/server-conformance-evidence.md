@@ -53,8 +53,8 @@ called by this dynamic-context SDK. It is not a blanket provider exemption.
 The mappings in `conformance/server-v0.9.0.json` are proposals. A passing selected
 test establishes that behavior in that fixture; it does not prove semantic
 completeness for every requirement. Maintainers must inspect each mapping,
-including the proposed static-context exceptions and the legacy client-logging
-SHOULD deviation. Any unmet applicable MUST blocks the release.
+including the proposed static-context exceptions and the quiet client-logging
+mapping. Any unmet applicable MUST blocks the release.
 
 Provider-specific requirements need evidence from the provider implementation.
 Core fixtures establish SDK dispatch/lifecycle behavior; they do not certify
@@ -77,28 +77,20 @@ its server evidence run contains 407 passing tests. These implementation slices
 do not resolve the remaining semantic, provider or future conformance-release
 gates. The reporter records the exact candidate under review.
 
-### Default logging and opt-out (1.4.11)
+### Application-owned logging (1.4.11)
 
-Evaluation errors log `WARNING` through `Logger('FeatureClient')` by default.
-Singleton API construction sets `Logger.root.level = Level.ALL` and subscribes a printer
-to root records. Isolated API construction does not install that printer, but
-clients still emit logger records. Applications can use the existing `package:logging` API:
+The SDK does not change the root logger level or install a process-wide printer.
+Singleton and isolated APIs both preserve application logging configuration.
+Evaluation and tracking do not emit per-call log records; defaults, evaluation
+details and error hooks retain their existing behavior. Applications can opt into
+`LoggingHook` and choose its logger callback. Lifecycle/configuration log records
+remain available to application-installed listeners.
 
-```dart
-import 'package:logging/logging.dart';
-import 'package:openfeature_dart_server_sdk/open_feature_api.dart';
-
-final api = OpenFeatureAPI();
-hierarchicalLoggingEnabled = true;
-Logger('FeatureClient').level = Level.OFF;
-```
-
-Declare `logging` as a direct application dependency when importing it.
-This process-wide configuration silences that named logger, including its
-tracking warnings, and preserves other loggers. It is not an SDK-wide opt-out.
-`logging_opt_out_test.dart` checks both default evaluation-error output and the
-named logger's suppression while an unrelated warning still prints. Keeping
-default logging is a **SHOULD NOT deviation awaiting maintainer acceptance**.
+`quiet_logging_test.dart` verifies unchanged root WARNING level, suppressed
+application FINE records, no default printing, quiet evaluation/tracking errors,
+continued application warning delivery and opt-in LoggingHook diagnostics.
+The previous default-on SHOULD NOT deviation is replaced by mapped test evidence;
+semantic acceptance of the fix remains pending.
 
 ### Accepted legacy API decisions for 0.1.x
 

@@ -122,7 +122,7 @@ requires evaluation failures to return the application default rather than
 throw. An invalid explicit snapshot created inside a before hook is reported
 as `ERROR` / `INVALID_CONTEXT`, with the path in detailed evaluation errors.
 Unrelated provider errors retain their existing classification. Tracking
-continues its existing non-throwing contract and logs failures.
+continues its existing non-throwing contract without default failure logging.
 
 There is no analyzer deprecation or removal date in this additive stage.
 Brian accepted the additive context scope in
