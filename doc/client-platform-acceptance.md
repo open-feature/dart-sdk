@@ -23,7 +23,7 @@ Record build and runtime outcomes separately, including failures and skipped
 cells. Use the same consumer assertions for typed evaluation, context changes,
 ready/error events and shutdown; controlled transport does not certify a live
 provider backend. Provider-owned spontaneous transport transitions need their
-own evidence in addition to the shared v2 contract.
+own evidence in addition to the shared v3 contract.
 
 The [canonical provider receipts](client-provider-validation.md) and these
 platform receipts are separate gates. Final release acceptance must use the

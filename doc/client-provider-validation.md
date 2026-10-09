@@ -5,7 +5,7 @@ with thirteen scenarios and a reproducible receipt command. Its SDK reference pa
 on Dart VM and Chrome, which validates the harness. Datadog is participating and
 reported a controlled-transport VM/Chrome pass in a temporary consumer in
 [PR #193](https://github.com/open-feature/dart-sdk/pull/193). Its canonical
-repository and reviewed v2 receipt remain pending; the independent-provider
+repository and reviewed v3 receipt remain pending; the independent-provider
 release gate is not yet satisfied.
 
 The existing SDK suites remain required: `client_sdk_test.dart` covers typed
@@ -21,7 +21,7 @@ event assertions (C11–C13). Contract v3 hardens C11–C13 with concurrent/neve
 | --- | --- | --- |
 | SDK reference | All thirteen cases on VM and real Chrome | Harness validation only |
 | IntelliToggle | Canonical provider adapter, exact SDK/provider receipts, transport scenarios | [Canonical pipeline 2883187502](https://gitlab.com/dartapps/apps/intellitoggle/openfeature-provider-intellitoggle/-/pipelines/2883187502) and both child pipelines passed at provider `1d8949bb0e565aea81eaad88b363d9ef1a268824`. [VM job 16741495021](https://gitlab.com/dartapps/apps/intellitoggle/openfeature-provider-intellitoggle/-/jobs/16741495021) and [Chrome job 16741495022](https://gitlab.com/dartapps/apps/intellitoggle/openfeature-provider-intellitoggle/-/jobs/16741495022) each pass C01–C13 against clean SDK/harness `21539eb46b932c234c8daa3d4d080c3e5d703514`, Dart 3.13.4. Controlled HTTP fixture; maintainer acceptance remains required |
-| Second independent provider | Same contract and independently maintained canonical implementation | Datadog participating; canonical repository and v2 receipt pending. Its temporary-consumer run is compatibility evidence only |
+| Second independent provider | Same contract and independently maintained canonical implementation | Datadog participating; canonical repository and v3 receipt pending. Its temporary-consumer run is compatibility evidence only |
 | Dart/Flutter/platform consumers | Exact SDK/provider/framework versions, resolved dependencies, web build/runtime and native device records | Use the [shared platform checklist](client-platform-acceptance.md); no native mobile claim from Chrome |
 | Static-context requirements | Each applicable v0.9 MUST mapped and reviewed; SHOULD deviations explained | [Executable inventory](client-conformance-evidence.md) exposes proposed mappings and explicit gaps; semantic review remains required |
 | Package/release safety | Both SDKs/tooling pass; archive, immutable tag and pub.dev identity verified | Independent routing retained; no stable publication authorized by a reference pass |

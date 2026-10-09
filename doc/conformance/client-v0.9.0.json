@@ -214,7 +214,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review.",
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
@@ -269,7 +269,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review.",
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
@@ -437,7 +437,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
       "disposition": "rationale",
-      "rationale": "Typed resolution is synchronous and non-blocking over provider-owned local state; network/bootstrap/reconciliation belongs to asynchronous provider lifecycle operations. Review this Dart/static-context SHOULD interpretation.",
+      "rationale": "Typed resolution is synchronous and non-blocking over provider-owned local state; network/bootstrap/reconciliation belongs to asynchronous provider lifecycle operations. This Dart/static-context SHOULD interpretation is accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
@@ -1004,9 +1004,9 @@
       "review": "pending",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
       "disposition": "gap",
-      "rationale": "Provider-owned post-shutdown behavior is checked directly by shared contract v2 C12, including reinitialization when supported. Canonical provider receipts and maintainer review remain required.",
+      "rationale": "Provider-owned post-shutdown behavior is checked directly by shared contract v3 C12, including reinitialization when supported. Canonical provider receipts and maintainer review remain required.",
       "provider_contract": {
-        "version": "2",
+        "version": "3",
         "scenario": "C12"
       },
       "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
@@ -1018,9 +1018,9 @@
       "review": "pending",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
       "disposition": "gap",
-      "rationale": "Provider-owned shutdown idempotency is checked directly by shared contract v2 C11. Canonical provider receipts and resource-cleanup evidence remain required; SDK cleanup suppression is insufficient.",
+      "rationale": "Provider-owned shutdown idempotency is checked directly by shared contract v3 C11. Canonical provider receipts and resource-cleanup evidence remain required; SDK cleanup suppression is insufficient.",
       "provider_contract": {
-        "version": "2",
+        "version": "3",
         "scenario": "C11"
       },
       "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
@@ -1064,9 +1064,9 @@
       "review": "pending",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
       "disposition": "gap",
-      "rationale": "The provider must emit its own status-transition events. Shared contract v2 C13 checks controlled initialization, refresh failure, recovery, and context-change transitions. Canonical receipts and review of spontaneous transport transitions remain required.",
+      "rationale": "The provider must emit its own status-transition events. Shared contract v3 C13 checks controlled initialization, refresh failure, recovery, and context-change transitions. Canonical receipts and review of spontaneous transport transitions remain required.",
       "provider_contract": {
-        "version": "2",
+        "version": "3",
         "scenario": "C13"
       },
       "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
@@ -1212,7 +1212,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review.",
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
@@ -1329,7 +1329,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review.",
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
@@ -1339,7 +1339,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review.",
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
@@ -1349,7 +1349,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review.",
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
@@ -1359,7 +1359,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review.",
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
@@ -1426,7 +1426,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review.",
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
@@ -1536,7 +1536,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review.",
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
@@ -2111,7 +2111,7 @@
       "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/06-tracking.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review.",
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {

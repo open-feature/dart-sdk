@@ -395,7 +395,7 @@
       "id": "1.4.11",
       "level": "SHOULD NOT",
       "section": "01-flag-evaluation",
-      "review": "pending",
+      "review": "approved",
       "disposition": "evidence",
       "tests": [
         {
@@ -403,7 +403,9 @@
           "name_pattern": "preserves application logging|1\\.4\\.11",
           "note": "Singleton and isolated defaults preserve process logging and emit no evaluation/tracking logs; opt-in LoggingHook remains functional."
         }
-      ]
+      ],
+      "review_source": "https://github.com/open-feature/dart-sdk/pull/211#pullrequestreview-5446254851",
+      "rationale": "Default SDK evaluation/tracking diagnostics are quiet and API construction preserves application logger configuration. Opt-in LoggingHook diagnostics remain application-owned."
     },
     {
       "id": "1.4.12",
@@ -933,9 +935,15 @@
       "level": "SHOULD",
       "section": "02-providers",
       "review": "pending",
-      "disposition": "deviation",
+      "disposition": "evidence",
       "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates.",
-      "rationale": "The legacy stock InMemoryProvider remains SHUTDOWN after cleanup and rejects reinitialization, rather than restoring NOT_READY. Do not substitute SDK adapter deduplication or a probe that forces NOT_READY for this SHOULD obligation. This legacy behavior is explicitly pending maintainer disposition; independent provider post-shutdown/reinitialization needs its own receipt."
+      "rationale": "Stock InMemoryProvider shutdown clears cached results and restores NOT_READY. Direct reinitialization returns READY and evaluates the retained flags. This tests the stock provider, not independent provider implementations.",
+      "tests": [
+        {
+          "file": "feature_provider_test.dart",
+          "name_pattern": "2\\.5\\.2 shutdown restores NOT_READY and permits reinitialization"
+        }
+      ]
     },
     {
       "id": "2.5.3",
@@ -958,7 +966,7 @@
       "section": "02-providers",
       "review": "approved",
       "disposition": "rationale",
-      "rationale": "Optional MAY capability is not implemented: the dynamic-context SDK passes the evaluation context on every call, so it does not require an on-context-changed reconciliation callback. There is no provider on-context-changed callback. The SDK-only setGlobalContext PROVIDER_CONTEXT_CHANGED is a legacy notification, not provider-owned callback evidence.",
+      "rationale": "Optional MAY capability is not implemented: the dynamic-context SDK passes the evaluation context on every call, so it does not require an on-context-changed reconciliation callback. There is no provider on-context-changed callback. The SDK-only setGlobalContext/setEvaluationContext PROVIDER_CONTEXT_CHANGED is a legacy notification, not provider-owned callback evidence.",
       "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },
@@ -1033,7 +1041,7 @@
       "section": "02-providers",
       "review": "approved",
       "disposition": "not_applicable",
-      "rationale": "Does not apply because the optional provider on-context-changed callback is neither implemented nor called. The SDK-synthesized setGlobalContext notification does not satisfy 2.8.4 or 5.3.4.x, and does not exempt providers implementing that callback.",
+      "rationale": "Does not apply because the optional provider on-context-changed callback is neither implemented nor called. The SDK-synthesized setGlobalContext/setEvaluationContext notification does not satisfy 2.8.4 or 5.3.4.x, and does not exempt providers implementing that callback.",
       "provider_boundary": "Core fixture evidence does not certify every external provider. Canonical provider validation and applicable provider-owned obligations remain release gates.",
       "review_source": "https://github.com/open-feature/dart-sdk/issues/165#issuecomment-6040671258"
     },

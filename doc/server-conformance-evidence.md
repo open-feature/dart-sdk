@@ -103,7 +103,7 @@ semantic acceptance of the fix remains pending.
 
 Brian accepted all four keep rows in #165 on October 7. The legacy event-stream
 row also preserves synthesized READY/ERROR, the one-second grace and the SDK-only
-setGlobalContext CONTEXT_CHANGED notification as compatibility behavior outside
+setGlobalContext/setEvaluationContext PROVIDER_CONTEXT_CHANGED notification as compatibility behavior outside
 the v0.9 provider-event claim; removing them requires the same reviewed migration gate. The
 supported public timeout configuration request remains a separate #196 follow-up.
 
@@ -142,8 +142,9 @@ historical. Brian accepts controlled HTTP for this criterion; three skipped
 live-credential tests do not block it. Attach raw receipt JSON publicly after
 review rather than requiring reviewers to access private GitLab job artifacts.
 
-Server 2.5.2 is now an explicit pending SHOULD deviation: legacy InMemoryProvider
-remains SHUTDOWN/rejects reuse, instead of returning to NOT_READY. Adapter
+Server 2.5.2 now maps to the stock InMemoryProvider shutdown/reinitialization
+regression: shutdown restores NOT_READY and reinitialization returns READY.
+The new evidence retains pending review and does not certify independent providers. Adapter
 shutdown deduplication does not establish provider-owned idempotence. Direct
 capability cleanup, spontaneous READY/STALE/READY and pre-return error-handler
 regressions narrow the other mappings but do not certify all vendors.
