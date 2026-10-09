@@ -6,6 +6,7 @@ import 'package:test/test.dart';
 bool isTerminalProviderEvent(ProviderEvent event) => const {
   ProviderEventType.ready,
   ProviderEventType.error,
+  ProviderEventType.stale,
   ProviderEventType.contextChanged,
 }.contains(event.type);
 

@@ -1,4 +1,4 @@
-# Shared client provider contract v2 (proposal)
+# Shared client provider contract v3 (proposal)
 
 This unpublished development-only package registers the same thirteen assertions for
 each participating provider. It does not add dependencies to either published
@@ -82,8 +82,8 @@ retained provider state or missing events. Providers must implement
 `InitializableProvider`, `ShutdownProvider`, `ContextReconciliationProvider`, and
 `ProviderEventSource` for this contract. C11 compares resolutions after both
 shutdown calls and requires no event from the second call. C13 requires exactly
-one terminal event for each controlled transition. Intermediate reconciling or
-stale events and configuration-change events are allowed.
+one terminal event for each controlled transition. Intermediate reconciling and configuration-change events are allowed. STALE
+is terminal and needs its own provider-owned transition receipt.
 
 C11 and C13 subscribe before each action. C13 waits for a terminal event; both
 checks then observe 100 ms without any further events after the action completes.
@@ -94,8 +94,8 @@ event. Provider-owned transport/resource tests must still cover longer delays.
 
 These checks do not prove that every spontaneous transport transition emits an
 event or that all resources were released. Provider-specific transport and
-resource tests remain required. Update old fixtures and rerun them; a v1 receipt
-cannot satisfy v2. The receipt tool requires exactly C01–C13 and records version 2.
+resource tests remain required. Update old fixtures and rerun them; a v1 or v2 receipt
+cannot satisfy v3. The receipt tool requires exactly C01–C13 and records version 3.
 
 ## Evidence beyond these thirteen tests
 
@@ -111,11 +111,22 @@ Maintainers must verify canonical provenance, independent ownership, SDK pin,
 transport tests and the declared platform matrix before accepting two providers.
 Two runs/platforms or two provider classes from one maintained implementation do
 not meet the two-provider gate. Datadog is participating; its canonical repository
-and v2 receipt remain pending. PR #193 reports a controlled-transport VM/Chrome
+and v3 receipt remain pending. PR #193 reports a controlled-transport VM/Chrome
 run against provider commit `9be107eacdbd24e856d834af0fdfbe5a2ac8eb49` in a temporary
 consumer. This is compatibility evidence, not a reviewed canonical receipt or
 live-backend validation.
 
-The v2 tests supplement existing SDK lifecycle/race tests; they do not replace
+The v3 tests supplement existing SDK lifecycle/race tests; they do not replace
 the full requirement-indexed static-context review. The experimental API import
 is used only to isolate the API owned by each test.
+
+## Contract v3 changes
+
+C11 exercises concurrent direct shutdown and never-initialized shutdown.
+C12 rejects a fixture already retaining identity before initialization.
+C13 adds failed initialization/context changes and error code/message assertions.
+STALE is a terminal event. These tests require lifecycle/event-source capabilities;
+stateless providers need separately reviewed applicable evidence, not skipped cases.
+Spontaneous transport loss/recovery remains a provider-owned test linked from its
+canonical receipt (2.8.1), not a generic C13 claim. Earlier v2 receipts remain
+historical and must be rerun against v3.

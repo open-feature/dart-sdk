@@ -5,7 +5,7 @@ with thirteen scenarios and a reproducible receipt command. Its SDK reference pa
 on Dart VM and Chrome, which validates the harness. Datadog is participating and
 reported a controlled-transport VM/Chrome pass in a temporary consumer in
 [PR #193](https://github.com/open-feature/dart-sdk/pull/193). Its canonical
-repository and reviewed v2 receipt remain pending; the independent-provider
+repository and reviewed v3 receipt remain pending; the independent-provider
 release gate is not yet satisfied.
 
 The existing SDK suites remain required: `client_sdk_test.dart` covers typed
@@ -13,15 +13,15 @@ resolution/static context; `event_handlers_test.dart` covers routing/state
 ordering; `race_safety_test.dart` covers serialized replacement/reconciliation;
 `promotion_readiness_test.dart` covers lifecycle timeouts, quarantine, ownership
 and rollback. The shared contract makes provider results comparable without
-moving vendor transport into core. Contract v2 adds direct repeated shutdown,
+moving vendor transport into core. Contract v2 added direct repeated shutdown,
 uninitialized evaluation state, optional reinitialization, and direct provider
-event assertions (C11–C13). V1 receipts must be rerun against v2.
+event assertions (C11–C13). Contract v3 hardens C11–C13 with concurrent/never-initialized shutdown, a non-vacuous C12 guard and failure code/message assertions. Older receipts must be rerun against v3.
 
 | Release input | Required evidence | Current decision |
 | --- | --- | --- |
 | SDK reference | All thirteen cases on VM and real Chrome | Harness validation only |
 | IntelliToggle | Canonical provider adapter, exact SDK/provider receipts, transport scenarios | [Canonical pipeline 2883187502](https://gitlab.com/dartapps/apps/intellitoggle/openfeature-provider-intellitoggle/-/pipelines/2883187502) and both child pipelines passed at provider `1d8949bb0e565aea81eaad88b363d9ef1a268824`. [VM job 16741495021](https://gitlab.com/dartapps/apps/intellitoggle/openfeature-provider-intellitoggle/-/jobs/16741495021) and [Chrome job 16741495022](https://gitlab.com/dartapps/apps/intellitoggle/openfeature-provider-intellitoggle/-/jobs/16741495022) each pass C01–C13 against clean SDK/harness `21539eb46b932c234c8daa3d4d080c3e5d703514`, Dart 3.13.4. Controlled HTTP fixture; maintainer acceptance remains required |
-| Second independent provider | Same contract and independently maintained canonical implementation | Datadog participating; canonical repository and v2 receipt pending. Its temporary-consumer run is compatibility evidence only |
+| Second independent provider | Same contract and independently maintained canonical implementation | Datadog participating; canonical repository and v3 receipt pending. Its temporary-consumer run is compatibility evidence only |
 | Dart/Flutter/platform consumers | Exact SDK/provider/framework versions, resolved dependencies, web build/runtime and native device records | Use the [shared platform checklist](client-platform-acceptance.md); no native mobile claim from Chrome |
 | Static-context requirements | Each applicable v0.9 MUST mapped and reviewed; SHOULD deviations explained | [Executable inventory](client-conformance-evidence.md) exposes proposed mappings and explicit gaps; semantic review remains required |
 | Package/release safety | Both SDKs/tooling pass; archive, immutable tag and pub.dev identity verified | Independent routing retained; no stable publication authorized by a reference pass |
@@ -29,10 +29,26 @@ event assertions (C11–C13). V1 receipts must be rerun against v2.
 For #167, maintainers must review the shared receipts and complete the
 [client conformance matrix](client-sdk-conformance-matrix.md) before approving
 stable promotion. Preserve the beta migration history, name the supported
-provider versions, reconcile unpublished client changes since `0.0.1-beta.1`,
-and promote through development to main using the normal review/check gates.
+provider versions, record final canonical receipts against published SDK `0.0.1` and IntelliToggle
+client provider `0.0.1-beta.4`. SDK publication and main promotion are complete;
+remaining semantic/provider/platform acceptance stays open.
 The server's release identity remains independent.
 
 No checkbox for two providers or stable readiness should be completed from
 this harness PR alone. Run the adapter in each canonical provider repository,
 retain raw JSON/logs, and link provider-specific failures to focused issues.
+
+## Current published-pair rerun
+
+SDK 0.0.1 and IntelliToggle client provider 0.0.1-beta.4 are published and both
+support Dart 3.10+. Historical table receipts above retain their original source
+identities. Brian reported a local final-pair v2 VM/Chrome pass on October 7;
+the canonical release owner must still attach raw v3 receipts after the hardening
+lands. Use `tool/client_provider_evidence.py --hosted-sdk-version 0.0.1` when the
+consumer resolves pub.dev: the collector compares every official archive file
+and rejects extra runtime files. The harness still resolves from its exact
+reviewed checkout. Preserve the dependency graph/lockfile in each receipt.
+
+Provider-owned transport-loss/recovery tests are linked from each canonical
+receipt rather than imposed as a generic transport scenario. Lifecycle contracts
+require the corresponding interfaces; stateless providers need separate review.

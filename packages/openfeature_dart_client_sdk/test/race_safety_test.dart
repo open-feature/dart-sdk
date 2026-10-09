@@ -14,6 +14,77 @@ void main() {
 
   tearDown(() => api.shutdown());
 
+  test(
+    '5.3.4.2 rapid reentrant changes invoke one success handler per completed change',
+    () async {
+      final provider = _GatedContextProvider();
+      await api.setProviderAndWait(provider);
+      final seen = <String?>[];
+      Future<void>? reentrant;
+      api.getClient().addHandler(ProviderEventType.contextChanged, (_) {
+        seen.add(provider.activeContext.targetingKey);
+        if (seen.length == 1) {
+          reentrant = api.setEvaluationContextAndWait(
+            EvaluationContext(targetingKey: 'third'),
+          );
+        }
+      });
+      final first = api.setEvaluationContextAndWait(
+        EvaluationContext(targetingKey: 'first'),
+      );
+      await provider.waitForChange(1);
+      final second = api.setEvaluationContextAndWait(
+        EvaluationContext(targetingKey: 'second'),
+      );
+      provider.allowChange(0);
+      await provider.waitForChange(2);
+      expect(seen, ['first']);
+      provider.allowChange(1);
+      await provider.waitForChange(3);
+      expect(seen, ['first', 'second']);
+      provider.allowChange(2);
+      await Future.wait([first, second, reentrant!]);
+      expect(seen, ['first', 'second', 'third']);
+    },
+  );
+
+  test(
+    '5.3.4.3 rapid failed changes invoke exactly one error handler each',
+    () async {
+      final provider = _GatedContextProvider(failReconciliation: true);
+      await api.setProviderAndWait(provider);
+      var errors = 0;
+      var successes = 0;
+      var failures = 0;
+      api.getClient().addHandler(ProviderEventType.error, (_) => errors++);
+      api.getClient().addHandler(
+        ProviderEventType.contextChanged,
+        (_) => successes++,
+      );
+      Future<void> change(String subject) => api
+          .setEvaluationContextAndWait(EvaluationContext(targetingKey: subject))
+          .then<void>(
+            (_) {},
+            onError: (Object _, StackTrace _) {
+              failures++;
+            },
+          );
+      final first = change('first');
+      await provider.waitForChange(1);
+      final second = change('second');
+      provider.allowChange(0);
+      await provider.waitForChange(2);
+      expect(errors, 1);
+      provider.allowChange(1);
+      await Future.wait([first, second]);
+      expect(errors, 2);
+      expect(failures, 2);
+      expect(successes, 0);
+      expect(api.getClient().providerStatus, ProviderStatus.error);
+      expect(provider.activeContext, EvaluationContext.empty);
+    },
+  );
+
   test('provider replacement waits for active reconciliation', () async {
     final original = _GatedContextProvider(name: 'original');
     final replacement = _GatedContextProvider(name: 'replacement');
@@ -413,11 +484,13 @@ final class _GatedContextProvider
     this.name = 'gated-provider',
     this.followingEvents = const [],
     this.throwsAfterEvent = false,
+    this.failReconciliation = false,
   }) : _delegate = InMemoryProvider({'flag': true});
 
   final String name;
   final List<ProviderEventType> followingEvents;
   final bool throwsAfterEvent;
+  final bool failReconciliation;
   final InMemoryProvider _delegate;
   final StreamController<ProviderEvent> _events =
       StreamController<ProviderEvent>.broadcast(sync: true);
@@ -460,6 +533,16 @@ final class _GatedContextProvider
     _events.add(ProviderEvent(type: ProviderEventType.reconciling));
     _starts.add(changes.length);
     await gate.future;
+    if (failReconciliation) {
+      _events.add(
+        ProviderEvent(
+          type: ProviderEventType.error,
+          errorCode: ErrorCode.general,
+          message: 'controlled reconciliation failure',
+        ),
+      );
+      throw StateError('controlled reconciliation failure');
+    }
     activeContext = newContext;
     _events.add(ProviderEvent(type: ProviderEventType.contextChanged));
     for (final type in followingEvents) {

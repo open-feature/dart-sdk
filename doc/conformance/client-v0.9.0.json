@@ -211,10 +211,11 @@
       "id": "1.3.1.1",
       "level": "MUST",
       "section": "01-flag-evaluation",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "1.3.2.1",
@@ -265,10 +266,11 @@
       "id": "1.4.1.1",
       "level": "MUST",
       "section": "01-flag-evaluation",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "1.4.2.1",
@@ -432,10 +434,11 @@
       "id": "1.4.12",
       "level": "SHOULD",
       "section": "01-flag-evaluation",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/01-flag-evaluation.md",
       "disposition": "rationale",
-      "rationale": "Typed resolution is synchronous and non-blocking over provider-owned local state; network/bootstrap/reconciliation belongs to asynchronous provider lifecycle operations. Review this Dart/static-context SHOULD interpretation."
+      "rationale": "Typed resolution is synchronous and non-blocking over provider-owned local state; network/bootstrap/reconciliation belongs to asynchronous provider lifecycle operations. This Dart/static-context SHOULD interpretation is accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "1.4.13",
@@ -690,8 +693,9 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "coverage_contract_test.dart",
-          "name_pattern": "non-awaiting mutators preserve ordered static context"
+          "file": "client_sdk_test.dart",
+          "name_pattern": "resolves every Dart flag type|waits for provider-owned ready event",
+          "note": ""
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
@@ -759,7 +763,7 @@
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
-      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+      "provider_boundary": "SDK fixture/passthrough assertions only; provider implementation and final-pair v3 receipt remain pending. Provider-owned spontaneous events need a separate transport test."
     },
     {
       "id": "2.2.5",
@@ -775,7 +779,7 @@
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
-      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+      "provider_boundary": "SDK fixture/passthrough assertions only; provider implementation and final-pair v3 receipt remain pending. Provider-owned spontaneous events need a separate transport test."
     },
     {
       "id": "2.2.6",
@@ -791,7 +795,7 @@
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
-      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+      "provider_boundary": "SDK fixture/passthrough assertions only; provider implementation and final-pair v3 receipt remain pending. Provider-owned spontaneous events need a separate transport test."
     },
     {
       "id": "2.2.7",
@@ -807,7 +811,7 @@
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
-      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+      "provider_boundary": "SDK fixture/passthrough assertions only; provider implementation and final-pair v3 receipt remain pending. Provider-owned spontaneous events need a separate transport test."
     },
     {
       "id": "2.2.8.1",
@@ -818,12 +822,13 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "conformance_evidence_test.dart",
-          "name_pattern": "detailed resolution preserves provider fields"
+          "file": "client_sdk_test.dart",
+          "name_pattern": "resolves every Dart flag type",
+          "note": "Typed local assignments verify the language-specific return types; independent providers still need receipts."
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
-      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+      "provider_boundary": "SDK fixture/passthrough assertions only; provider implementation and final-pair v3 receipt remain pending. Provider-owned spontaneous events need a separate transport test."
     },
     {
       "id": "2.2.9",
@@ -839,7 +844,7 @@
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
-      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+      "provider_boundary": "SDK fixture/passthrough assertions only; provider implementation and final-pair v3 receipt remain pending. Provider-owned spontaneous events need a separate transport test."
     },
     {
       "id": "2.2.10",
@@ -887,7 +892,7 @@
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
-      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+      "provider_boundary": "SDK fixture/passthrough assertions only; provider implementation and final-pair v3 receipt remain pending. Provider-owned spontaneous events need a separate transport test."
     },
     {
       "id": "2.3.3",
@@ -914,8 +919,14 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "coverage_contract_test.dart",
-          "name_pattern": "non-awaiting mutators preserve ordered static context"
+          "file": "client_sdk_test.dart",
+          "name_pattern": "waits for provider-owned ready event",
+          "note": ""
+        },
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "1\\.7 and 2\\.4\\.4:",
+          "note": ""
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
@@ -930,8 +941,9 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "promotion_readiness_test.dart",
-          "name_pattern": "a provider that throws before an event is shut down"
+          "file": "client_sdk_test.dart",
+          "name_pattern": "keeps an error provider bound after failed initialization",
+          "note": ""
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
@@ -992,9 +1004,9 @@
       "review": "pending",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
       "disposition": "gap",
-      "rationale": "Provider-owned post-shutdown behavior is checked directly by shared contract v2 C12, including reinitialization when supported. Canonical provider receipts and maintainer review remain required.",
+      "rationale": "Provider-owned post-shutdown behavior is checked directly by shared contract v3 C12, including reinitialization when supported. Canonical provider receipts and maintainer review remain required.",
       "provider_contract": {
-        "version": "2",
+        "version": "3",
         "scenario": "C12"
       },
       "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
@@ -1006,9 +1018,9 @@
       "review": "pending",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
       "disposition": "gap",
-      "rationale": "Provider-owned shutdown idempotency is checked directly by shared contract v2 C11. Canonical provider receipts and resource-cleanup evidence remain required; SDK cleanup suppression is insufficient.",
+      "rationale": "Provider-owned shutdown idempotency is checked directly by shared contract v3 C11. Canonical provider receipts and resource-cleanup evidence remain required; SDK cleanup suppression is insufficient.",
       "provider_contract": {
-        "version": "2",
+        "version": "3",
         "scenario": "C11"
       },
       "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
@@ -1052,9 +1064,9 @@
       "review": "pending",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/02-providers.md",
       "disposition": "gap",
-      "rationale": "The provider must emit its own status-transition events. Shared contract v2 C13 checks controlled initialization, refresh failure, recovery, and context-change transitions. Canonical receipts and review of spontaneous transport transitions remain required.",
+      "rationale": "The provider must emit its own status-transition events. Shared contract v3 C13 checks controlled initialization, refresh failure, recovery, and context-change transitions. Canonical receipts and review of spontaneous transport transitions remain required.",
       "provider_contract": {
-        "version": "2",
+        "version": "3",
         "scenario": "C13"
       },
       "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
@@ -1073,7 +1085,7 @@
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
-      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+      "provider_boundary": "SDK fixture/passthrough assertions only; provider implementation and final-pair v3 receipt remain pending. Provider-owned spontaneous events need a separate transport test."
     },
     {
       "id": "2.8.3",
@@ -1084,12 +1096,18 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "promotion_readiness_test.dart",
-          "name_pattern": "a provider that throws before an event is shut down"
+          "file": "client_sdk_test.dart",
+          "name_pattern": "keeps an error provider bound after failed initialization",
+          "note": ""
+        },
+        {
+          "file": "event_handlers_test.dart",
+          "name_pattern": "replays initialization statuses|queues handler events behind initialization",
+          "note": ""
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
-      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+      "provider_boundary": "SDK fixture/passthrough assertions only; provider implementation and final-pair v3 receipt remain pending. Provider-owned spontaneous events need a separate transport test."
     },
     {
       "id": "2.8.4",
@@ -1109,7 +1127,7 @@
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete.",
-      "provider_boundary": "Core fixtures do not certify independent provider implementations; canonical shared-contract and transport evidence remain required."
+      "provider_boundary": "SDK fixture/passthrough assertions only; provider implementation and final-pair v3 receipt remain pending. Provider-owned spontaneous events need a separate transport test."
     },
     {
       "id": "2.8.5.1",
@@ -1191,10 +1209,11 @@
       "id": "3.2.1.1",
       "level": "MUST",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "3.2.2.1",
@@ -1260,10 +1279,18 @@
       "id": "3.2.3",
       "level": "MUST",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
-      "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "disposition": "rationale",
+      "rationale": "This unconditional requirement is retained. Static context uses only the API/global or associated domain level; no transaction/client/invocation context is supplied, so there are no lower-precedence layers to merge. See the static context/global-domain and tracking tests.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351",
+      "tests": [
+        {
+          "file": "coverage_contract_test.dart",
+          "name_pattern": "non-awaiting mutators preserve ordered static context",
+          "note": "API/global/domain context selection; no client or invocation layers."
+        }
+      ]
     },
     {
       "id": "3.2.4.1",
@@ -1299,37 +1326,41 @@
       "id": "3.3.1.1",
       "level": "SHOULD",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "3.3.1.2.1",
       "level": "MUST",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "3.3.1.2.2",
       "level": "MUST",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "3.3.1.2.3",
       "level": "MUST",
       "section": "03-evaluation-context",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/03-evaluation-context.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "3.3.2.1",
@@ -1392,10 +1423,11 @@
       "id": "4.1.4.1",
       "level": "MUST",
       "section": "04-hooks",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "4.1.5",
@@ -1501,10 +1533,11 @@
       "id": "4.3.2.1",
       "level": "MUST",
       "section": "04-hooks",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "4.3.3.1",
@@ -1525,19 +1558,21 @@
       "id": "4.3.4",
       "level": "MUST",
       "section": "04-hooks",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Applies only when a before hook returns evaluation context. Static-context before hooks return void under 4.3.3.1, so no returned-context merge/mutation exists. This is a callback-return applicability boundary, not a dynamic-context-only rule.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "4.3.5",
       "level": "MUST",
       "section": "04-hooks",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/04-hooks.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Applies only when a before hook returns evaluation context. Static-context before hooks return void under 4.3.3.1, so no returned-context merge/mutation exists. This is a callback-return applicability boundary, not a dynamic-context-only rule.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "4.3.6",
@@ -1783,6 +1818,11 @@
         {
           "file": "client_sdk_test.dart",
           "name_pattern": "replaceAll emits the union of old and new flag keys"
+        },
+        {
+          "file": "conformance_evidence_test.dart",
+          "name_pattern": "1\\.7 and 2\\.4\\.4:",
+          "note": ""
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
@@ -1977,7 +2017,8 @@
       "tests": [
         {
           "file": "event_handlers_test.dart",
-          "name_pattern": "late handlers receive the current lifecycle state"
+          "name_pattern": "queues handler events behind initialization",
+          "note": ""
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
@@ -2021,8 +2062,9 @@
       "disposition": "evidence",
       "tests": [
         {
-          "file": "client_sdk_test.dart",
-          "name_pattern": "waits for provider-owned context changed event"
+          "file": "race_safety_test.dart",
+          "name_pattern": "context-changed handlers evaluate|5\\.3\\.4\\.2 rapid reentrant",
+          "note": ""
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
@@ -2038,6 +2080,11 @@
         {
           "file": "coverage_contract_test.dart",
           "name_pattern": "reconciliation errors preserve the previous active context"
+        },
+        {
+          "file": "race_safety_test.dart",
+          "name_pattern": "5\\.3\\.4\\.3 rapid failed",
+          "note": ""
         }
       ],
       "scope": "Proposed relevant test evidence, not proof that all clauses or external-provider obligations are complete."
@@ -2061,10 +2108,11 @@
       "id": "6.1.1.1",
       "level": "MUST",
       "section": "06-tracking",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/06-tracking.md",
       "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "rationale": "Accepted dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability accepted by the linked maintainer review.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351"
     },
     {
       "id": "6.1.2.1",
@@ -2085,10 +2133,18 @@
       "id": "6.1.3",
       "level": "MUST",
       "section": "06-tracking",
-      "review": "pending",
+      "review": "approved",
       "source": "https://github.com/open-feature/spec/blob/d5b0a734d8cb9b42bf89be2a97c627f58208e811/specification/sections/06-tracking.md",
-      "disposition": "not_applicable",
-      "rationale": "Proposed dynamic-context-only boundary: this client uses static global/domain context and void before hooks; no transaction/client/invocation context merge is exposed. Applicability requires maintainer review."
+      "disposition": "rationale",
+      "rationale": "This unconditional requirement is retained. Static context uses only the API/global or associated domain level; no transaction/client/invocation context is supplied, so there are no lower-precedence layers to merge. See the static context/global-domain and tracking tests.",
+      "review_source": "https://github.com/open-feature/dart-sdk/issues/167#issuecomment-6040698351",
+      "tests": [
+        {
+          "file": "client_sdk_test.dart",
+          "name_pattern": "uses static context and immutable tracking details",
+          "note": ""
+        }
+      ]
     },
     {
       "id": "6.1.4",
@@ -2140,6 +2196,6 @@
     "Close applicable MUST evidence gaps and review every mapping, applicability rationale and SHOULD interpretation.",
     "Obtain maintainer acceptance of the shared contract from two independent canonical providers; IntelliToggle alone is insufficient.",
     "Complete exact-version Flutter consumer and declared Android, iOS and desktop runtime evidence; browser tests do not establish native support.",
-    "Approve migration/provider compatibility notes and reviewed development-to-main stable promotion; verify immutable tag and pub.dev archive separately."
+    "Approve remaining migration/support and canonical provider compatibility evidence. SDK0.0.1 development-to-main promotion, OIDC tag publication and immutable archive are complete; do not republish or substitute them for remaining acceptance."
   ]
 }

@@ -23,6 +23,8 @@ class MinimalProvider implements Provider {
         flagKey: key,
         value: value,
         reason: 'STATIC',
+        variant: 'resolved',
+        flagMetadata: {'fixture': 'minimal'},
         evaluatedAt: DateTime.now(),
       );
   @override

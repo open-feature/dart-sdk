@@ -6,12 +6,13 @@ import re
 import shutil
 import subprocess
 from urllib.parse import urljoin, urlparse, unquote
+from hosted_sdk_evidence import verify_hosted_sdk
 
-CONTRACT_VERSION = '2'
+CONTRACT_VERSION = '3'
 SCENARIOS = {f'C{i:02}' for i in range(1, 14)}
 
 
-def verify_package_paths(config_path, root):
+def verify_package_paths(config_path, root, expected_sdk=None):
     """Verify the SDK and harness actually loaded by the provider's tests."""
     config = json.loads(config_path.read_text(encoding='utf-8'))
 
@@ -29,7 +30,7 @@ def verify_package_paths(config_path, root):
 
     return {
         'sdk_path_verified': resolves_to('openfeature_dart_client_sdk',
-            root/'packages/openfeature_dart_client_sdk'),
+            expected_sdk or root/'packages/openfeature_dart_client_sdk'),
         'contract_path_verified': resolves_to('openfeature_client_provider_contract',
             root/'conformance/client_provider_contract'),
     }
@@ -75,6 +76,7 @@ def run():
     parser.add_argument('--test-target', required=True)
     parser.add_argument('--platform', required=True, choices=['vm','chrome'])
     parser.add_argument('--output', required=True)
+    parser.add_argument('--hosted-sdk-version', help='Exact published SDK; verify every archive file against actual resolution')
     options = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     out = Path(options.output).resolve()
@@ -86,7 +88,7 @@ def run():
     (out/'stderr.log').write_text(result.stderr, encoding='utf-8')
     summary = summarize(result.stdout)
     receipt = {'contract_version':CONTRACT_VERSION, 'contract_checkout':identity(root),
-        'sdk_checkout':identity(root), 'provider_checkout':identity(options.provider_repo),
+        'sdk_checkout':None if options.hosted_sdk_version else identity(root), 'provider_checkout':identity(options.provider_repo),
         'classification':options.classification, 'canonical_repository':options.canonical_repository,
         'dart':subprocess.check_output([dart,'--version'],encoding='utf-8').strip(),
         'command':command[1:], 'process_exit_code':result.returncode, **summary,
@@ -102,7 +104,20 @@ def run():
     config_path = next((path for path in configs if path.exists()), None)
     if config_path is None:
         raise RuntimeError('Cannot verify package resolution')
-    receipt.update(verify_package_paths(config_path, root))
+    expected_sdk = None
+    if options.hosted_sdk_version:
+        sdk_dep = next((p for p in json.loads(deps.stdout)['packages']
+            if p['name'] == 'openfeature_dart_client_sdk'), None)
+        if not sdk_dep or sdk_dep.get('source') != 'hosted' or sdk_dep.get('version') != options.hosted_sdk_version:
+            raise RuntimeError('Exact hosted SDK resolution required; path/git overrides do not qualify')
+        expected_sdk, hosted = verify_hosted_sdk(config_path, options.hosted_sdk_version)
+        receipt['sdk_hosted_archive'] = hosted
+        receipt['sdk_resolved_dependency'] = sdk_dep
+    receipt.update(verify_package_paths(config_path, root, expected_sdk))
+    receipt['sdk_resolution_kind'] = 'registry-archive-equivalent' if expected_sdk else 'checkout'
+    lock = working/'pubspec.lock'
+    if lock.is_file():
+        shutil.copyfile(lock, out/'pubspec.lock')
     receipt['all_scenarios_passed'] = receipt['all_scenarios_passed'] and result.returncode == 0
     (out/'receipt.json').write_text(json.dumps(receipt, indent=2)+'\n', encoding='utf-8')
     print(json.dumps({key:receipt[key] for key in ('classification','all_scenarios_passed','platforms','sdk_path_verified','contract_path_verified','independent_provider_gate_satisfied')}))

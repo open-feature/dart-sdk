@@ -1,4 +1,4 @@
-/// Shared validation contract v2. This development-only package is unpublished.
+/// Shared validation contract v3. This development-only package is unpublished.
 library;
 
 import 'dart:async';
@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 
 import 'src/provider_event_observer.dart';
 
-const clientProviderContractVersion = '2';
+const clientProviderContractVersion = '3';
 
 /// A provider-owned control boundary. Implement this in the canonical provider
 /// repository using its real provider and controlled transport/backend.
@@ -309,10 +309,15 @@ void runClientProviderContract({
         expect(provider, isA<ProviderEventSource>());
         addTearDown((provider as ShutdownProvider).shutdown);
         await _initializeDirect(provider);
-        // Drain the first shutdown before measuring effects of the second.
+        // Exercise concurrent direct callers, without SDK adapter deduplication.
         await observeProviderEvents(
           (provider as ProviderEventSource).events,
-          (provider as ShutdownProvider).shutdown,
+          () async {
+            await Future.wait([
+              (provider as ShutdownProvider).shutdown(),
+              (provider as ShutdownProvider).shutdown(),
+            ]);
+          },
         );
         final afterFirst = _directEvaluations(provider);
         await expectNoProviderEvents(
@@ -320,6 +325,22 @@ void runClientProviderContract({
           (provider as ShutdownProvider).shutdown,
         );
         expect(_directEvaluations(provider), afterFirst);
+        final neverInitialized = await createFixture();
+        addTearDown(neverInitialized.close);
+        final neverProvider = neverInitialized.provider;
+        expect(neverProvider, isA<ShutdownProvider>());
+        expect(neverProvider, isA<ProviderEventSource>());
+        final uninitialized = _directEvaluations(neverProvider);
+        await expectNoProviderEvents(
+          (neverProvider as ProviderEventSource).events,
+          () async {
+            await Future.wait([
+              (neverProvider as ShutdownProvider).shutdown(),
+              (neverProvider as ShutdownProvider).shutdown(),
+            ]);
+          },
+        );
+        expect(_directEvaluations(neverProvider), uninitialized);
       });
 
       test('C12 direct shutdown restores uninitialized evaluations', () async {
@@ -328,6 +349,12 @@ void runClientProviderContract({
         expect(provider, isA<ShutdownProvider>());
         addTearDown((provider as ShutdownProvider).shutdown);
         final beforeInitialization = _directEvaluations(provider);
+        expect(
+          beforeInitialization[3],
+          isNot(contains('a')),
+          reason:
+              'The uninitialized fixture must not retain the initialized identity',
+        );
         await _initializeDirect(provider);
         expect(
           provider
@@ -337,6 +364,7 @@ void runClientProviderContract({
         );
         await (provider as ShutdownProvider).shutdown();
         expect(_directEvaluations(provider), beforeInitialization);
+        expect(_directEvaluations(provider)[3], isNot(contains('a')));
         if (fixture.supportsReinitialization) {
           await _initializeDirect(provider);
           expect(
@@ -362,10 +390,38 @@ void runClientProviderContract({
           Future<void> transition(
             ProviderEventType expected,
             Future<void> Function() action,
-          ) => expectProviderTransition(
-            (provider as ProviderEventSource).events,
-            action,
-            expected,
+          ) async {
+            final events = await observeProviderEvents(
+              (provider as ProviderEventSource).events,
+              action,
+              requireTerminal: true,
+            );
+            final terminals = events.where(isTerminalProviderEvent).toList();
+            expect(terminals.map((event) => event.type), [expected]);
+            if (expected == ProviderEventType.error) {
+              expect(terminals.single.errorCode, isNotNull);
+              expect(terminals.single.message, isNotEmpty);
+            }
+          }
+
+          Future<void> allowReportedFailure(
+            Future<void> Function() action,
+          ) async {
+            try {
+              await action();
+            } on Object {
+              /* Also reported by provider event. */
+            }
+          }
+
+          fixture.failNextRequest();
+          await transition(
+            ProviderEventType.error,
+            () => allowReportedFailure(
+              () => (provider as InitializableProvider).initialize(
+                _directContext,
+              ),
+            ),
           );
 
           await transition(
@@ -382,6 +438,17 @@ void runClientProviderContract({
             }
           });
           await transition(ProviderEventType.ready, fixture.refresh);
+          fixture.failNextRequest();
+          await transition(
+            ProviderEventType.error,
+            () => allowReportedFailure(
+              () =>
+                  (provider as ContextReconciliationProvider).onContextChanged(
+                    _directContext,
+                    EvaluationContext(targetingKey: 'b'),
+                  ),
+            ),
+          );
           await transition(
             ProviderEventType.contextChanged,
             () => (provider as ContextReconciliationProvider).onContextChanged(

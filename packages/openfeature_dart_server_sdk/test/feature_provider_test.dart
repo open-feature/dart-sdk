@@ -102,7 +102,7 @@ void main() {
       expect(provider.state, equals(ProviderState.READY));
 
       await provider.shutdown();
-      expect(provider.state, equals(ProviderState.SHUTDOWN));
+      expect(provider.state, equals(ProviderState.NOT_READY));
     });
 
     test('throws when not ready', () async {
@@ -112,10 +112,29 @@ void main() {
       );
     });
 
-    test('prevents initialization after shutdown', () async {
-      await provider.shutdown();
-      expect(() => provider.initialize(), throwsA(isA<ProviderException>()));
-    });
+    test(
+      '2.5.2 shutdown restores NOT_READY and permits reinitialization',
+      () async {
+        await provider.initialize();
+        await provider.shutdown();
+        expect(provider.state, equals(ProviderState.NOT_READY));
+        await expectLater(
+          provider.resolveBooleanFlag('bool-flag', false),
+          throwsA(
+            isA<ProviderException>().having(
+              (error) => error.code,
+              'code',
+              ErrorCode.PROVIDER_NOT_READY,
+            ),
+          ),
+        );
+        await provider.initialize();
+        expect(provider.state, equals(ProviderState.READY));
+        final restored = await provider.resolveBooleanFlag('bool-flag', false);
+        expect(restored.value, isTrue);
+        expect(restored.errorCode, isNull);
+      },
+    );
 
     group('flag evaluation when ready', () {
       setUp(() async {

@@ -617,7 +617,7 @@ class InMemoryProvider extends CachedFeatureProvider {
   @override
   Future<void> shutdown() async {
     clearCache();
-    setState(ProviderState.SHUTDOWN);
+    setState(ProviderState.NOT_READY);
   }
 
   void _checkState() {
