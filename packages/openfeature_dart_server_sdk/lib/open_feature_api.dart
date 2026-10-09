@@ -27,6 +27,9 @@ class OpenFeatureEvaluationContext {
   Map<String, dynamic> get attributes =>
       UnmodifiableMapView(_context.attributes);
 
+  @Deprecated(
+    'Use EvaluationContext.immutable and OpenFeatureAPI.setEvaluationContext instead.',
+  )
   OpenFeatureEvaluationContext(
     Map<String, dynamic> attributes, {
     String? targetingKey,
@@ -623,13 +626,19 @@ class OpenFeatureAPI {
   /// Set global evaluation fields using the canonical context representation.
   /// Existing clients resolve the latest snapshot on their next evaluation.
   void setEvaluationContext(EvaluationContext context) {
-    setGlobalContext(OpenFeatureEvaluationContext._(context.snapshot()));
+    _setGlobalContext(OpenFeatureEvaluationContext._(context.snapshot()));
   }
 
   EvaluationContext? get evaluationContext =>
       _globalContext?.toEvaluationContext();
 
-  void setGlobalContext(OpenFeatureEvaluationContext context) {
+  @Deprecated(
+    'Use setEvaluationContext(EvaluationContext.immutable(...)) instead.',
+  )
+  void setGlobalContext(OpenFeatureEvaluationContext context) =>
+      _setGlobalContext(context);
+
+  void _setGlobalContext(OpenFeatureEvaluationContext context) {
     _ensureMutable();
     _logger.info('Setting global context');
     _globalContext = context;
@@ -639,6 +648,7 @@ class OpenFeatureAPI {
     );
   }
 
+  @Deprecated('Use evaluationContext instead.')
   OpenFeatureEvaluationContext? get globalContext => _globalContext;
 
   void addHooks(List<OpenFeatureHook> hooks) {

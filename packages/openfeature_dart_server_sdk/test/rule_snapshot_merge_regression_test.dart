@@ -1,3 +1,5 @@
+// Compatibility regressions intentionally exercise the deprecated surface.
+// ignore_for_file: deprecated_member_use, deprecated_member_use_from_same_package
 import 'package:test/test.dart';
 import 'package:openfeature_dart_server_sdk/evaluation_context.dart';
 import 'package:openfeature_dart_server_sdk/open_feature_api.dart';

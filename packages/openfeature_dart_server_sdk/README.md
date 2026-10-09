@@ -226,8 +226,8 @@ the
 
 ```dart
 final api = OpenFeatureAPI();
-api.setGlobalContext(
-  OpenFeatureEvaluationContext({
+api.setEvaluationContext(
+  EvaluationContext.immutable(attributes: {
     'region': 'us-east-1-iah-1a',
   }),
 );
@@ -235,7 +235,7 @@ api.setGlobalContext(
 final client = FeatureClient(
   metadata: ClientMetadata(name: 'my-app'),
   hookManager: HookManager(),
-  defaultContext: const EvaluationContext(
+  defaultContext: EvaluationContext.immutable(
     attributes: {
       'version': '1.4.6',
     },
@@ -246,7 +246,7 @@ final client = FeatureClient(
 final result = await client.getBooleanFlag(
   'feature-flag',
   defaultValue: false,
-  context: const EvaluationContext(
+  context: EvaluationContext.immutable(
     attributes: {
       'user': 'user-123',
       'company': 'Initech',
@@ -297,7 +297,7 @@ final client = api.getClient('my-app');
 
 await client.track(
   'checkout-completed',
-  context: const EvaluationContext(
+  context: EvaluationContext.immutable(
     attributes: {
       'user': 'user-123',
     },

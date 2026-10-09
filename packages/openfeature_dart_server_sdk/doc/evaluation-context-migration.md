@@ -124,7 +124,7 @@ as `ERROR` / `INVALID_CONTEXT`, with the path in detailed evaluation errors.
 Unrelated provider errors retain their existing classification. Tracking
 continues its existing non-throwing contract without default failure logging.
 
-There is no analyzer deprecation or removal date in this additive stage.
+The next release containing #195 adds analyzer deprecations to the legacy API wrapper, setter and getter; no runtime warning or behavior change is introduced.
 Brian accepted the additive context scope in
 [#159](https://github.com/open-feature/dart-sdk/issues/159#issuecomment-5831385040).
 The spec does not require deep immutability or rejection of every unsupported
@@ -145,3 +145,36 @@ explicit isolation across awaited hooks and overlapping transactions, and
 late global replacement. Both independently published SDKs contain the same
 immutable-value implementation; a repository test detects drift. The client
 package also tests cycle rejection, shared acyclic data and error paths.
+
+## Versioned legacy API warning policy (#195)
+
+The next release containing this change warns on
+`OpenFeatureEvaluationContext(...)`, `api.setGlobalContext(...)` and
+`api.globalContext`. Use the named immutable context/API directly:
+
+```dart
+final api = OpenFeatureAPI();
+api.setEvaluationContext(EvaluationContext.immutable(
+  targetingKey: 'user-123', attributes: {'region': 'us-east-1'},
+));
+final current = api.evaluationContext;
+```
+
+These are analyzer warnings only. The old calls retain their existing behavior,
+including the legacy event notification; there are no per-call log warnings.
+Both `setGlobalContext(...)` and `setEvaluationContext(...)` emit the legacy
+SDK-only `PROVIDER_CONTEXT_CHANGED` event. Migrating to `setEvaluationContext()`
+preserves this event behavior; it does not introduce a provider-owned
+reconciliation callback.
+
+`const EvaluationContext(...)` stays available without deprecation, preserving
+its const/default-value use cases and permissive compatibility. Revisit its
+shape in the 1.0 API review rather than rejecting extra value types now.
+
+Removal requires a separate maintainer-approved breaking release: a subsequent
+0.x minor or 1.0, after the warning has shipped in at least one release, with
+migration/release notes. No removal version/date is selected by this change.
+The unchanged legacy fixture suppresses only its expected deprecated-member
+warning; ordinary application analyzers still report the migration guidance.
+
+Policy proposal: https://github.com/open-feature/dart-sdk/issues/195#issuecomment-6040548421
