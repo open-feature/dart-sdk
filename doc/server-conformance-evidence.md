@@ -90,13 +90,14 @@ remain available to application-installed listeners.
 application FINE records, no default printing, quiet evaluation/tracking errors,
 continued application warning delivery and opt-in LoggingHook diagnostics.
 The previous default-on SHOULD NOT deviation is replaced by mapped test evidence;
-semantic acceptance of the fix remains pending.
+Brian [accepted the 1.4.11 fix in his #211 review](https://github.com/open-feature/dart-sdk/pull/211#pullrequestreview-5446254851).
+#212 records that approval; the remaining semantic dispositions are separate.
 
 ### Accepted legacy API decisions for 0.1.x
 
 | Legacy surface | Accepted 0.1.x decision | Later change gate |
 | --- | --- | --- |
-| Positional context constructors and legacy reserved-key behavior | Keep; canonical named form remains additive | #195: review warnings/migration before a breaking removal; no removal version chosen |
+| Positional context constructors and legacy reserved-key behavior | Keep; canonical named form remains additive | #213 implements the #195 analyzer warnings and migration guidance; breaking removal requires a separate reviewed release after the warnings have shipped; no removal version chosen |
 | `Hook` / `BaseHook` mutability and stages | Keep; use opt-in `EvaluationHook` for the new contract | Review migration and a breaking version before removal |
 | Legacy provider event streams and grace behavior | Keep alongside typed events | Review event migration before any breaking removal |
 | Legacy provider members | Keep; optional capability interfaces remain additive | Review migration before any breaking removal |
@@ -104,13 +105,16 @@ semantic acceptance of the fix remains pending.
 Brian accepted all four keep rows in #165 on October 7. The legacy event-stream
 row also preserves synthesized READY/ERROR, the one-second grace and the SDK-only
 setGlobalContext/setEvaluationContext PROVIDER_CONTEXT_CHANGED notification as compatibility behavior outside
-the v0.9 provider-event claim; removing them requires the same reviewed migration gate. The
-supported public timeout configuration request remains a separate #196 follow-up.
+the v0.9 provider-event claim; removing them requires the same reviewed migration gate.
+#213 also documents that both context setters preserve this event behavior.
+#214 implements the reviewed #196 public `providerShutdownTimeout` configuration.
+Both changes are integrated into development and await the next main promotion
+and package release; the currently published server remains `0.1.0`.
 
 ## Migration and consumer evidence
 
 The identical legacy consumer fixture runs against published server `0.0.25`,
-published `0.0.26` (the latest release baseline), and the candidate. Retaining
+published `0.0.26` (a retained compatibility baseline), and the candidate. Retaining
 `0.0.25` also checks the pre-numeric-widening API. It analyzes and executes old package imports, provider setup,
 positional contexts, asynchronous evaluation/details, legacy transactions and
 tracking, and checks the resolved dependency graph for Flutter dependencies.
