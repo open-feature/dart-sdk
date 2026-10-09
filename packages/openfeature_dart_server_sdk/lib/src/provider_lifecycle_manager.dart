@@ -22,7 +22,7 @@ class ProviderLifecycleManager {
 
   final ProviderLifecycleEventHandler _onProviderEvent;
   final void Function(FeatureProvider)? _onRetired;
-  final Duration _shutdownTimeout;
+  Duration _shutdownTimeout;
   final HashMap<FeatureProvider, _ProviderLifecycleRecord> _records =
       HashMap.identity();
   bool _disposed = false;
@@ -41,6 +41,15 @@ class ProviderLifecycleManager {
         'Must be positive',
       );
     }
+  }
+
+  Duration get shutdownTimeout => _shutdownTimeout;
+
+  set shutdownTimeout(Duration value) {
+    if (value <= Duration.zero) {
+      throw ArgumentError.value(value, 'shutdownTimeout', 'Must be positive');
+    }
+    _shutdownTimeout = value;
   }
 
   Map<FeatureProvider, Future<void>> get pendingInitializations =>
@@ -490,6 +499,9 @@ class ProviderLifecycleManager {
     FeatureProvider provider,
     _ProviderLifecycleRecord record,
   ) async {
+    // Snapshot once for BOTH phases of this cleanup. Configuration changes
+    // affect only later cleanups, including later provider replacements.
+    final shutdownTimeout = _shutdownTimeout;
     Object? firstError;
     StackTrace? firstStack;
     try {
@@ -500,16 +512,16 @@ class ProviderLifecycleManager {
         return LegacyProviderLifecycleAdapter.shutdown(provider);
       });
       await cleanup.timeout(
-        _shutdownTimeout,
+        shutdownTimeout,
         onTimeout: () {
           ProviderOwnership.quarantineUntil(provider, cleanup);
           throw ProviderException(
             'Provider ${provider.metadata.name} shutdown timed out after '
-            '${_shutdownTimeout.inMilliseconds}ms.',
+            '${shutdownTimeout.inMilliseconds}ms.',
             code: ErrorCode.GENERAL,
             details: {
               'operation': 'shutdown',
-              'timeoutMs': _shutdownTimeout.inMilliseconds,
+              'timeoutMs': shutdownTimeout.inMilliseconds,
             },
           );
         },
@@ -525,7 +537,7 @@ class ProviderLifecycleManager {
         final cancellation = record.eventSubscription?.cancel();
         if (cancellation != null) {
           await cancellation.timeout(
-            _shutdownTimeout,
+            shutdownTimeout,
             onTimeout: () {
               // Cancellation may itself release provider-owned transport resources.
               ProviderOwnership.quarantineUntil(provider, cancellation);
@@ -534,7 +546,7 @@ class ProviderLifecycleManager {
                 code: ErrorCode.GENERAL,
                 details: {
                   'operation': 'event cancellation',
-                  'timeoutMs': _shutdownTimeout.inMilliseconds,
+                  'timeoutMs': shutdownTimeout.inMilliseconds,
                 },
               );
             },
