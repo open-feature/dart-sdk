@@ -24,6 +24,9 @@ def run():
                 "  openfeature_dart_server_sdk:\n    path: " + (root/'packages/openfeature_dart_server_sdk').as_posix() + '\n')
             (cwd/'pubspec.yaml').write_text('name: legacy_consumer_fixture\npublish_to: none\nenvironment:\n  sdk: ^3.12.2\ndependencies:\n'+dependency)
             (cwd/'consumer.dart').write_text(fixture)
+            # Keep the old calls byte-identical: this fixture checks runtime compatibility,
+            # while downstream users normally receive the intentional analyzer warnings.
+            (cwd/'analysis_options.yaml').write_text('analyzer:\n  errors:\n    deprecated_member_use: ignore\n')
             commands = [['pub','get'], ['analyze','--fatal-infos'], ['run','consumer.dart']]
             for args in commands:
                 result = subprocess.run([dart, *args], cwd=cwd, encoding='utf-8', stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

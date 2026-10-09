@@ -385,9 +385,6 @@ class FeatureClient {
         );
       } else {
         evaluationError = _providerErrorAsException(finalResult);
-        _logger.warning(
-          'Flag evaluation error for $flagKey: ${finalResult.errorMessage}',
-        );
         _recordEvaluationError(finalResult.errorCode, evaluationError);
 
         await _hookManager.executeHooks(
@@ -408,9 +405,6 @@ class FeatureClient {
       }
     } catch (e) {
       evaluationError = _asException(e);
-      _logger.warning(
-        'Error evaluating flag $flagKey: ${_safeErrorMessage(e)}',
-      );
       if (finalResult == null || finalResult.errorCode == null) {
         finalResult = _exceptionResult(
           flagKey,
@@ -614,8 +608,9 @@ class FeatureClient {
           trackingDetails: trackingDetails,
         );
       }
-    } catch (e) {
-      _logger.warning('Error sending tracking event "$trackingEventName": $e');
+    } catch (_) {
+      // Tracking must not throw or log from this hot path. Applications own
+      // their provider diagnostics and logging policy.
     }
   }
 

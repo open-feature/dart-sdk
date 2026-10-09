@@ -27,6 +27,9 @@ class OpenFeatureEvaluationContext {
   Map<String, dynamic> get attributes =>
       UnmodifiableMapView(_context.attributes);
 
+  @Deprecated(
+    'Use EvaluationContext.immutable and OpenFeatureAPI.setEvaluationContext instead.',
+  )
   OpenFeatureEvaluationContext(
     Map<String, dynamic> attributes, {
     String? targetingKey,
@@ -192,7 +195,6 @@ class OpenFeatureAPI {
   final List<Hook> _evaluationHooks = [];
   OpenFeatureEvaluationContext? _globalContext;
   StreamSubscription<Domain>? _domainSubscription;
-  StreamSubscription<LogRecord>? _logSubscription;
   int _defaultBindingGeneration = 0;
   FeatureProvider? _requestedDefaultProvider;
   bool _disposed = false;
@@ -212,7 +214,6 @@ class OpenFeatureAPI {
     : _providerStreamController = StreamController<FeatureProvider>.broadcast(),
       _domainUpdatesController =
           StreamController<Map<String, String>>.broadcast() {
-    if (!isolated) _configureLogging();
     _transactionManager = isolated
         ? TransactionContextManager.isolated()
         : TransactionContextManager();
@@ -331,15 +332,6 @@ class OpenFeatureAPI {
           'providerName': domain.providerName,
         });
       }
-    });
-  }
-
-  void _configureLogging() {
-    Logger.root.level = Level.ALL;
-    _logSubscription = Logger.root.onRecord.listen((record) {
-      print(
-        '${record.time} [${record.level.name}] ${record.loggerName}: ${record.message}',
-      );
     });
   }
 
@@ -656,13 +648,19 @@ class OpenFeatureAPI {
   /// Set global evaluation fields using the canonical context representation.
   /// Existing clients resolve the latest snapshot on their next evaluation.
   void setEvaluationContext(EvaluationContext context) {
-    setGlobalContext(OpenFeatureEvaluationContext._(context.snapshot()));
+    _setGlobalContext(OpenFeatureEvaluationContext._(context.snapshot()));
   }
 
   EvaluationContext? get evaluationContext =>
       _globalContext?.toEvaluationContext();
 
-  void setGlobalContext(OpenFeatureEvaluationContext context) {
+  @Deprecated(
+    'Use setEvaluationContext(EvaluationContext.immutable(...)) instead.',
+  )
+  void setGlobalContext(OpenFeatureEvaluationContext context) =>
+      _setGlobalContext(context);
+
+  void _setGlobalContext(OpenFeatureEvaluationContext context) {
     _ensureMutable();
     _logger.info('Setting global context');
     _globalContext = context;
@@ -672,6 +670,7 @@ class OpenFeatureAPI {
     );
   }
 
+  @Deprecated('Use evaluationContext instead.')
   OpenFeatureEvaluationContext? get globalContext => _globalContext;
 
   void addHooks(List<OpenFeatureHook> hooks) {
@@ -1147,9 +1146,6 @@ class OpenFeatureAPI {
     final domainSubscription = _domainSubscription;
     _domainSubscription = null;
     await attempt(() => domainSubscription?.cancel());
-    final logSubscription = _logSubscription;
-    _logSubscription = null;
-    await attempt(() => logSubscription?.cancel());
     await attempt(_lifecycleManager.dispose);
     await attempt(_domainManager.dispose);
     await attempt(_providerStreamController.close);
