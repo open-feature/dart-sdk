@@ -84,7 +84,9 @@ through an SDK adapter obtained from an existing client. Multiple domains within
 one API may share a provider, subject to the existing domain-scoped restriction.
 After all registrations/bindings are removed and cleanup finishes, the object may
 move to another API if the provider supports reinitialization. One-shot providers,
-including the existing `InMemoryProvider`, still require a new provider object.
+which do not support reinitialization, require a new provider object. The stock
+`InMemoryProvider` returns to `NOT_READY` after shutdown and can be initialized
+again once its previous lifecycle work has settled.
 
 `api.transactionContextManager` supplies that API's transaction scope. The global
 API retains the legacy `TransactionContextManager()` singleton for compatibility;
