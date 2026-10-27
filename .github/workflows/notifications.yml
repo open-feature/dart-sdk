@@ -14,6 +14,6 @@ jobs:
     
     steps:
       - name: Notify Google Chat
-        uses: SimonScholz/google-chat-action@e90269b18c270452c57f8f6c6eebabc49ab27943
+        uses: SimonScholz/google-chat-action@f75e2f4f5539eaa09e879f1aac16c0f7d4e779d4
         with:
           webhookUrl: '${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}'
